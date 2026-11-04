@@ -2181,6 +2181,18 @@
     'office-130': [1527,351]
   };
 
+  /* [보정 계층] 원본 PDF 안내표가 같은 시설을 두 분류에 중복 표기했지만 지도에는 원이 하나뿐인 항목
+   *   → 지도에 실제로 있는 원(같은 시설)의 위치로 연결 · 값: 지도에 있는 원의 '분류-번호' */
+  const HHV_INDEX_POS_ALIAS = {
+    'ent-76': 'svc-76',        // Tours & Activities Desk (그랜드 아일랜더) → 초록 76
+    'ent-94': 'svc-94',        // Tours & Activities Desk (메인 로비) → 초록 94
+    'ent-129': 'svc-129',      // Port Waikiki Cruises → 초록 129
+    'gift-136': 'fashion-136', // Hi Trend Sunglasses → 보라 136
+    'fashion-27': 'gift-27',   // Anuenue → 파랑 27
+    'svc-29': 'gift-29'        // Aloha Tattoo → 파랑 29
+  };
+  function hhvPosKey(key) { return HHV_INDEX_POS[key] ? key : (HHV_INDEX_POS_ALIAS[key] && HHV_INDEX_POS[HHV_INDEX_POS_ALIAS[key]] ? HHV_INDEX_POS_ALIAS[key] : null); }
+
   let hhvIndexCat = 'all';
   let hhvSelectedKey = null;
 
@@ -2209,7 +2221,7 @@
           <div class="divide-y divide-slate-200">
             ${rows.map(it => {
               const key = `${it.cat}-${it.n}`;
-              const has = !!HHV_INDEX_POS[key];
+              const has = !!hhvPosKey(key);
               return `
               <div ${has ? `role="button" tabindex="0" data-hhvkey="${key}"` : ''} class="hhv-row flex items-start gap-2 py-1.5 ${has ? 'hhv-row-click' : ''} ${hhvSelectedKey === key ? 'hhv-row-active' : ''} ${it.star ? 'bg-amber-50 -mx-1 px-1 rounded-lg' : ''}">
                 <span class="hhv-num" style="background:${c.color}">${it.n}</span>
@@ -2231,7 +2243,8 @@
 
   // 번호 안내표 항목 선택 → 영문 지도에서 해당 번호 원 위치 표시 (한글 안내도의 시설 선택과 같은 방식)
   function focusHhvIndex(key) {
-    const pos = HHV_INDEX_POS[key];
+    const mapKey = hhvPosKey(key);
+    const pos = mapKey ? HHV_INDEX_POS[mapKey] : null;
     if (!pos || !resortMap) return;
     if (resortMode !== 'en') setResortMode('en');
     const [cat, num] = key.split('-');
@@ -2242,7 +2255,12 @@
     const icon = L.divIcon({ className: '', html: '<div class="resort-focus-ring hhv-focus-ring"></div>', iconSize: [44, 44], iconAnchor: [22, 22] });
     resortFocusMarker = L.marker(latlng, { icon, zIndexOffset: 900 }).addTo(resortMap);
     const body = items.map(it => `<b>${it.name}</b><br><span style="color:#64748b">${it.ko ? it.ko + ' · ' : ''}${it.loc}</span>`).join('<hr style="margin:4px 0;border-color:#e2e8f0">');
-    resortFocusMarker.bindPopup(`<span class="hhv-num" style="background:${catInfo ? catInfo.color : '#475569'};margin-right:4px">${num}</span>${body}`, { offset: [0, -14] });
+    let aliasNote = '';
+    if (mapKey !== key) {
+      const mapCat = HHV_INDEX_CATS.find(c => c.key === mapKey.split('-')[0]);
+      aliasNote = `<div style="margin-top:4px;font-size:11px;color:#b45309">ℹ️ 지도에는 <b>${mapCat ? mapCat.label : ''}</b> 색 원(${mapKey.split('-')[1]})으로 표시돼 있어요</div>`;
+    }
+    resortFocusMarker.bindPopup(`<span class="hhv-num" style="background:${catInfo ? catInfo.color : '#475569'};margin-right:4px">${num}</span>${body}${aliasNote}`, { offset: [0, -14] });
     resortMap.setView(latlng, -0.5, { animate: true });
     setTimeout(() => { if (resortFocusMarker) resortFocusMarker.openPopup(); }, 280);
     hhvSelectedKey = key;
