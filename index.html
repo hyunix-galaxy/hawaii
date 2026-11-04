@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611040601">
+  <link rel="stylesheet" href="/tailwind.css?v=202611040616">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -1493,13 +1493,22 @@
     { day: 4, slot: '점심', note: 'ℹ️ 영업 중 확인(2026.11) · 랍스터 특가 조건은 예약 전화(808-973-0168) 때 함께 확인' },
     { day: 4, costIndex: 1, cost: 'Tantalus Lookout 입장 무료 · 비거주자 주차 $7/대 (게이트 07:00 개방, 겨울 18:45경 폐쇄)' },
     { day: 7, costIndex: 0, cost: 'Kualoa Movie Sites 성인 $59.95 · 아동 $39.95 / UTV 랩터 $154.95 (+세금 4.712%)' },
-    // D7: 식물원 → 쿠알로아 점심 → 13:00 투어 → 지오반니 간식 → 노스쇼어 경유 일주 복귀 (2026.11.04 결정)
+    // D7: 식물원 → 11:20 쿠알로아 투어 → Kaya's Store 점심 → 노스쇼어 → 할레이바 지오반니 간식 → 일주 복귀 (2026.11.04 결정)
     { day: 7, daySet: { title: 'Day 7 · 식물원 · 쿠알로아 랜치 · 노스쇼어 일주', badge: '섬 북동부 일주' } },
-    { day: 7, slot: '오전', set: { placeName: "Ho'omaluhia Botanical Garden", placeId: 'hoomaluhia', time: '09:00', mapQuery: "Ho'omaluhia Botanical Garden Kaneohe HI", siteUrl: 'https://www.honolulu.gov/dpr/honolulu-botanical-gardens/hoomaluhia-botanical-garden/', extraLinks: [], desc: '🌴 08:30 숙소 출발 ➔ 09:00 개장 시간에 맞춰 호오말루히아 식물원 열대 우림 드라이브 & 가족 사진 ➔ 쿠알로아로 이동' } },
-    { day: 7, slot: '점심', set: { placeName: "Aunty Pat's Cafe (Kualoa Ranch)", placeId: 'kualoa_cafe', time: '11:45', mapQuery: 'Kualoa Ranch Kaneohe HI', siteUrl: 'https://www.kualoa.com/eatshop/', extraLinks: [], desc: "🍔 쿠알로아 랜치 안 Aunty Pat's Cafe 점심 (로코모코 · 그래스페드 버거) 후 투어 체크인" }, note: 'ℹ️ 매일 07:30~15:00 영업 (쿠알로아 공식) · 투어 전 브리핑·서명이 있으니 점심 후 바로 체크인' },
-    { day: 7, slot: '오후', set: { placeName: 'Kualoa Ranch', placeId: 'kualoa', time: '13:00', mapQuery: 'Kualoa Ranch Kaneohe HI', siteUrl: 'https://www.kualoa.com/tours-and-activities/movie-sites-ranch-tour', extraLinks: [], desc: '🦖 13:00 쿠알로아 랜치 무비 사이트 투어 (약 1시간 30분, 오후 회차 13:00·13:20·13:40…) · UTV 랩터 투어로 하면 약 2시간' }, note: 'ℹ️ 예약자 이름과 같은 사진 신분증 지참 · 만 18세 미만은 보호자와 함께 체크인' },
-    { day: 7, addSlot: { label: '간식', color: 'bg-rose-100 text-rose-900', placeName: "Giovanni's Shrimp Truck", placeId: 'giovanni', time: '15:15', mapQuery: "Giovanni's Shrimp Truck Kahuku HI", siteUrl: 'https://www.giovannisshrimptruck.com/', desc: '🦐 카후쿠 지오반니 새우트럭 오후 간식 · 갈릭 새우 몇 접시 나눠 먹기 (매일 10:30~18:30)' }, after: '오후' },
-    { day: 7, addSlot: { label: '드라이브', color: 'bg-teal-100 text-teal-900', placeName: 'North Shore (Sunset Beach · Haleiwa)', placeIds: ['sharkscove', 'haleiwa'], time: '16:15', mapQuery: 'Sunset Beach Haleiwa HI', desc: '🌊 노스쇼어 해안 따라 선셋 비치·라니아케아 ➔ 할레이바 ➔ H2 고속도로로 숙소 복귀 (18:00 전후 도착 · 일몰 18:35)' }, after: '간식' },
+    { day: 7, slot: '오전', set: { placeName: "Ho'omaluhia Botanical Garden", placeId: 'hoomaluhia', time: '09:00', mapQuery: "Ho'omaluhia Botanical Garden Kaneohe HI", siteUrl: 'https://www.honolulu.gov/dpr/honolulu-botanical-gardens/hoomaluhia-botanical-garden/', extraLinks: [], desc: '🌴 08:30 숙소 출발 ➔ 09:00~10:15 호오말루히아 식물원 (차로 안쪽 도로 한 바퀴 · 코올라우 산맥 배경 사진 · 방문자 센터·호수 산책)' } },
+    { day: 7, removeSlot: '점심' },
+    { day: 7, removeSlot: '오후' },
+    { day: 7, addSlot: { label: '투어', color: 'bg-amber-100 text-amber-900', placeName: 'Kualoa Ranch', placeId: 'kualoa', time: '11:20', mapQuery: 'Kualoa Ranch Kaneohe HI', siteUrl: 'https://www.kualoa.com/tours-and-activities/movie-sites-ranch-tour',
+      desc: '🦖 10:45 도착·체크인 ➔ 11:20 쿠알로아 랜치 무비 사이트 투어 (약 1시간 30분)',
+      note: 'ℹ️ 오전 마지막 회차가 11:20이에요 (11:30 회차 없음) · 예약자 이름과 같은 사진 신분증 지참 · 만 18세 미만은 보호자와 함께 체크인' }, after: '오전' },
+    { day: 7, addSlot: { label: '점심', color: 'bg-emerald-100 text-emerald-900', placeName: "Kaya's Store (Hau'ula)", placeId: 'kayas', time: '13:15', mapQuery: "Kaya's Store 53-534 Kamehameha Hwy Hauula HI", siteUrl: 'https://kayastorehawaii.com',
+      desc: "🍱 쿠알로아에서 북쪽으로 약 20분 ➔ Kaya's Store 플레이트 런치·도시락·무스비 & 버터모찌 · 가게 앞 그늘 피크닉 벤치에서 식사",
+      note: 'ℹ️ 주방 매일 07:30~17:00 · 가게 07:00~19:00 (공식)' }, after: '투어' },
+    { day: 7, addSlot: { label: '오후', color: 'bg-teal-100 text-teal-900', placeName: 'North Shore (Sunset Beach · Laniakea)', placeId: 'sharkscove', time: '14:50', mapQuery: 'Sunset Beach Haleiwa HI',
+      desc: '🌊 카후쿠 지나 노스쇼어 해안 드라이브 ➔ 선셋 비치 ➔ 15:20 라니아케아 바다거북' }, after: '점심' },
+    { day: 7, addSlot: { label: '간식', color: 'bg-rose-100 text-rose-900', placeName: "Giovanni's Shrimp Truck (Haleiwa)", placeId: 'giovanni_haleiwa', time: '15:50', mapQuery: "Giovanni's Shrimp Truck 66-472 Kamehameha Hwy Haleiwa HI", siteUrl: 'https://www.giovannisshrimptruck.com/',
+      desc: '🦐 할레이바 지오반니 새우트럭 오후 간식 (갈릭 새우 몇 접시 나눠 먹기) & 할레이바 타운 산책 ➔ 16:50 출발, H2 고속도로로 숙소 (17:50 전후 도착 · 일몰 18:34)',
+      note: 'ℹ️ 할레이바 지점은 매일 10:30~17:00 (카후쿠 지점보다 일찍 닫아요)' }, after: '오후' },
     { day: 7, slot: '저녁', set: { desc: '🍽️ 숙소 복귀 및 자유 석식 (섬 북동부를 한 바퀴 돈 날이라 가볍게)' } },
     // 카할라 일정: D9(금) 애프터눈 티 → D10(토) Plumeria Beach House 점심으로 이동 (2026.11.04 결정)
     { day: 9, daySet: { title: 'Day 9 · 진주만 투어 · 휴식 & 2차 불꽃놀이', badge: '불꽃놀이 피날레' } },
@@ -1870,6 +1879,8 @@
     plumeria:      { name: 'Plumeria Beach House (The Kahala)', icon: '💐', node: 'kahala', query: 'Plumeria Beach House The Kahala Hotel and Resort Honolulu HI', menu: 'plumeria' },
     costco_food:   { name: 'Costco Food Court', icon: '🌭', node: 'costco', query: 'Costco Wholesale Iwilei Honolulu HI', menu: 'costco' },
     kualoa_cafe:   { name: "Aunty Pat's Cafe (Kualoa Ranch)", icon: '🍔', node: 'kualoa', query: 'Kualoa Ranch Kaneohe HI' },
+    kayas:         { name: "Kaya's Store (Hau'ula)", icon: '🍱', lat: 21.5865, lng: -157.8935, query: "Kaya's Store 53-534 Kamehameha Hwy Hauula HI" },   // 위치는 주소 기준 대략값
+    giovanni_haleiwa: { name: "Giovanni's Shrimp Truck (Haleiwa)", icon: '🦐', node: 'haleiwa', query: "Giovanni's Shrimp Truck 66-472 Kamehameha Hwy Haleiwa HI", menu: 'giovanni' },
     car_return:    { name: 'HNL Rent-A-Car Return', icon: '🚙', node: 'hnl', query: 'Consolidated Rent-A-Car Facility Honolulu HI' },
     incheon:       { name: 'Incheon Airport T2', icon: '🇰🇷', offOahu: true, query: 'Incheon International Airport Terminal 2' }
   };
@@ -1918,7 +1929,7 @@
     "Ray's Kiawe Broiled Chicken": 'rays', 'Matsumoto Shave Ice': 'matsumoto', 'Laniakea Beach (거북이)': 'sharkscove',
     'Fook Yuen Seafood': 'fookyuen', "Tantalus Lookout (Pu'u Ualaka'a)": 'tantalus', 'Makapuu Point': 'halona',
     "Boots & Kimo's": 'boots', 'Lanikai Beach': 'lanikai', 'Diamond Head': 'diamond', "Wolfgang's Steakhouse": 'wolfgang',
-    'Kualoa Ranch': 'kualoa', "Giovanni's Shrimp Truck": 'giovanni', "Ho'omaluhia Botanical Garden": 'hoomaluhia',
+    'Kualoa Ranch': 'kualoa', "Giovanni's Shrimp Truck": 'giovanni_haleiwa', "Ho'omaluhia Botanical Garden": 'hoomaluhia',
     'Dole Plantation': 'dole', 'Waikele Premium Outlets': 'waikele', 'Pearl Harbor': 'pearl',
     'The Kahala — Plumeria Beach House': 'plumeria'
   };
@@ -2038,7 +2049,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611040601').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611040616').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
