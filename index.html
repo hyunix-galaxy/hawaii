@@ -371,8 +371,13 @@
     .tip-chip.fx-on { background: #0369A1; color: #FFFFFF; border-color: #0369A1; }
     #entry-code-input::placeholder { letter-spacing: 0; font-size: 15px; font-weight: 700; }
     .phrase-chip { background: #F0FDF4; color: #166534; border: 1px solid #86EFAC; }
-    .m3-segmented.seg-5 { gap: 2px; }
-    .m3-segmented.seg-5 .m3-seg-btn { padding: 9px 2px; font-size: 12.5px; letter-spacing: -0.2px; }
+    .m3-segmented.seg-6 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; border-radius: 18px; }
+    .m3-segmented.seg-6 .m3-seg-btn { padding: 8px 2px; font-size: 12.5px; letter-spacing: -0.2px; }
+    @media (min-width: 768px) { .m3-segmented.seg-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); border-radius: 9999px; } }
+    .food-card { display: flex; gap: 10px; padding: 10px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E8F0; }
+    .food-img { width: 92px; height: 92px; flex-shrink: 0; border-radius: 12px; object-fit: cover; background: #F1F5F9; }
+    @media (min-width: 768px) { .food-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .food-grid > * { margin-top: 0 !important; } }
+    @media (min-width: 1280px) { .food-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
     .phrase-row { display: flex; align-items: flex-start; gap: 10px; width: 100%; text-align: left; padding: 9px 10px; border-radius: 12px; background: #FFFFFF; border: 1px solid #E2E8F0; }
     .phrase-row:active { background: #F0F9FF; border-color: #7DD3FC; }
     .phrase-row.speaking { background: #E0F2FE; border-color: #0284C7; }
@@ -934,11 +939,12 @@
     </section>
 
     <section id="tab-guide" class="main-screen hidden space-y-3">
-      <div class="m3-segmented seg-5">
+      <div class="m3-segmented seg-6">
         <button data-guide="dday" type="button" class="m3-seg-btn guide-seg-btn active">⏰ 예약</button>
         <button data-guide="flight" type="button" class="m3-seg-btn guide-seg-btn">✈️ 항공·렌트</button>
         <button data-guide="check" type="button" class="m3-seg-btn guide-seg-btn">✅ 준비물</button>
         <button data-guide="tips" type="button" class="m3-seg-btn guide-seg-btn">📸 꿀팁</button>
+        <button data-guide="food" type="button" class="m3-seg-btn guide-seg-btn">🍴 음식</button>
         <button data-guide="phrase" type="button" class="m3-seg-btn guide-seg-btn">🗣️ 영어</button>
       </div>
 
@@ -1006,6 +1012,19 @@
               🔗 앨범 링크 복사
             </button>
           </div>
+        </div>
+      </div>
+
+      <div id="guide-sub-food" class="guide-subpage hidden space-y-3">
+        <div class="m3-card p-4 space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <h3 class="text-[15.5px] font-extrabold text-slate-900">🍴 추천 음식</h3>
+            <span id="food-count" class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11.5px] font-bold nowrap-btn"></span>
+          </div>
+          <p class="text-[12px] text-slate-600 leading-relaxed">일정에 있는 곳은 <b>📅 D일차</b>를 누르면 그날 일정으로 가요. 가격은 세금·팁 별도이고 바뀔 수 있어요 (<b>비공식</b> 표시는 공식 메뉴가 아닌 최근 후기·메뉴 사이트 기준).</p>
+          <div id="food-filter" class="flex flex-wrap gap-1.5"></div>
+          <div id="food-list" class="food-grid space-y-2"></div>
+          <div class="text-[11px] font-semibold text-slate-500 leading-relaxed">사진은 음식 종류를 보여 주는 대표 사진이에요 (해당 가게 사진 아님) · 출처 Wikimedia Commons, 사진마다 작성자·라이선스 표시</div>
         </div>
       </div>
 
