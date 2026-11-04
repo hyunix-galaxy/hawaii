@@ -1108,7 +1108,12 @@
     ]},
     { day: 'D1 · 2/18', title: '도착 · 코스트코', items: [
       { place: 'Costco Iwilei', tips: ['미국 코스트코는 신용카드 중 비자(Visa)만 받아요. 마스터카드 신용카드는 안 되니 비자 카드를 준비하세요 (직불카드·애플페이는 가능).', '평일 10:00~20:30, 주말 19:00 마감 (이그제큐티브 회원은 9:00부터). 한국 회원카드를 꼭 챙기세요.'] },
-      { place: "Nico's Pier 38", tips: ['카운터에서 주문하고 번호표를 받는 방식이에요. 점심 피크(12시 전후)는 줄이 길어요.'] }
+      { place: "Nico's Pier 38 Fish Market", tips: [
+        '레스토랑 옆 Fish Market 진열장에서 포케 종류를 고르고 무게(파운드/온스)를 말하면 담아서 무게로 계산해요. 8인이면 2~3가지를 1~2lb씩 고르면 넉넉해요.',
+        '밥·음료·젓가락이 필요하면 계산할 때 함께 요청하세요.',
+        '주차장은 무료(약 120면)지만 11:45~12:45엔 거의 차요.',
+        '항구 앞 야외 테이블 일부는 레스토랑 손님용일 수 있으니, 자리가 애매하면 직원에게 물어보세요.'
+      ]}
     ]},
     { day: 'D2 · 2/19', title: '하나우마 베이 · 불꽃놀이', items: [
       { place: 'Hanauma Bay', tips: [
@@ -1332,6 +1337,9 @@
    *   slot: 덮어쓸 슬롯(label) · set: 바꿀 필드 · note: 슬롯 아래 경고 문구 · costIndex/cost: 비용 줄 교체 */
   const SCHEDULE_UPDATED_AT = '2026.11.04';
   const SCHEDULE_UPDATES = [
+    // D1 점심: 레스토랑 대신 Fish Market 테이크아웃 (2026.11.04 결정)
+    { day: 1, slot: '점심', set: { placeName: "Nico's Pier 38 Fish Market", desc: "🐟 Nico's Pier 38 Fish Market에서 포케 테이크아웃 → 바로 앞 야외 테이블에서 식사" } },
+    { day: 1, costIndex: 0, cost: "Nico's Fish Market 포케 약 $16~22/lb (무게 달아 계산) · 포케 볼 약 $14~16 · 주차 무료" },
     { day: 2, costIndex: 0, cost: 'Hanauma Bay 입장료 $25.00/인 (만 12세 이하 무료) · 주차 $3.00/대 (현금만) · 마지막 입장 13:30' },
     { day: 3, slot: '오전', set: { mapQuery: '66-190 Kamehameha Hwy Haleiwa HI' } },
     { day: 3, costIndex: 0, cost: "Ray's 통닭 1마리 약 $16 (토·일 10:00~16:00경 · 전화 예약 808-351-6258 · 현금 준비)" },
