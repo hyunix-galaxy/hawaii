@@ -2,9 +2,9 @@
 // - 화면(HTML): 네트워크 우선, 3초 안에 응답이 없으면(약한 신호) 저장본을 먼저 보여 줌
 // - 같은 사이트 파일(스타일·지도 이미지·라이브러리): 저장본을 바로 쓰고 뒤에서 새 파일로 갱신
 //   → 같은 이름으로 이미지를 바꿔도 다음번 열 때 반영됨
-// - 글꼴·배경 사진·음식 사진(위키미디어)·지도 타일: 한 번 받으면 저장해 두고 재사용 (현지 데이터 절약 · 오프라인)
+// - 글꼴·배경 사진·지도 타일: 한 번 받으면 저장해 두고 재사용 (현지 데이터 절약 · 오프라인)
 // - Supabase(정산 데이터)·날씨 API: 저장하지 않음 (항상 최신)
-const VERSION = '202611041317';
+const VERSION = '202611041322';
 const CACHE = 'hawaii-portal-' + VERSION;
 const RUNTIME = 'hawaii-runtime-v1';
 const TILES = 'hawaii-tiles-v1';
@@ -92,7 +92,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   // 글꼴(jsDelivr) · 배경 사진(Unsplash)
-  if (url.hostname === 'cdn.jsdelivr.net' || url.hostname === 'images.unsplash.com' || url.hostname === 'upload.wikimedia.org') {
+  if (url.hostname === 'cdn.jsdelivr.net' || url.hostname === 'images.unsplash.com') {
     event.respondWith(cacheFirst(req, RUNTIME));
     return;
   }
