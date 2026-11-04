@@ -1,0 +1,1829 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🌺 하와이 3가족 오아후 트립 (2027.02.18 ~ 02.28)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Supabase (지출 공유 저장소) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Google Fonts: Pretendard -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <style>
+    :root {
+      --m3-primary: #006493;
+      --m3-primary-container: #CAE6FF;
+      --m3-surface: #F8FAFC;
+      --m3-card: #FFFFFF;
+      --m3-text-main: #0F172A;
+      --m3-text-sub: #475569;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      word-break: keep-all;
+      overflow-wrap: break-word;
+    }
+
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      background-color: #0B253A;
+      color: var(--m3-text-main);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    .app-shell {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background-color: var(--m3-surface);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+      padding-bottom: 86px;
+    }
+
+    .hero-banner {
+      position: relative;
+      background-color: #0284c7;
+      background-size: cover;
+      background-position: center;
+      color: #FFFFFF;
+      padding: 16px 16px 14px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+      transition: background-image 0.4s ease, background-color 0.4s ease;
+    }
+
+    .nowrap-btn {
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .m3-card {
+      background: var(--m3-card);
+      border-radius: 20px;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+    }
+
+    .m3-segmented {
+      display: flex;
+      background: #E2E8F0;
+      padding: 4px;
+      border-radius: 9999px;
+      gap: 4px;
+    }
+
+    .m3-seg-btn {
+      flex: 1;
+      text-align: center;
+      padding: 9px 8px;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 9999px;
+      color: #475569;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .m3-seg-btn.active {
+      background: #FFFFFF;
+      color: var(--m3-primary);
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+    }
+
+    .day-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .day-chip, .oahu-filter-chip {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 2px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #FFFFFF;
+      color: #334155;
+      border: 1px solid #CBD5E1;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .day-chip.active, .oahu-filter-chip.active {
+      background: var(--m3-primary);
+      color: #FFFFFF;
+      border-color: var(--m3-primary);
+      box-shadow: 0 3px 8px rgba(0, 100, 147, 0.28);
+    }
+
+    .m3-bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      height: 74px;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid #E2E8F0;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      z-index: 1000;
+      padding: 6px 4px 8px 4px;
+    }
+
+    .m3-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      color: #64748B;
+      font-size: 11px;
+      font-weight: 700;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .m3-nav-pill {
+      width: 48px;
+      height: 28px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: all 0.18s ease;
+    }
+
+    .m3-nav-item.active {
+      color: #001E30;
+    }
+
+    .m3-nav-item.active .m3-nav-pill {
+      background: var(--m3-primary-container);
+    }
+
+    #oahu-leaflet-map, #resort-leaflet-map {
+      width: 100%;
+      height: 340px;
+      border-radius: 16px;
+      z-index: 10;
+      background: #E0F2FE;
+      border: 1px solid #CBD5E1;
+    }
+
+    .resort-icon-pin {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      background: #FFFFFF;
+      border: 2px solid #006493;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+    }
+
+    .resort-icon-pin.our-home {
+      width: 32px;
+      height: 32px;
+      font-size: 17px;
+      background: #FEF3C7;
+      border: 2.5px solid #D97706;
+      box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.35), 0 3px 8px rgba(0, 0, 0, 0.35);
+      z-index: 999 !important;
+    }
+
+    .oahu-spot-pin {
+      position: relative;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      border: 2.5px solid #006493;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+    }
+
+    .oahu-seq-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 17px;
+      height: 17px;
+      border-radius: 50%;
+      background: #EA580C;
+      color: #FFFFFF;
+      font-size: 10px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid #FFFFFF;
+    }
+
+    .ext-link-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 11.5px;
+      font-weight: 700;
+      background: #F0F9FF;
+      color: #0369A1;
+      border: 1px solid #BAE6FD;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .gmap-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 4px 9px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 800;
+      background: #ECFDF5;
+      color: #047857;
+      border: 1px solid #A7F3D0;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .gnav-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 4px 9px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 800;
+      background: #EFF6FF;
+      color: #1D4ED8;
+      border: 1px solid #BFDBFE;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .place-title-link {
+      color: #0369A1;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      font-weight: 800;
+    }
+
+    #app-toast {
+      position: fixed;
+      bottom: 88px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.94);
+      color: #FFFFFF;
+      padding: 10px 18px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 2000;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+      white-space: nowrap;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-shell">
+  <!-- TOP HERO HEADER (Time-Adaptive Hawaiian Panorama) -->
+  <header id="app-hero-banner" class="hero-banner">
+    <div class="flex items-center justify-between gap-1.5 mb-2.5">
+      <button id="cycle-theme-btn" type="button" title="터치하여 시간대별 풍경 미리보기 전환"
+              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-amber-400 text-slate-950 nowrap-btn shadow-sm cursor-pointer">
+        <span id="theme-badge-label">☀️ 에메랄드 와이키키</span>
+        <span class="text-[9.5px] opacity-80">↻</span>
+      </button>
+      <div class="flex items-center gap-1.5">
+        <button id="open-flight-modal-btn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11.5px] font-bold bg-slate-900/65 text-white border border-white/25 nowrap-btn">
+          ✈️ 대한항공 KE051/052
+        </button>
+        <button id="share-portal-btn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11.5px] font-bold bg-slate-900/65 text-white border border-white/25 nowrap-btn">
+          🔗 공유
+        </button>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <div class="flex items-baseline justify-between gap-2 flex-wrap">
+        <h1 class="text-[20px] font-extrabold tracking-tight text-white drop-shadow-sm">
+          하와이 3가족 오아후 트립
+        </h1>
+        <span class="text-[12px] font-bold text-sky-100 nowrap-btn">
+          2027.02.18 ~ 02.28 (8인)
+        </span>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between gap-2 bg-slate-900/65 backdrop-blur-md border border-white/20 rounded-2xl px-3 py-2">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="text-lg">🏨</span>
+        <div class="truncate">
+          <div class="text-[10.5px] text-sky-200 font-semibold leading-tight">현재 등록 객실</div>
+          <div class="text-[13.5px] font-extrabold text-white truncate">
+            <span>The Grand Islander</span> · <span class="text-amber-300">#2307</span>
+          </div>
+        </div>
+      </div>
+      <a href="https://photos.app.goo.gl/T7oLKmuA24sTGZky6" target="_blank" rel="noopener noreferrer"
+         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white text-slate-900 text-[12px] font-extrabold shadow-sm nowrap-btn">
+        📸 공유앨범 ↗
+      </a>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="flex-1 px-3.5 pt-3.5 pb-4 space-y-3.5">
+
+    <!-- ================= TAB 1: 📅 일정표 (D1 ~ D11) ================= -->
+    <section id="tab-schedule" class="main-screen space-y-3">
+      <div class="m3-card p-2.5">
+        <div class="flex items-center justify-between mb-2 px-1">
+          <span class="text-[12px] font-extrabold text-slate-700">📅 일자별 타임라인 선택 (D1 ~ D11)</span>
+          <span id="current-day-indicator" class="text-[11.5px] font-bold text-sky-700">1 / 11일차</span>
+        </div>
+        <div id="schedule-day-grid" class="day-grid"></div>
+      </div>
+
+      <div id="day-card-container"></div>
+
+      <div class="flex items-center justify-between gap-2 pt-1">
+        <button id="prev-day-btn" type="button" class="m3-card px-3.5 py-2.5 text-[12.5px] font-extrabold text-slate-700 nowrap-btn">
+          ◀ 이전 날
+        </button>
+        <a href="https://photos.app.goo.gl/T7oLKmuA24sTGZky6" target="_blank" rel="noopener noreferrer"
+           class="m3-card px-3.5 py-2.5 text-[12.5px] font-extrabold text-sky-700 bg-sky-50/70 border-sky-200 nowrap-btn">
+          📸 구글포토 공유앨범 ↗
+        </a>
+        <button id="next-day-btn" type="button" class="m3-card px-3.5 py-2.5 text-[12.5px] font-extrabold text-slate-700 nowrap-btn">
+          다음 날 ▶
+        </button>
+      </div>
+    </section>
+
+    <!-- ================= TAB 2: 🗺️ 오아후맵 ================= -->
+    <section id="tab-oahu" class="main-screen hidden space-y-3">
+      <div class="m3-card p-3.5 space-y-3">
+        <div>
+          <h2 class="text-[16px] font-extrabold text-slate-900">🗺️ Oahu Island Drive Route Map</h2>
+          <p class="text-[12px] text-slate-600 mt-0.5">일자를 선택하면 해당 날 방문하는 거점과 실제 고속도로·해안도로 주행 선형이 표시됩니다.</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button id="toggle-oahu-sat-btn" type="button" class="py-2 px-3 rounded-xl bg-slate-100 text-slate-800 text-[12.5px] font-bold nowrap-btn">
+            🛰️ 위성 사진으로 보기
+          </button>
+          <button id="reset-oahu-bounds-btn" type="button" class="py-2 px-3 rounded-xl bg-sky-50 text-sky-800 border border-sky-200 text-[12.5px] font-bold nowrap-btn">
+            🎯 코스 전체보기
+          </button>
+        </div>
+
+        <div id="oahu-day-filter-grid" class="day-grid"></div>
+        <div id="oahu-leaflet-map"></div>
+        <div id="oahu-route-summary" class="bg-slate-50 rounded-2xl p-3 border border-slate-200 space-y-2"></div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 3: 🏨 숙소·단지 ================= -->
+    <section id="tab-resort" class="main-screen hidden space-y-3">
+      <div class="m3-segmented">
+        <button id="seg-resort-map-btn" type="button" class="m3-seg-btn active">🏨 힐튼 단지 안내도</button>
+        <button id="seg-resort-room-btn" type="button" class="m3-seg-btn">🔑 객실 · 주차 · 생활팁</button>
+      </div>
+
+      <div id="resort-subpage-map" class="m3-card p-3.5 space-y-3">
+        <div>
+          <h2 class="text-[16px] font-extrabold text-slate-900">🏨 Hilton Hawaiian Village Map</h2>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button id="reset-resort-map-btn" type="button" class="py-2 px-3 rounded-xl bg-sky-50 text-sky-800 border border-sky-200 text-[12.5px] font-bold nowrap-btn text-center">
+            🎯 단지 전체보기
+          </button>
+          <a href="https://www.hilton.com/en/hotels/hnlhvhh-hilton-hawaiian-village-waikiki-beach-resort/" target="_blank" rel="noopener noreferrer"
+             class="py-2 px-3 rounded-xl bg-slate-100 text-slate-800 text-[12.5px] font-bold nowrap-btn text-center">
+            🌐 Hilton 공식홈 ↗
+          </a>
+        </div>
+
+        <div id="resort-leaflet-map"></div>
+
+        <div id="resort-spot-detail" class="bg-sky-50/80 border border-sky-200 rounded-2xl p-3 space-y-2">
+          <div class="min-w-0">
+            <a id="resort-spot-title" href="https://www.google.com/maps/dir/?api=1&destination=The+Grand+Islander+by+Hilton+Grand+Vacations+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="text-[14px] font-extrabold text-sky-900 underline underline-offset-2 block">⭐ The Grand Islander (#2307) ↗</a>
+            <div id="resort-spot-desc" class="text-[12px] text-slate-600 mt-0.5">우리 가족 베이스캠프 · 2베드룸 풀키친 스위트</div>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <a id="resort-spot-gmap" href="https://www.google.com/maps/search/?api=1&query=The+Grand+Islander+by+Hilton+Grand+Vacations+Honolulu+HI" target="_blank" rel="noopener noreferrer" class="gmap-chip">📍 구글맵 ↗</a>
+            <a id="resort-spot-gnav" href="https://www.google.com/maps/dir/?api=1&destination=The+Grand+Islander+by+Hilton+Grand+Vacations+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 길안내 ↗</a>
+            <a id="resort-spot-link" href="https://www.hilton.com/en/hotels/hnlhvhh-hilton-hawaiian-village-waikiki-beach-resort/" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 공식 사이트 ↗</a>
+          </div>
+        </div>
+
+        <div class="space-y-2.5 pt-1">
+          <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
+            <div class="text-[11.5px] font-extrabold text-slate-700 mb-1.5">🏨 숙소 타워</div>
+            <div id="legend-cat-tower" class="flex flex-wrap gap-1.5"></div>
+          </div>
+          <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
+            <div class="text-[11.5px] font-extrabold text-slate-700 mb-1.5">🍕 3대 맛집 · 식당 · 카페</div>
+            <div id="legend-cat-food" class="flex flex-wrap gap-1.5"></div>
+          </div>
+          <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
+            <div class="text-[11.5px] font-extrabold text-slate-700 mb-1.5">🏊 수영장 · 석호 · 편의시설</div>
+            <div id="legend-cat-pool" class="flex flex-wrap gap-1.5"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="resort-subpage-room" class="hidden space-y-3">
+        <div class="grid grid-cols-2 gap-2.5">
+          <div class="m3-card p-3.5 space-y-1.5">
+            <div class="text-[11.5px] font-bold text-slate-500">숙소 타워 · 호수</div>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=The+Grand+Islander+by+Hilton+Grand+Vacations+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="text-[14.5px] font-extrabold text-sky-800 underline block">📍 The Grand Islander</a>
+            <div class="text-[12.5px] font-bold text-slate-700">#2307 (2BR Suite)</div>
+            <div class="flex gap-1 pt-1">
+              <a href="https://www.google.com/maps/search/?api=1&query=The+Grand+Islander+by+Hilton+Grand+Vacations+Honolulu+HI" target="_blank" rel="noopener noreferrer" class="gmap-chip">📍 구글맵</a>
+              <a href="https://www.google.com/maps/dir/?api=1&destination=The+Grand+Islander+by+Hilton+Grand+Vacations+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 길안내</a>
+            </div>
+          </div>
+          <div class="m3-card p-3.5 space-y-1.5">
+            <div class="text-[11.5px] font-bold text-slate-500">연계 주차장 (도보 5분)</div>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=Hale+Koa+Hotel+Parking+Garage+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="text-[14.5px] font-extrabold text-emerald-800 underline block">📍 Hale Koa Garage</a>
+            <div class="text-[12px] font-semibold text-slate-600">Kalia Tower 맞은편</div>
+            <div class="flex gap-1 pt-1">
+              <a href="https://www.google.com/maps/search/?api=1&query=Hale+Koa+Hotel+Parking+Garage+Honolulu+HI" target="_blank" rel="noopener noreferrer" class="gmap-chip">📍 구글맵</a>
+              <a href="https://www.google.com/maps/dir/?api=1&destination=Hale+Koa+Hotel+Parking+Garage+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 길안내</a>
+            </div>
+          </div>
+          <div class="m3-card p-3.5">
+            <div class="text-[11.5px] font-bold text-slate-500">체크인 / 체크아웃</div>
+            <div class="text-[15px] font-extrabold text-slate-900 mt-1">16:00 / 10:00</div>
+            <div class="text-[11.5px] text-slate-500 mt-0.5">전용 3층 로비 데스크</div>
+          </div>
+          <div class="m3-card p-3.5">
+            <div class="text-[11.5px] font-bold text-slate-500">와이파이 접속</div>
+            <div class="text-[14px] font-extrabold text-sky-700 mt-1">HGVC_Guest</div>
+            <div class="text-[11.5px] text-slate-500 mt-0.5">객실호수 + 투숙객 성(Last Name)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 4: 💰 정산 (등록 전용 공유 원장) ================= -->
+    <section id="tab-expense" class="main-screen hidden space-y-3">
+      <div class="m3-segmented">
+        <button id="seg-exp-summary-btn" type="button" class="m3-seg-btn active">📊 정산 요약</button>
+        <button id="seg-exp-list-btn" type="button" class="m3-seg-btn">📋 지출 내역 목록</button>
+      </div>
+
+      <div id="exp-subpage-summary" class="space-y-3">
+        <div class="m3-card p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-[11.5px] font-bold text-slate-500">누적 공용 지출 총액</div>
+              <div id="exp-total-usd" class="text-[24px] font-extrabold text-slate-900">$0.00</div>
+            </div>
+            <span class="px-2.5 py-1 rounded-full bg-sky-50 text-sky-800 border border-sky-200 text-[11.5px] font-bold nowrap-btn">
+              3:3:2 자동계산
+            </span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2">
+            <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
+              <div class="text-[11.5px] font-extrabold text-sky-800">A가족 (3명)</div>
+              <div id="fam-a-share" class="text-[15px] font-extrabold text-slate-900 mt-1">$0.00</div>
+              <div id="fam-a-diff" class="text-[11px] font-bold text-slate-500 mt-0.5">결제 $0</div>
+            </div>
+            <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
+              <div class="text-[11.5px] font-extrabold text-emerald-800">B가족 (3명)</div>
+              <div id="fam-b-share" class="text-[15px] font-extrabold text-slate-900 mt-1">$0.00</div>
+              <div id="fam-b-diff" class="text-[11px] font-bold text-slate-500 mt-0.5">결제 $0</div>
+            </div>
+            <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
+              <div class="text-[11.5px] font-extrabold text-amber-800">C가족 (2명)</div>
+              <div id="fam-c-share" class="text-[15px] font-extrabold text-slate-900 mt-1">$0.00</div>
+              <div id="fam-c-diff" class="text-[11px] font-bold text-slate-500 mt-0.5">결제 $0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="m3-card p-4 space-y-2.5">
+          <h3 class="text-[14.5px] font-extrabold text-slate-900">💸 최종 송금 안내</h3>
+          <div id="settle-transfers" class="space-y-1.5"></div>
+        </div>
+
+        <!-- 영수증 촬영 · 지출 등록 -->
+        <div class="m3-card p-4 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <h3 class="text-[14.5px] font-extrabold text-slate-900">🧾 영수증 촬영 · 지출 등록</h3>
+            <span id="sync-status" class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11px] font-bold nowrap-btn">연결 중…</span>
+          </div>
+
+          <label class="block cursor-pointer">
+            <input id="receipt-file" type="file" accept="image/*" class="hidden">
+            <div class="w-full py-3 rounded-xl border-2 border-dashed border-sky-300 bg-sky-50 text-sky-800 text-[13px] font-extrabold text-center">
+              📷 영수증 촬영 / 사진 선택 (자동 인식)
+            </div>
+          </label>
+
+          <div id="receipt-preview-wrap" class="hidden flex gap-3 items-start">
+            <img id="receipt-preview" alt="영수증 미리보기" class="w-20 h-28 object-cover rounded-lg border border-slate-300 bg-slate-100">
+            <div class="flex-1 min-w-0 space-y-1.5">
+              <div id="ocr-status" class="text-[12px] font-semibold text-slate-600"></div>
+              <button id="receipt-clear-btn" type="button" class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-[11.5px] font-bold nowrap-btn">✕ 사진 빼기</button>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <div class="grid grid-cols-3 gap-2">
+              <div class="col-span-2">
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">항목명</label>
+                <input id="exp-title-input" type="text" maxlength="80" placeholder="예: Costco Wholesale" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-[13px] font-semibold">
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">금액 ($)</label>
+                <input id="exp-amount-input" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-[13px] font-extrabold">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">날짜</label>
+                <select id="exp-date-input" class="w-full px-2.5 py-2 rounded-xl border border-slate-300 text-[12.5px] font-bold bg-white">
+                  <option value="사전">사전 결제</option>
+                  <option value="2/18">2/18 (D1)</option>
+                  <option value="2/19">2/19 (D2)</option>
+                  <option value="2/20">2/20 (D3)</option>
+                  <option value="2/21">2/21 (D4)</option>
+                  <option value="2/22">2/22 (D5)</option>
+                  <option value="2/23">2/23 (D6)</option>
+                  <option value="2/24">2/24 (D7)</option>
+                  <option value="2/25">2/25 (D8)</option>
+                  <option value="2/26">2/26 (D9)</option>
+                  <option value="2/27">2/27 (D10)</option>
+                  <option value="2/28">2/28 (D11)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">결제 가족</label>
+                <select id="exp-payer-input" class="w-full px-2.5 py-2 rounded-xl border border-slate-300 text-[12.5px] font-bold bg-white">
+                  <option value="A">A가족</option>
+                  <option value="B">B가족</option>
+                  <option value="C">C가족</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">분담 방식</label>
+                <select id="exp-split-input" class="w-full px-2.5 py-2 rounded-xl border border-slate-300 text-[12.5px] font-bold bg-white">
+                  <option value="8p">8인 (3:3:2)</option>
+                  <option value="6p">선발6인 (3:3:0)</option>
+                  <option value="equal">3가족 (1:1:1)</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">여행 코드 (6자리)</label>
+              <input id="exp-code-input" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••••" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-[13px] font-extrabold tracking-widest">
+            </div>
+
+            <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[11.5px] font-semibold text-amber-900">
+              ⚠️ 자동 인식 결과를 꼭 확인·수정한 뒤 저장해 주세요. 저장 후에는 수정·삭제할 수 없습니다.
+            </div>
+
+            <button id="add-expense-btn" type="button" class="w-full py-2.5 rounded-xl bg-slate-900 text-white text-[13px] font-extrabold">
+              + 지출 내역 저장하기
+            </button>
+          </div>
+        </div>
+
+        <div class="m3-card p-4 space-y-1.5 bg-slate-50">
+          <div class="text-[12px] font-extrabold text-slate-700">ℹ️ 분담 방식 안내</div>
+          <div class="text-[12px] text-slate-600 leading-relaxed">• 8인 전원: A 3 : B 3 : C 2<br>• 선발 6인: A 3 : B 3 : C 0<br>• 3가족 균등: A 1 : B 1 : C 1</div>
+          <div class="text-[11.5px] text-slate-500 pt-1">저장된 내역의 수정·삭제는 총무에게 요청해 주세요.<br><span id="exp-updated-at"></span></div>
+        </div>
+      </div>
+
+      <div id="exp-subpage-list" class="hidden m3-card p-3.5 space-y-2.5">
+        <h3 class="text-[14.5px] font-extrabold text-slate-900">📋 등록된 지출 내역</h3>
+        <div id="expense-list-container" class="divide-y divide-slate-200"></div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 5: 📌 예약·꿀팁 ================= -->
+    <section id="tab-guide" class="main-screen hidden space-y-3">
+      <div class="m3-segmented">
+        <button data-guide="dday" type="button" class="m3-seg-btn guide-seg-btn active">⏰ 예약</button>
+        <button data-guide="flight" type="button" class="m3-seg-btn guide-seg-btn">✈️ 항공·렌트</button>
+        <button data-guide="check" type="button" class="m3-seg-btn guide-seg-btn">✅ 준비물</button>
+        <button data-guide="tips" type="button" class="m3-seg-btn guide-seg-btn">📸 꿀팁</button>
+      </div>
+
+      <div id="guide-sub-dday" class="guide-subpage space-y-2.5">
+        <div class="m3-card p-3.5 space-y-2.5">
+          <h3 class="text-[15px] font-extrabold text-slate-900">⏰ 사전 예약 필수 타임라인 & 길안내</h3>
+
+          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+            <div class="flex items-center justify-between gap-2">
+              <a href="https://www.google.com/maps/dir/?api=1&destination=Hanauma+Bay+Nature+Preserve+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="text-[13.5px] font-extrabold text-sky-900 underline">1. 📍 Hanauma Bay (2/19 금 · 11:00)</a>
+              <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[11px] font-extrabold nowrap-btn">30~60일 전</span>
+            </div>
+            <p class="text-[12px] text-slate-600">Roberts Hawaii 사전예약 또는 방문 2일 전 시영 PROS 예약 ($25/성인)</p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              <a href="https://www.google.com/maps/search/?api=1&query=Hanauma+Bay+Nature+Preserve+Honolulu+HI" target="_blank" rel="noopener noreferrer" class="gmap-chip">📍 구글맵 ↗</a>
+              <a href="https://www.google.com/maps/dir/?api=1&destination=Hanauma+Bay+Nature+Preserve+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 길안내 ↗</a>
+              <a href="https://hbay.robertshawaii.com/" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 Roberts Hawaii 예약 ↗</a>
+              <a href="https://web5.hnl.info/pros-ticketing/event/hbay-online-reservation" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 시영 PROS 예약 ↗</a>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+            <div class="flex items-center justify-between gap-2">
+              <a href="https://www.google.com/maps/dir/?api=1&destination=Diamond+Head+State+Monument+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="text-[13.5px] font-extrabold text-sky-900 underline">2. 📍 Diamond Head (2/23 화 · 06:00)</a>
+              <span class="px-2 py-0.5 rounded-full bg-sky-100 text-sky-900 text-[11px] font-extrabold nowrap-btn">30일 전</span>
+            </div>
+            <p class="text-[12px] text-slate-600">입장권($5/인) 및 차량 주차권($10/대) 사전 예약 필수</p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              <a href="https://www.google.com/maps/search/?api=1&query=Diamond+Head+State+Monument+Honolulu+HI" target="_blank" rel="noopener noreferrer" class="gmap-chip">📍 구글맵 ↗</a>
+              <a href="https://www.google.com/maps/dir/?api=1&destination=Diamond+Head+State+Monument+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 길안내 ↗</a>
+              <a href="https://gostateparks.hawaii.gov/diamondhead" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 주립공원 예약 ↗</a>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+            <div class="flex items-center justify-between gap-2">
+              <a href="https://www.google.com/maps/dir/?api=1&destination=Kualoa+Ranch+Kaneohe+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="text-[13.5px] font-extrabold text-sky-900 underline">3. 📍 Kualoa Ranch (2/24 수)</a>
+              <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 text-[11px] font-extrabold nowrap-btn">1~2개월 전</span>
+            </div>
+            <p class="text-[12px] text-slate-600">무비 사이트 투어($59.95/성인) 또는 UTV 랩터 투어($149.95/성인)</p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              <a href="https://www.google.com/maps/search/?api=1&query=Kualoa+Ranch+Kaneohe+HI" target="_blank" rel="noopener noreferrer" class="gmap-chip">📍 구글맵 ↗</a>
+              <a href="https://www.google.com/maps/dir/?api=1&destination=Kualoa+Ranch+Kaneohe+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 길안내 ↗</a>
+              <a href="https://www.kualoa.com/tours-and-activities/movie-sites-ranch-tour" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 투어 예약 ↗</a>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+            <div class="flex items-center justify-between gap-2">
+              <a href="https://www.google.com/maps/dir/?api=1&destination=Pearl+Harbor+National+Memorial+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="text-[13.5px] font-extrabold text-sky-900 underline">4. 📍 Pearl Harbor & The Kahala (2/26 금)</a>
+              <span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-900 text-[11px] font-extrabold nowrap-btn">8주 전</span>
+            </div>
+            <p class="text-[12px] text-slate-600">USS Arizona 보트 예약($1/인) 및 카할라 더 베란다 애프터눈 티($65~80/인)</p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              <a href="https://www.google.com/maps/dir/?api=1&destination=Pearl+Harbor+National+Memorial+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 진주만 길안내 ↗</a>
+              <a href="https://www.google.com/maps/dir/?api=1&destination=The+Kahala+Hotel+and+Resort+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 카할라 길안내 ↗</a>
+              <a href="https://www.recreation.gov/ticket/facility/233338" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 진주만 예약 ↗</a>
+              <a href="https://www.kahalaresort.com/dining/the-veranda/" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 카할라 예약 ↗</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="guide-sub-flight" class="guide-subpage hidden space-y-2.5">
+        <div class="m3-card p-4 space-y-3">
+          <h3 class="text-[15px] font-extrabold text-slate-900">✈️ 대한항공 (Korean Air) 공식 스케줄</h3>
+          <div class="p-3 rounded-2xl bg-sky-50/70 border border-sky-200 space-y-1">
+            <div class="font-extrabold text-sky-900">출국 · KE051 (B787-9)</div>
+            <div class="text-[14px] font-extrabold text-slate-900">인천(ICN T2) 22:20 ➔ 호놀룰루(HNL T2) 11:10</div>
+            <div class="text-[12px] text-slate-700">• 선발대 6인: 2.18(목) / 후발대 2인: 2.21(일) 동일 스케줄</div>
+          </div>
+          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-extrabold text-slate-800">귀국 · KE052 (B787-9)</div>
+            <div class="text-[14px] font-extrabold text-slate-900">호놀룰루(HNL T2) 14:25 ➔ 인천(ICN T2) 20:20 (+1일)</div>
+            <div class="text-[12px] text-slate-700">• 8인 전원: 2.28(일) 출발 ➔ 3.01(월) 도착</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="guide-sub-check" class="guide-subpage hidden">
+        <div class="m3-card p-4 space-y-2.5">
+          <h3 class="text-[15px] font-extrabold text-slate-900">✅ 필수 준비물 체크리스트</h3>
+          <div id="checklist-items" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <div id="guide-sub-tips" class="guide-subpage hidden space-y-3">
+        <div class="m3-card p-4 bg-gradient-to-br from-sky-50 to-white border-sky-200 space-y-2.5">
+          <h3 class="text-[15.5px] font-extrabold text-slate-900">📸 3가족 실시간 공유 사진첩</h3>
+          <p class="text-[12.5px] text-slate-600">여행 중 촬영한 사진을 아래 구글 포토 공유 앨범에 함께 올려주세요.</p>
+          <div class="grid grid-cols-2 gap-2">
+            <a href="https://photos.app.goo.gl/T7oLKmuA24sTGZky6" target="_blank" rel="noopener noreferrer"
+               class="py-2.5 px-3 rounded-xl bg-sky-700 text-white text-[12.5px] font-extrabold text-center">
+              📸 공유앨범 열기 ↗
+            </a>
+            <button id="copy-album-url-btn" type="button" class="py-2.5 px-3 rounded-xl bg-slate-100 text-slate-800 text-[12.5px] font-extrabold text-center">
+              🔗 앨범 링크 복사
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="m3-bottom-nav" aria-label="하단 메인 메뉴">
+    <button type="button" data-target="tab-schedule" class="m3-nav-item active">
+      <span class="m3-nav-pill">📅</span>
+      <span>일정표</span>
+    </button>
+    <button type="button" data-target="tab-oahu" class="m3-nav-item">
+      <span class="m3-nav-pill">🗺️</span>
+      <span>오아후맵</span>
+    </button>
+    <button type="button" data-target="tab-resort" class="m3-nav-item">
+      <span class="m3-nav-pill">🏨</span>
+      <span>숙소·단지</span>
+    </button>
+    <button type="button" data-target="tab-expense" class="m3-nav-item">
+      <span class="m3-nav-pill">💰</span>
+      <span>정산</span>
+    </button>
+    <button type="button" data-target="tab-guide" class="m3-nav-item">
+      <span class="m3-nav-pill">📌</span>
+      <span>예약·꿀팁</span>
+    </button>
+  </nav>
+</div>
+
+<!-- FLIGHT MODAL -->
+<div id="flight-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-[1500] hidden items-center justify-center p-4">
+  <div class="bg-white rounded-3xl max-w-md w-full p-5 space-y-3.5 shadow-2xl">
+    <div class="flex items-center justify-between">
+      <h3 class="text-[16px] font-extrabold text-slate-900">✈️ 대한항공 스케줄 (KE051 / KE052)</h3>
+      <button id="close-flight-modal-btn" type="button" class="w-8 h-8 rounded-full bg-slate-100 font-extrabold">✕</button>
+    </div>
+    <div class="space-y-2 text-[12.5px]">
+      <div class="p-3 rounded-2xl bg-sky-50">
+        <div class="font-extrabold text-sky-900">출국 KE051: 인천(T2) 22:20 ➔ 호놀룰루(T2) 11:10</div>
+        <div class="text-slate-600 mt-1">• 선발대 6인(2/18 목) · 후발대 2인(2/21 일) 동일 편명</div>
+      </div>
+      <div class="p-3 rounded-2xl bg-slate-50">
+        <div class="font-extrabold text-slate-900">귀국 KE052: 호놀룰루(T2) 14:25 ➔ 인천(T2) 20:20 (+1일)</div>
+        <div class="text-slate-600 mt-1">• 8인 전원: 2/28(일) 출발 ➔ 3/1(월) 저녁 도착</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="app-toast" class="opacity-0">알림 메시지</div>
+
+<script>
+  /* =====================================================================
+   * [CONFIG] 지출 공유 저장소 (Supabase · 공개용 키 — 노출되어도 되는 키)
+   *   지출 원장: public.expenses (조회 전용, 등록은 여행 코드 확인 함수로만)
+   *   영수증 사진: Storage 'receipts' 버킷
+   * ===================================================================== */
+  const SUPABASE_URL = 'https://zbmgocqznrmcotlhocfe.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_q5vobkDdPiNE58YgQiR-vg_BW3TvnvO';
+  const RECEIPT_BUCKET = 'receipts';
+  const TESSERACT_CDN = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+
+  /* [DATA] 준비물 (조회 전용 — 변경은 총무가 이 블록을 수정) */
+  const checklistItems = [
+    { text: '여권 (만료일 6개월 이상) 및 ESTA 승인서', done: true },
+    { text: '한국 운전면허증 + 국제운전면허증 (미니밴 대여 필수)', done: true },
+    { text: '대한항공(KE051/052) 이티켓 및 힐튼 그랜드 아일랜더 바우처', done: true },
+    { text: '트래블월렛/트래블로그 카드 및 팁·새우트럭용 달러 현금', done: false },
+    { text: '스노클링 마스크 · 아쿠아슈즈 · 산호초 안전(Reef-Safe) 선크림', done: false }
+  ];
+  /* ===================== [DATA] 끝 ===================== */
+
+  const GOOGLE_PHOTOS_ALBUM_URL = 'https://photos.app.goo.gl/T7oLKmuA24sTGZky6';
+
+  // 4-Stage Time-Adaptive Hawaiian Hero Themes
+  const HERO_THEMES = [
+    {
+      key: 'sunrise',
+      label: '🌅 다이아몬드 헤드 일출',
+      bgColor: '#be185d',
+      gradient: 'linear-gradient(180deg, rgba(45, 18, 48, 0.55) 0%, rgba(190, 24, 93, 0.25) 48%, rgba(15, 23, 42, 0.84) 100%)',
+      photoUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80'
+    },
+    {
+      key: 'day',
+      label: '☀️ 에메랄드 와이키키',
+      bgColor: '#0284c7',
+      gradient: 'linear-gradient(180deg, rgba(7, 24, 41, 0.56) 0%, rgba(7, 24, 41, 0.22) 45%, rgba(7, 24, 41, 0.82) 100%)',
+      photoUrl: 'https://images.unsplash.com/photo-1542259009477-d625272157b7?auto=format&fit=crop&w=1200&q=80'
+    },
+    {
+      key: 'sunset',
+      label: '🌇 와이키키 매직아워 선셋',
+      bgColor: '#c2410c',
+      gradient: 'linear-gradient(180deg, rgba(43, 14, 38, 0.58) 0%, rgba(194, 65, 12, 0.30) 48%, rgba(15, 23, 42, 0.86) 100%)',
+      photoUrl: 'https://images.unsplash.com/photo-1507876466758-bc54f384809c?auto=format&fit=crop&w=1200&q=80'
+    },
+    {
+      key: 'night',
+      label: '🌙 호놀룰루 나이트 & 불꽃',
+      bgColor: '#0f172a',
+      gradient: 'linear-gradient(180deg, rgba(2, 6, 23, 0.72) 0%, rgba(15, 23, 42, 0.45) 48%, rgba(2, 6, 23, 0.90) 100%)',
+      photoUrl: 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=1200&q=80'
+    }
+  ];
+
+  let currentHeroThemeIdx = 1;
+
+  function getAutoThemeIdxByHour() {
+    const hr = new Date().getHours();
+    if (hr >= 5 && hr < 9) return 0;
+    if (hr >= 9 && hr < 17) return 1;
+    if (hr >= 17 && hr < 20) return 2;
+    return 3;
+  }
+
+  function applyHeroTheme(index, notify) {
+    currentHeroThemeIdx = ((index % HERO_THEMES.length) + HERO_THEMES.length) % HERO_THEMES.length;
+    const theme = HERO_THEMES[currentHeroThemeIdx];
+    const banner = document.getElementById('app-hero-banner');
+    const labelEl = document.getElementById('theme-badge-label');
+    if (banner) {
+      banner.style.backgroundColor = theme.bgColor;
+      banner.style.backgroundImage = `${theme.gradient}, url('${theme.photoUrl}')`;
+    }
+    if (labelEl) labelEl.textContent = theme.label;
+    if (notify) showToast(`${theme.label} 풍경으로 전환되었습니다.`);
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('app-toast');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.classList.remove('opacity-0');
+    toast.classList.add('opacity-100');
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => {
+      toast.classList.remove('opacity-100');
+      toast.classList.add('opacity-0');
+    }, 2300);
+  }
+
+  function copyTextToClipboard(text, successMsg) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      showToast(successMsg || '복사되었습니다.');
+    } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
+  function gMapSearchQuery(q) { return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`; }
+  function gMapDirQuery(q) { return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}&travelmode=driving`; }
+
+  /* [DATA] 일정표 */
+  const scheduleData = [
+    {
+      day: 1, date: '2/18 (목)', title: 'Day 1 · 선발대 6인 도착 & 코스트코 장보기', badge: '선발대 (KE051)',
+      slots: [
+        { label: '오전', color: 'bg-sky-100 text-sky-900', placeName: 'Daniel K. Inouye Airport (HNL)', mapQuery: 'Daniel K. Inouye International Airport Honolulu HI', desc: '✈️ KE051 인천 22:20 출발 ➔ 호놀룰루 11:10 도착 후 미니밴 픽업' },
+        { label: '점심', color: 'bg-emerald-100 text-emerald-900', placeName: "Nico's Pier 38", mapQuery: "Nico's Pier 38 Honolulu HI", siteUrl: 'https://nicospier38.com/', desc: "🍽️ Nico's Pier 38 로컬 포케 런치" },
+        { label: '오후', color: 'bg-amber-100 text-amber-900', placeName: 'Costco Iwilei', mapQuery: 'Costco Wholesale 525 Alakawa St Honolulu HI', siteUrl: 'https://www.costco.com/w/-/hi/honolulu/687', desc: '🛒 코스트코 1차 식자재 장보기 후 The Grand Islander (#2307) 체크인' },
+        { label: '저녁', color: 'bg-indigo-100 text-indigo-900', placeName: 'Duke Lagoon', mapQuery: 'Duke Kahanamoku Lagoon Honolulu HI', desc: '🌅 듀크 라군 선셋 산책 및 객실 스테이크 만찬' }
+      ],
+      costs: ["Nico's Seared Ahi Poke Salad $18.00 · Fisherman's Stew $11.03", "Costco 생수 40병 $5.49 · USDA 스테이크 $14~$22/lb"]
+    },
+    {
+      day: 2, date: '2/19 (금)', title: 'Day 2 · 11:00 하나우마 베이 피크닉 & 금요 불꽃놀이', badge: '11시 슬롯 · 피크닉',
+      slots: [
+        { label: '오전', color: 'bg-sky-100 text-sky-900', placeName: 'Hanauma Bay (11:00 슬롯)', mapQuery: 'Hanauma Bay Nature Preserve Honolulu HI', siteUrl: 'https://hbay.robertshawaii.com/', extraLinks: [{ label: 'Roberts Hawaii 예약', url: 'https://hbay.robertshawaii.com/' }, { label: '시영 PROS 예약', url: 'https://web5.hnl.info/pros-ticketing/event/hbay-online-reservation' }], desc: '🕘 09:30 느긋한 기상 후 피크닉 도시락 픽업 ➔ 11:00 하나우마 베이 입장' },
+        { label: '점심', color: 'bg-emerald-100 text-emerald-900', placeName: 'Hanauma Bay Beach Picnic', mapQuery: 'Hanauma Bay Beach Park Honolulu HI', desc: '🏖️ 산호초 스노클링 및 해변 잔디밭 그늘 피크닉 도시락 런치' },
+        { label: '오후', color: 'bg-amber-100 text-amber-900', placeName: 'Ala Moana Center', mapQuery: 'Ala Moana Center Honolulu HI', siteUrl: 'https://www.alamoanacenter.com/en/', desc: '🛍️ 알라모아나 센터 필수 매장(Target 등) 1.5시간 가볍게 쇼핑 후 숙소 복귀' },
+        { label: '저녁', color: 'bg-indigo-100 text-indigo-900', placeName: 'Blue Water Shrimp & Fireworks', mapQuery: 'Blue Water Shrimp Hilton Hawaiian Village Honolulu HI', siteUrl: 'https://www.bluewatershrimphi.com/hilton-hawaiian-village', desc: '🦐 갈릭새우 포장 ➔ 19:45 힐튼 1차 금요 불꽃놀이 관람' }
+      ],
+      costs: ['Hanauma Bay 입장료 $25.00/성인 (만 12세 이하 무료) · 주차 $3.00/대', 'Blue Water Garlic Shrimp (6pc) $16.00 · Regular Plate $19.95']
+    },
+    {
+      day: 3, date: '2/20 (토)', title: 'Day 3 · 노스쇼어 할레이바 타운 & 선셋 비치', badge: 'North Shore',
+      slots: [
+        { label: '오전', color: 'bg-sky-100 text-sky-900', placeName: "Ray's Chicken (Haleiwa)", mapQuery: '66-160 Kamehameha Hwy Haleiwa HI', siteUrl: 'https://www.ryoko-traveler.com/rays-kaiawe-broiled-chicken/', desc: "🍗 할레이바 주말 명물 Ray's Kiawe Broiled Chicken 장작구이 통닭" },
+        { label: '점심', color: 'bg-emerald-100 text-emerald-900', placeName: 'Matsumoto Shave Ice', mapQuery: 'Matsumoto Shave Ice Haleiwa HI', siteUrl: 'https://matsumotoshaveice.com/', desc: '🍧 할레이바 타운 산책 & Matsumoto Shave Ice 무지개 빙수 디저트' },
+        { label: '오후', color: 'bg-amber-100 text-amber-900', placeName: 'Laniakea & Sunset Beach', mapQuery: 'Laniakea Beach Haleiwa HI', desc: '🐢 라니아케아 바다거북 관찰 및 선셋 비치 해안 드라이브' },
+        { label: '저녁', color: 'bg-indigo-100 text-indigo-900', placeName: 'Hilton Paradise Pool', mapQuery: 'The Grand Islander Honolulu HI', desc: '🌴 숙소 복귀 후 파라다이스 풀 휴식 및 자유 석식' }
+      ],
+      costs: ["Ray's Whole Chicken $11.00 · Half Chicken $6.50", "Matsumoto Shave Ice Small $3.75 · Ichiban Special $6.00"]
+    },
+    {
+      day: 4, date: '2/21 (일)', title: 'Day 4 · 후발대 C가족 픽업(8인 완전체) & 랍스터', badge: '8인 완전체 (KE051)',
+      slots: [
+        { label: '오전', color: 'bg-sky-100 text-sky-900', placeName: 'HNL Airport T2', mapQuery: 'Daniel K. Inouye International Airport Terminal 2 Honolulu HI', desc: '✈️ KE051 후발대(C가족 2인) HNL 11:10 도착 픽업 · 8인 완전체 합류!' },
+        { label: '점심', color: 'bg-emerald-100 text-emerald-900', placeName: 'Fook Yuen Seafood Restaurant', mapQuery: 'Fook Yuen Seafood Restaurant Honolulu HI', desc: '🦞 Fook Yuen Seafood Restaurant 버터갈릭/진저스캘리언 활 랍스터 런치' },
+        { label: '오후', color: 'bg-amber-100 text-amber-900', placeName: 'Tantalus Lookout', mapQuery: 'Puu Ualakaa State Wayside Honolulu HI', siteUrl: 'https://dlnr.hawaii.gov/dsp/parks/oahu/puu-ualakaa-state-wayside/', desc: '⛰️ 탄탈루스 전망대(Puu Ualakaa) 호놀룰루·다이아몬드헤드 파노라마 뷰' },
+        { label: '저녁', color: 'bg-indigo-100 text-indigo-900', placeName: 'The Grand Islander (#2307)', mapQuery: 'The Grand Islander Honolulu HI', desc: '🥂 3가족 8인 완전체 웰컴 파티' }
+      ],
+      costs: ['Fook Yuen 활 랍스터 특가 $21.99~ (일반 메인요리 1품목 별도 주문 조건)', 'Tantalus Lookout 입장 및 주차 무료']
+    },
+    {
+      day: 5, date: '2/22 (월)', title: 'Day 5 · 마카푸우 · 부츠앤키모스 & 라니카이 비치', badge: 'East Coast',
+      slots: [
+        { label: '오전', color: 'bg-sky-100 text-sky-900', placeName: 'Makapuu Point Lookout', mapQuery: 'Makapuu Point Lookout Waimanalo HI', desc: '🌊 72번 동부 해안도로 드라이브 및 마카푸우 전망대 산책' },
+        { label: '점심', color: 'bg-emerald-100 text-emerald-900', placeName: "Boots & Kimo's", mapQuery: "Boots & Kimo's Kailua HI", siteUrl: 'https://www.bootsnkimos.com/menu-sub-categories/pancakewaffle', desc: "🥞 카일루아 Boots & Kimo's 마카다미아 넛 소스 팬케이크 브런치" },
+        { label: '오후', color: 'bg-amber-100 text-amber-900', placeName: 'Lanikai Beach', mapQuery: 'Lanikai Beach Kailua HI', desc: '🏝️ 천국의 바다 라니카이 비치 해수욕 & 모쿨루아 쌍둥이섬 뷰' },
+        { label: '저녁', color: 'bg-indigo-100 text-indigo-900', placeName: 'The Grand Islander (#2307)', mapQuery: 'The Grand Islander Honolulu HI', desc: '🥩 팔리 하이웨이(61번) 경유 숙소 복귀 및 바비큐 만찬' }
+      ],
+      costs: ["Boots & Kimo's Banana Pancakes w/ Macadamia Sauce $24.99 · Original $23.99"]
+    },
+    {
+      day: 6, date: '2/23 (화)', title: 'Day 6 · 다이아몬드 헤드 일출 · 오전 휴식 & 와이키키 도보 만찬', badge: '일출 ➔ 휴식 ➔ 도보',
+      slots: [
+        { label: '오전', color: 'bg-sky-100 text-sky-900', placeName: "Diamond Head & Bogart's Cafe", mapQuery: 'Diamond Head State Monument Honolulu HI', siteUrl: 'https://gostateparks.hawaii.gov/diamondhead', extraLinks: [{ label: "Bogart's Cafe", url: 'https://bogartscafe.com/' }], desc: "🌅 06:00 다이아몬드 헤드 일출 트레킹 ➔ 하산길 Bogart's 아사이볼 포장 ➔ 08:30 숙소 복귀 후 조식·샤워·오전 꿀잠 휴식" },
+        { label: '점심', color: 'bg-emerald-100 text-emerald-900', placeName: 'Waikiki Beach Walk & Iyasume', mapQuery: 'Musubi Cafe Iyasume Waikiki Beach Walk Honolulu HI', siteUrl: 'https://iyasumehawaii.com/store/musubi-cafe-iyasume/', extraLinks: [{ label: 'Waikiki Beach Walk', url: 'https://www.waikikibeachwalk.com/' }], desc: '🍙 12:00 차 없이 도보 외출 ➔ 와이키키 비치 워크 산책 & 이야스메 무스비 스낵 런치' },
+        { label: '오후', color: 'bg-amber-100 text-amber-900', placeName: "Wolfgang's Steakhouse", mapQuery: "Wolfgang's Steakhouse Waikiki Honolulu HI", siteUrl: 'https://www.wolfgangssteakhousehawaii.com/waikiki', extraLinks: [{ label: 'Royal Hawaiian Center', url: 'https://www.royalhawaiiancenter.com/' }], desc: "🥩 로얄 하와이안 센터 구경 ➔ 15:30 울프강 스테이크하우스 해피아워 만찬" },
+        { label: '저녁', color: 'bg-indigo-100 text-indigo-900', placeName: 'Waikiki Beach Sunset', mapQuery: 'Waikiki Beach Honolulu HI', desc: '🌇 와이키키 해변 노을 산책하며 숙소 도보 복귀' }
+      ],
+      costs: ['Diamond Head 비거주자 입장 $5.00/인 · 차량 주차 $10.00/대', "Bogart's Acai Bowl $15.50 · Iyasume Musubi $2.98~$4.28", "Wolfgang's 해피아워 Taste of New York $83.95~$86.00 · 생맥주 $6.00"]
+    },
+    {
+      day: 7, date: '2/24 (수)', title: 'Day 7 · 쿠알로아 랜치 · 지오반니 새우트럭 & 식물원', badge: 'Kualoa Ranch',
+      slots: [
+        { label: '오전', color: 'bg-sky-100 text-sky-900', placeName: 'Kualoa Ranch', mapQuery: 'Kualoa Ranch Kaneohe HI', siteUrl: 'https://www.kualoa.com/tours-and-activities/movie-sites-ranch-tour', desc: '🦖 쿠알로아 랜치 무비 사이트 투어 또는 UTV 랩터 투어' },
+        { label: '점심', color: 'bg-emerald-100 text-emerald-900', placeName: "Giovanni's Shrimp Truck", mapQuery: "Giovanni's Shrimp Truck Kahuku HI", siteUrl: 'https://www.giovannisshrimptruck.com/', desc: '🦐 카후쿠 원조 지오반니 새우트럭 Shrimp Scampi 런치' },
+        { label: '오후', color: 'bg-amber-100 text-amber-900', placeName: "Ho'omaluhia Botanical Garden", mapQuery: "Ho'omaluhia Botanical Garden Kaneohe HI", siteUrl: 'https://www.honolulu.gov/dpr/honolulu-botanical-gardens/hoomaluhia-botanical-garden/', desc: '🌴 호오말루히아 식물원 열대 우림 드라이브 및 가족 사진 촬영' },
+        { label: '저녁', color: 'bg-indigo-100 text-indigo-900', placeName: 'The Grand Islander (#2307)', mapQuery: 'The Grand Islander Honolulu HI', desc: '🍽️ 숙소 복귀 및 자유 석식' }
+      ],
+      costs: ['Kualoa Movie Sites 성인 $59.95 · 아동 $39.95 / UTV 성인 $149.95', "Giovanni's Shrimp Scampi / Hot & Spicy $18.50 · Half Plate $9.50"]
+    },
+    {
+      day: 8, date: '2/25 (목)', title: 'Day 8 · 피자 · 돌 플랜테이션 & 와이켈레 아울렛', badge: 'Dole & Waikele',
+      slots: [
+        { label: '오전', color: 'bg-sky-100 text-sky-900', placeName: 'Hilton Hawaiian Village', mapQuery: 'The Grand Islander Honolulu HI', desc: '🌴 오전 리조트 수영장 물놀이 및 여유로운 휴식' },
+        { label: '점심', color: 'bg-emerald-100 text-emerald-900', placeName: 'Round Table Pizza', mapQuery: 'Round Table Pizza Hilton Hawaiian Village Honolulu HI', siteUrl: 'https://www.roundtablepizzawaikiki.com/items/pepperoni-131/', desc: '🍕 힐튼 단지 내 라운드 테이블 피자 풀사이드 런치' },
+        { label: '오후', color: 'bg-amber-100 text-amber-900', placeName: 'Dole Plantation & Waikele', mapQuery: 'Dole Plantation Wahiawa HI', siteUrl: 'https://www.doleplantation.com/tour-packages/', extraLinks: [{ label: 'Waikele Outlets 길안내', url: 'https://www.google.com/maps/dir/?api=1&destination=Waikele+Premium+Outlets+Waipahu+HI&travelmode=driving' }], desc: '🍍 돌 플랜테이션 파인애플 기차 & 돌휩 ➔ 와이켈레 아울렛 집중 쇼핑' },
+        { label: '저녁', color: 'bg-indigo-100 text-indigo-900', placeName: 'The Grand Islander (#2307)', mapQuery: 'The Grand Islander Honolulu HI', desc: '🌙 숙소 복귀 및 저녁 식사' }
+      ],
+      costs: ['Round Table Pepperoni Large $32.50 · Supreme Large $36.99~', 'Dole Pineapple Express 기차 성인 $15.00 · 아동(4~12세) $12.85']
+    },
+    {
+      day: 9, date: '2/26 (금)', title: 'Day 9 · 진주만 투어 · 카할라 애프터눈 티 & 2차 불꽃놀이', badge: '기념일 피날레',
+      slots: [
+        { label: '오전', color: 'bg-sky-100 text-sky-900', placeName: 'Pearl Harbor National Memorial', mapQuery: 'Pearl Harbor National Memorial Honolulu HI', siteUrl: 'https://www.recreation.gov/ticket/facility/233338', desc: '⚓ 진주만 USS Arizona 기념관 보트 투어' },
+        { label: '점심', color: 'bg-emerald-100 text-emerald-900', placeName: 'Ward Village', mapQuery: 'Ward Village Honolulu HI', desc: '🥗 워드 빌리지 또는 알라모아나 인근 가벼운 런치' },
+        { label: '오후', color: 'bg-amber-100 text-amber-900', placeName: 'The Kahala Hotel — The Veranda', mapQuery: 'The Kahala Hotel and Resort Honolulu HI', siteUrl: 'https://www.kahalaresort.com/dining/the-veranda/', desc: '💐 카할라 호텔 3부부(19·20·21주년) 기념 스냅 & 더 베란다 애프터눈 티' },
+        { label: '저녁', color: 'bg-indigo-100 text-indigo-900', placeName: 'Duke Lagoon Fireworks', mapQuery: 'Duke Kahanamoku Lagoon Honolulu HI', desc: '🎆 19:45 힐튼 와이키키 해변 2차 금요 불꽃놀이(8인 전원) 관람' }
+      ],
+      costs: ['USS Arizona 보트 예약 수수료 $1.00/인 · 현장 주차 $7.00/대', 'The Veranda 애프터눈 티 $65.00/인 (세금·봉사료 포함 선결제 시 $80.00/인)']
+    },
+    {
+      day: 10, date: '2/27 (토)', title: 'Day 10 · 듀크 라군 물놀이 · 라퍼츠 아이스크림 & 패킹', badge: 'Resort Relax',
+      slots: [
+        { label: '오전', color: 'bg-sky-100 text-sky-900', placeName: 'Duke Lagoon & Paradise Pool', mapQuery: 'Duke Kahanamoku Lagoon Honolulu HI', desc: '🏄 듀크 라군 패들보드/카약 & 파라다이스 풀 슬라이드 물놀이' },
+        { label: '점심', color: 'bg-emerald-100 text-emerald-900', placeName: 'Tropics Bar & Grill', mapQuery: 'Tropics Bar & Grill Honolulu HI', desc: '🌮 알리 타워 앞 비치프론트 레스토랑 런치' },
+        { label: '오후', color: 'bg-amber-100 text-amber-900', placeName: "Lappert's Hawaii", mapQuery: "Lappert's Hawaii Hilton Hawaiian Village Honolulu HI", siteUrl: 'https://www.lappertshawaii.com/', desc: "🍦 라퍼츠 하와이 수제 와플콘 아이스크림 & 지인 선물 정리" },
+        { label: '저녁', color: 'bg-indigo-100 text-indigo-900', placeName: 'The Grand Islander (#2307)', mapQuery: 'The Grand Islander Honolulu HI', desc: '🧳 3가족 마지막 밤 페어웰 만찬 및 귀국 짐 패킹' }
+      ],
+      costs: ["Lappert's 싱글 와플콘 $7.50~$8.50", '라군 패들보드(SUP) $49.00/시간 · 카약 $55.00/시간 (선택 시)']
+    },
+    {
+      day: 11, date: '2/28 (일)', title: 'Day 11 · 체크아웃 · 코스트코 주유 & KE052 귀국', badge: '8인 전원 귀국 (KE052)',
+      slots: [
+        { label: '오전', color: 'bg-sky-100 text-sky-900', placeName: 'The Grand Islander (10:00)', mapQuery: 'The Grand Islander Honolulu HI', desc: '🧳 10:00 체크아웃 및 미니밴 짐 탑재' },
+        { label: '점심', color: 'bg-emerald-100 text-emerald-900', placeName: 'Costco Iwilei Gas & Food Court', mapQuery: 'Costco Wholesale Iwilei Honolulu HI', siteUrl: 'https://www.costco.com/w/-/hi/honolulu/687', desc: '⛽ 코스트코 이윌레이 만충 주유 및 푸드코트 이른 점심' },
+        { label: '오후', color: 'bg-amber-100 text-amber-900', placeName: 'HNL Airport Rental Return', mapQuery: 'Consolidated Rent-A-Car Facility Honolulu HI', desc: '✈️ 11:50 공항 렌터카 반납 ➔ 14:25 대한항공 KE052 호놀룰루 출발' },
+        { label: '저녁', color: 'bg-indigo-100 text-indigo-900', placeName: 'Incheon Airport Terminal 2', mapQuery: 'Incheon International Airport Terminal 2', desc: '🇰🇷 3/1(월, +1일) 20:20 인천국제공항 제2터미널 도착' }
+      ],
+      costs: ['Costco Food Court 핫도그+음료 세트 $1.50 · 피자 1조각 $1.99', 'Costco Gas 레귤러 가솔린 약 $4.20~$4.40/갤런']
+    }
+  ];
+
+  let currentDayIndex = 1;
+
+  function renderScheduleDayGrid() {
+    const grid = document.getElementById('schedule-day-grid');
+    if (!grid) return;
+    grid.innerHTML = scheduleData.map(item => `
+      <button type="button" data-day="${item.day}" class="day-chip ${item.day === currentDayIndex ? 'active' : ''}">
+        <span>D${item.day}</span>
+        <span class="text-[10px] font-medium opacity-85">${item.date.split(' ')[0]}</span>
+      </button>
+    `).join('');
+
+    grid.querySelectorAll('.day-chip').forEach(btn => {
+      btn.addEventListener('click', () => updateDayView(parseInt(btn.dataset.day, 10)));
+    });
+  }
+
+  function updateDayView(dayNum) {
+    currentDayIndex = dayNum;
+    const data = scheduleData.find(d => d.day === dayNum) || scheduleData[0];
+
+    document.querySelectorAll('#schedule-day-grid .day-chip').forEach(chip => {
+      chip.classList.toggle('active', parseInt(chip.dataset.day, 10) === dayNum);
+    });
+
+    const indicator = document.getElementById('current-day-indicator');
+    if (indicator) indicator.textContent = `Day ${dayNum} / 11 (${data.date})`;
+
+    const container = document.getElementById('day-card-container');
+    if (container) {
+      const slotsHtml = (data.slots || []).map(slot => {
+        const searchUrl = gMapSearchQuery(slot.mapQuery);
+        const dirUrl = gMapDirQuery(slot.mapQuery);
+        const extraHtml = (slot.extraLinks || []).map(ex => `
+          <a href="${ex.url}" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 ${ex.label} ↗</a>
+        `).join('');
+
+        return `
+          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="px-2 py-0.5 rounded-lg ${slot.color} text-[11px] font-extrabold nowrap-btn">${slot.label}</span>
+                <a href="${dirUrl}" target="_blank" rel="noopener noreferrer" class="place-title-link text-[13px] truncate">
+                  📍 ${slot.placeName} ↗
+                </a>
+              </div>
+            </div>
+            <p class="text-[13px] font-semibold text-slate-900 leading-relaxed">${slot.desc}</p>
+            <div class="flex flex-wrap items-center gap-1.5 pt-0.5">
+              <a href="${searchUrl}" target="_blank" rel="noopener noreferrer" class="gmap-chip">📍 구글맵 ↗</a>
+              <a href="${dirUrl}" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 길안내 ↗</a>
+              ${slot.siteUrl ? `<a href="${slot.siteUrl}" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 공식홈 ↗</a>` : ''}
+              ${extraHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const costsHtml = (data.costs || []).map(c => `<div class="text-[12px] text-slate-700 font-semibold leading-snug">• ${c}</div>`).join('');
+
+      container.innerHTML = `
+        <article class="m3-card p-4 space-y-3">
+          <div class="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded-md bg-sky-100 text-sky-900 text-[11px] font-extrabold nowrap-btn">${data.date}</span>
+                <span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 text-[11px] font-extrabold nowrap-btn">${data.badge}</span>
+              </div>
+              <h2 class="text-[16px] font-extrabold text-slate-900 mt-1.5 leading-snug">${data.title}</h2>
+            </div>
+          </div>
+
+          <div class="space-y-2.5">${slotsHtml}</div>
+
+          <div class="pt-2 border-t border-slate-200 flex flex-col gap-2.5">
+            <div class="bg-slate-50 rounded-xl p-2.5 border border-slate-200 space-y-1">
+              <div class="text-[11px] font-extrabold text-slate-500">💰 주요 비용 (현재 기준 단가)</div>
+              ${costsHtml}
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <a href="${GOOGLE_PHOTOS_ALBUM_URL}" target="_blank" rel="noopener noreferrer"
+                 class="py-2.5 px-3 rounded-xl bg-slate-100 text-slate-900 text-[12.5px] font-extrabold text-center nowrap-btn">
+                📸 사진첩 (공유앨범) ↗
+              </a>
+              <button type="button" onclick="jumpToDayRoute(${data.day})"
+                      class="py-2.5 px-3 rounded-xl bg-sky-700 text-white text-[12.5px] font-extrabold text-center nowrap-btn shadow-sm">
+                🗺️ Day ${data.day} 동선보기
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    const prevBtn = document.getElementById('prev-day-btn');
+    const nextBtn = document.getElementById('next-day-btn');
+    if (prevBtn) { prevBtn.disabled = dayNum <= 1; prevBtn.style.opacity = dayNum <= 1 ? '0.4' : '1'; }
+    if (nextBtn) { nextBtn.disabled = dayNum >= 11; nextBtn.style.opacity = dayNum >= 11 ? '0.4' : '1'; }
+  }
+
+  // OAHU MAP (Real Highway Curved Coordinates)
+  let oahuMap = null;
+  let oahuStreetLayer = null;
+  let oahuSatLayer = null;
+  let isOahuSat = false;
+  let oahuMarkersGroup = null;
+  let oahuRouteGroup = null;
+  let currentOahuFilter = 'all';
+
+  /* [DATA] 오아후 거점 */
+  const oahuSpots = {
+    hnl: { id: 'hnl', name: 'HNL Airport T2', icon: '✈️', lat: 21.3245, lng: -157.9251, url: 'https://airports.hawaii.gov/hnl/' },
+    nicos: { id: 'nicos', name: "Nico's Pier 38", icon: '🐟', lat: 21.3208, lng: -157.8722, url: 'https://nicospier38.com/' },
+    costco: { id: 'costco', name: 'Costco Wholesale Iwilei', icon: '🛒', lat: 21.3156, lng: -157.8689, url: 'https://www.costco.com/w/-/hi/honolulu/687' },
+    hgvc: { id: 'hgvc', name: 'Hilton Hawaiian Village (#2307)', icon: '⭐', lat: 21.2835, lng: -157.8378, url: 'https://www.hilton.com/en/hotels/hnlhvhh-hilton-hawaiian-village-waikiki-beach-resort/' },
+    hanauma: { id: 'hanauma', name: 'Hanauma Bay Nature Preserve', icon: '🐠', lat: 21.2690, lng: -157.6938, url: 'https://hbay.robertshawaii.com/' },
+    alamoana: { id: 'alamoana', name: 'Ala Moana Center', icon: '🛍️', lat: 21.2910, lng: -157.8435, url: 'https://www.alamoanacenter.com/en/' },
+    sharkscove: { id: 'sharkscove', name: 'Laniakea & Sunset Beach', icon: '🐢', lat: 21.6188, lng: -158.0854, url: 'https://www.gohawaii.com/' },
+    haleiwa: { id: 'haleiwa', name: 'Haleiwa Town (Matsumoto & Ray\'s)', icon: '🍧', lat: 21.5906, lng: -158.1030, url: 'https://matsumotoshaveice.com/' },
+    fookyuen: { id: 'fookyuen', name: 'Fook Yuen Seafood', icon: '🦞', lat: 21.2943, lng: -157.8260, url: 'https://www.gohawaii.com/' },
+    tantalus: { id: 'tantalus', name: 'Tantalus Lookout', icon: '⛰️', lat: 21.3144, lng: -157.8214, url: 'https://dlnr.hawaii.gov/dsp/parks/oahu/puu-ualakaa-state-wayside/' },
+    halona: { id: 'halona', name: 'Makapuu Point Lookout', icon: '🌊', lat: 21.3102, lng: -157.6501, url: 'https://www.gohawaii.com/' },
+    boots: { id: 'boots', name: "Boots & Kimo's (Kailua)", icon: '🥞', lat: 21.3886, lng: -157.7429, url: 'https://www.bootsnkimos.com/' },
+    lanikai: { id: 'lanikai', name: 'Lanikai Beach', icon: '🏝️', lat: 21.3924, lng: -157.7154, url: 'https://www.gohawaii.com/' },
+    diamond: { id: 'diamond', name: 'Diamond Head State Monument', icon: '🌅', lat: 21.2614, lng: -157.8056, url: 'https://gostateparks.hawaii.gov/diamondhead' },
+    bogarts: { id: 'bogarts', name: "Bogart's Cafe", icon: '🥣', lat: 21.2681, lng: -157.8133, url: 'https://bogartscafe.com/' },
+    wolfgang: { id: 'wolfgang', name: "Wolfgang's Steakhouse Waikiki", icon: '🥩', lat: 21.2785, lng: -157.8291, url: 'https://www.wolfgangssteakhousehawaii.com/waikiki' },
+    kualoa: { id: 'kualoa', name: 'Kualoa Ranch', icon: '🦖', lat: 21.5207, lng: -157.8373, url: 'https://www.kualoa.com/' },
+    giovanni: { id: 'giovanni', name: "Giovanni's Shrimp Truck (Kahuku)", icon: '🦐', lat: 21.6803, lng: -157.9491, url: 'https://www.giovannisshrimptruck.com/' },
+    hoomaluhia: { id: 'hoomaluhia', name: "Ho'omaluhia Botanical Garden", icon: '🌴', lat: 21.3910, lng: -157.8087, url: 'https://www.honolulu.gov/dpr/honolulu-botanical-gardens/hoomaluhia-botanical-garden/' },
+    dole: { id: 'dole', name: 'Dole Plantation', icon: '🍍', lat: 21.5262, lng: -158.0376, url: 'https://www.doleplantation.com/' },
+    waikele: { id: 'waikele', name: 'Waikele Premium Outlets', icon: '🏷️', lat: 21.4027, lng: -158.0067, url: 'https://www.premiumoutlets.com/outlet/waikele' },
+    pearl: { id: 'pearl', name: 'Pearl Harbor National Memorial', icon: '⚓', lat: 21.3649, lng: -157.9500, url: 'https://www.recreation.gov/ticket/facility/233338' },
+    kahala: { id: 'kahala', name: 'The Kahala Hotel & Resort', icon: '💐', lat: 21.2715, lng: -157.7734, url: 'https://www.kahalaresort.com/dining/the-veranda/' }
+  };
+
+  /* [DATA] 일자별 동선 */
+  const dayRoutes = {
+    1: { spots: ['hnl', 'nicos', 'costco', 'hgvc'], roadPath: [[21.3245,-157.9251],[21.3285,-157.8950],[21.3208,-157.8722],[21.3156,-157.8689],[21.2980,-157.8550],[21.2910,-157.8435],[21.2835,-157.8378]] },
+    2: { spots: ['hgvc', 'hanauma', 'alamoana', 'hgvc'], roadPath: [[21.2835,-157.8378],[21.2810,-157.8050],[21.2785,-157.7600],[21.2820,-157.7150],[21.2690,-157.6938],[21.2820,-157.7150],[21.2810,-157.8050],[21.2910,-157.8435],[21.2835,-157.8378]] },
+    3: { spots: ['hgvc', 'haleiwa', 'sharkscove', 'hgvc'], roadPath: [[21.2835,-157.8378],[21.3150,-157.8650],[21.3750,-157.9300],[21.3980,-158.0050],[21.4650,-158.0180],[21.5262,-158.0376],[21.5906,-158.1030],[21.6188,-158.0854],[21.5906,-158.1030],[21.4650,-158.0180],[21.3750,-157.9300],[21.2835,-157.8378]] },
+    4: { spots: ['hgvc', 'hnl', 'fookyuen', 'tantalus', 'hgvc'], roadPath: [[21.2835,-157.8378],[21.3150,-157.8650],[21.3245,-157.9251],[21.3150,-157.8650],[21.2943,-157.8260],[21.3144,-157.8214],[21.2835,-157.8378]] },
+    5: { spots: ['hgvc', 'halona', 'boots', 'lanikai', 'hgvc'], roadPath: [[21.2835,-157.8378],[21.2780,-157.7500],[21.2690,-157.6938],[21.2860,-157.6650],[21.3102,-157.6501],[21.3450,-157.7050],[21.3886,-157.7429],[21.3924,-157.7154],[21.3620,-157.7850],[21.3150,-157.8450],[21.2835,-157.8378]] },
+    6: { spots: ['hgvc', 'diamond', 'bogarts', 'wolfgang'], roadPath: [[21.2835,-157.8378],[21.2720,-157.8220],[21.2614,-157.8056],[21.2681,-157.8133],[21.2835,-157.8378],[21.2785,-157.8291]] },
+    7: { spots: ['hgvc', 'kualoa', 'giovanni', 'hoomaluhia', 'hgvc'], roadPath: [[21.2835,-157.8378],[21.3350,-157.8650],[21.4050,-157.8020],[21.4600,-157.8350],[21.5207,-157.8373],[21.5850,-157.8820],[21.6400,-157.9200],[21.6803,-157.9491],[21.5850,-157.8820],[21.5207,-157.8373],[21.3910,-157.8087],[21.3350,-157.8650],[21.2835,-157.8378]] },
+    8: { spots: ['hgvc', 'dole', 'waikele', 'hgvc'], roadPath: [[21.2835,-157.8378],[21.3750,-157.9300],[21.4550,-158.0150],[21.5262,-158.0376],[21.4550,-158.0150],[21.4027,-158.0067],[21.3750,-157.9300],[21.2835,-157.8378]] },
+    9: { spots: ['hgvc', 'pearl', 'kahala', 'hgvc'], roadPath: [[21.2835,-157.8378],[21.3250,-157.8850],[21.3649,-157.9500],[21.3150,-157.8550],[21.2800,-157.7950],[21.2715,-157.7734],[21.2835,-157.8378]] },
+    10: { spots: ['hgvc'], roadPath: [[21.2835,-157.8378]] },
+    11: { spots: ['hgvc', 'costco', 'hnl'], roadPath: [[21.2835,-157.8378],[21.2950,-157.8480],[21.3156,-157.8689],[21.3250,-157.8950],[21.3245,-157.9251]] }
+  };
+
+  function renderOahuFilterGrid() {
+    const grid = document.getElementById('oahu-day-filter-grid');
+    if (!grid) return;
+    let html = `<button type="button" data-filter="all" class="oahu-filter-chip active">전체</button>`;
+    for (let d = 1; d <= 11; d++) {
+      html += `<button type="button" data-filter="${d}" class="oahu-filter-chip">D${d}</button>`;
+    }
+    grid.innerHTML = html;
+
+    grid.querySelectorAll('.oahu-filter-chip').forEach(chip => {
+      chip.addEventListener('click', () => filterOahuRoute(chip.dataset.filter));
+    });
+  }
+
+  function initOahuMap() {
+    if (oahuMap) return;
+    oahuMap = L.map('oahu-leaflet-map', { zoomControl: true }).setView([21.4389, -157.9480], 10);
+
+    oahuStreetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(oahuMap);
+    oahuSatLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 });
+
+    oahuRouteGroup = L.layerGroup().addTo(oahuMap);
+    oahuMarkersGroup = L.layerGroup().addTo(oahuMap);
+
+    filterOahuRoute(currentOahuFilter);
+  }
+
+  function filterOahuRoute(filterKey) {
+    currentOahuFilter = filterKey;
+    document.querySelectorAll('#oahu-day-filter-grid .oahu-filter-chip').forEach(c => {
+      c.classList.toggle('active', c.dataset.filter === String(filterKey));
+    });
+
+    if (!oahuMap) return;
+    oahuMarkersGroup.clearLayers();
+    oahuRouteGroup.clearLayers();
+
+    const summaryEl = document.getElementById('oahu-route-summary');
+
+    if (filterKey === 'all') {
+      const bounds = L.latLngBounds();
+      const allList = Object.values(oahuSpots);
+      allList.forEach(sp => {
+        bounds.extend([sp.lat, sp.lng]);
+        const icon = L.divIcon({
+          className: '',
+          html: `<div class="oahu-spot-pin">${sp.icon}</div>`,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
+        });
+        L.marker([sp.lat, sp.lng], { icon })
+          .bindPopup(`
+            <div style="min-width:185px;">
+              <div style="font-weight:800;font-size:13px;margin-bottom:6px;">${sp.icon} ${sp.name}</div>
+              <div style="display:flex;gap:4px;">
+                <a href="${gMapSearchQuery(sp.name + ' Oahu HI')}" target="_blank" rel="noopener noreferrer" style="padding:3px 7px;background:#ecfdf5;color:#047857;font-weight:800;font-size:11px;border-radius:99px;text-decoration:none;">📍 구글맵 ↗</a>
+                <a href="${gMapDirQuery(sp.name + ' Oahu HI')}" target="_blank" rel="noopener noreferrer" style="padding:3px 7px;background:#eff6ff;color:#1d4ed8;font-weight:800;font-size:11px;border-radius:99px;text-decoration:none;">🚗 길안내 ↗</a>
+              </div>
+            </div>
+          `)
+          .addTo(oahuMarkersGroup);
+      });
+      oahuMap.fitBounds(bounds, { padding: [26, 26] });
+      if (summaryEl) summaryEl.innerHTML = `<div class="text-[12px] font-extrabold text-slate-800">📌 오아후 전체 거점 표시 중 (상단 D1~D11을 누르면 일자별 실제 도로 경로가 표시됩니다)</div>`;
+      return;
+    }
+
+    const dayNum = parseInt(filterKey, 10);
+    const routeInfo = dayRoutes[dayNum];
+    if (!routeInfo) return;
+
+    const bounds = L.latLngBounds();
+    routeInfo.spots.forEach((id, idx) => {
+      const sp = oahuSpots[id];
+      if (!sp) return;
+      bounds.extend([sp.lat, sp.lng]);
+      const seq = idx + 1;
+      const icon = L.divIcon({
+        className: '',
+        html: `<div class="oahu-spot-pin">${sp.icon}<span class="oahu-seq-badge">${seq}</span></div>`,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+      });
+      L.marker([sp.lat, sp.lng], { icon })
+        .bindPopup(`
+          <div style="min-width:185px;">
+            <div style="font-weight:800;font-size:13px;margin-bottom:6px;">[${seq}] ${sp.icon} ${sp.name}</div>
+            <div style="display:flex;gap:4px;">
+              <a href="${gMapSearchQuery(sp.name + ' Oahu HI')}" target="_blank" rel="noopener noreferrer" style="padding:3px 7px;background:#ecfdf5;color:#047857;font-weight:800;font-size:11px;border-radius:99px;text-decoration:none;">📍 구글맵 ↗</a>
+              <a href="${gMapDirQuery(sp.name + ' Oahu HI')}" target="_blank" rel="noopener noreferrer" style="padding:3px 7px;background:#eff6ff;color:#1d4ed8;font-weight:800;font-size:11px;border-radius:99px;text-decoration:none;">🚗 길안내 ↗</a>
+            </div>
+          </div>
+        `)
+        .addTo(oahuMarkersGroup);
+    });
+
+    if (routeInfo.roadPath.length > 1) {
+      L.polyline(routeInfo.roadPath, { color: '#006493', weight: 4.5, opacity: 0.9 }).addTo(oahuRouteGroup);
+    }
+    if (routeInfo.spots.length === 1) {
+      const only = oahuSpots[routeInfo.spots[0]];
+      oahuMap.setView([only.lat, only.lng], 15);
+    } else {
+      oahuMap.fitBounds(bounds, { padding: [36, 36], maxZoom: 14 });
+    }
+
+    if (summaryEl) {
+      const rows = routeInfo.spots.map((id, idx) => {
+        const sp = oahuSpots[id];
+        return `
+          <div class="flex items-center justify-between bg-white p-2 rounded-xl border border-slate-200 text-[12px] font-extrabold gap-2">
+            <span class="truncate">${idx+1}. ${sp.icon} ${sp.name}</span>
+            <div class="flex gap-1 shrink-0">
+              <a href="${gMapSearchQuery(sp.name + ' Oahu HI')}" target="_blank" rel="noopener noreferrer" class="gmap-chip">📍 구글맵</a>
+              <a href="${gMapDirQuery(sp.name + ' Oahu HI')}" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 길안내</a>
+            </div>
+          </div>`;
+      }).join('');
+      summaryEl.innerHTML = `<div class="text-[12px] font-extrabold text-slate-800 mb-1">🚗 Day ${dayNum} 실제 도로 동선 & 방문 순번</div><div class="space-y-1.5">${rows}</div>`;
+    }
+  }
+
+  window.jumpToDayRoute = function(dayNum) {
+    switchMainScreen('tab-oahu');
+    setTimeout(() => filterOahuRoute(String(dayNum)), 150);
+  };
+
+  // RESORT MAP (Detailed Embedded Vector Map of Hilton Hawaiian Village)
+  let resortMap = null;
+  let resortMarkers = {};
+  const resortBounds = [[0, 0], [520, 820]];
+
+  /* [DATA] 단지 내 시설 */
+  const resortSpots = [
+    { id: 'grand_islander', cat: 'tower', icon: '⭐', isHome: true, name: 'The Grand Islander (#2307)', desc: '우리 숙소 베이스캠프 · 2층 전용 체크인 데스크 & 풀키친 스위트', x: 217, y: 305, query: 'The Grand Islander by Hilton Grand Vacations Honolulu HI', url: 'https://www.hilton.com/en/hotels/hnlhvhh-hilton-hawaiian-village-waikiki-beach-resort/' },
+    { id: 'tapa_tower', cat: 'tower', icon: '🏢', name: 'Tapa Tower', desc: '타파 풀 · 타파 바 · ABC 스토어 인접 메인 타워', x: 245, y: 240, query: 'Tapa Tower Hilton Hawaiian Village Honolulu HI', url: 'https://www.hilton.com/en/hotels/hnlhvhh-hilton-hawaiian-village-waikiki-beach-resort/' },
+    { id: 'diamond_tower', cat: 'tower', icon: '🏢', name: 'Diamond Head Tower', desc: '잔디 정원 및 레인보우 바자 인접 타워', x: 377, y: 210, query: 'Diamond Head Tower Hilton Hawaiian Village Honolulu HI', url: 'https://www.hilton.com/en/hotels/hnlhvhh-hilton-hawaiian-village-waikiki-beach-resort/' },
+    { id: 'rainbow_tower', cat: 'tower', icon: '🏢', name: 'Rainbow Tower', desc: '와이키키 해변과 듀크 라군 사이의 무지개 모자이크 랜드마크 타워', x: 537, y: 264, query: 'Rainbow Tower Hilton Hawaiian Village Honolulu HI', url: 'https://www.hilton.com/en/hotels/hnlhvhh-hilton-hawaiian-village-waikiki-beach-resort/' },
+    { id: 'lagoon_tower', cat: 'tower', icon: '🏢', name: 'Lagoon Tower', desc: '듀크 카하나모쿠 라군 바로 앞 HGVC 타임쉐어 타워', x: 515, y: 384, query: 'Lagoon Tower Hilton Hawaiian Village Honolulu HI', url: 'https://www.hilton.com/en/hotels/hnlhvhh-hilton-hawaiian-village-waikiki-beach-resort/' },
+    { id: 'waikikian', cat: 'tower', icon: '🏢', name: 'Grand Waikikian', desc: '파라다이스 풀과 직결되는 HGVC 타워', x: 352, y: 414, query: 'Grand Waikikian by Hilton Grand Vacations Honolulu HI', url: 'https://www.hilton.com/en/hotels/hnlhvhh-hilton-hawaiian-village-waikiki-beach-resort/' },
+    { id: 'kalia_tower', cat: 'tower', icon: '🏢', name: 'Kalia Tower', desc: '단지 입구 측 타워 · 1층 스타벅스 및 만다라 스파 위치', x: 157, y: 364, query: 'Kalia Tower Hilton Hawaiian Village Honolulu HI', url: 'https://www.hilton.com/en/hotels/hnlhvhh-hilton-hawaiian-village-waikiki-beach-resort/' },
+    { id: 'lapperts', cat: 'food', icon: '🍦', name: "Lappert's Hawaii", desc: '카우아이 파이·코나커피 와플콘($7.50~$8.50) 아이스크림 명소', x: 430, y: 300, query: "Lappert's Hawaii Hilton Hawaiian Village Honolulu HI", url: 'https://www.lappertshawaii.com/pages/find-us' },
+    { id: 'bluewater', cat: 'food', icon: '🦐', name: 'Blue Water Shrimp', desc: '레인보우 바자 인기 갈릭쉬림프($16.00~$19.95) & 스테이크 플레이트', x: 365, y: 325, query: 'Blue Water Shrimp Hilton Hawaiian Village Honolulu HI', url: 'https://www.bluewatershrimphi.com/hilton-hawaiian-village' },
+    { id: 'roundtable', cat: 'food', icon: '🍕', name: 'Round Table Pizza', desc: '레인보우 바자 대형 화덕피자($29.00~$36.99) & 생맥주', x: 315, y: 310, query: 'Round Table Pizza Hilton Hawaiian Village Honolulu HI', url: 'https://www.roundtablepizzawaikiki.com/menu' },
+    { id: 'starbucks', cat: 'food', icon: '☕', name: 'Starbucks & ABC Store', desc: '모닝 커피·무스비·선크림·생수 상시 구매처', x: 285, y: 205, query: 'Starbucks Hilton Hawaiian Village Honolulu HI', url: 'https://www.hilton.com/en/hotels/hnlhvhh-hilton-hawaiian-village-waikiki-beach-resort/dining/' },
+    { id: 'duke_lagoon', cat: 'pool', icon: '🏊', name: 'Duke Kahanamoku Lagoon', desc: '파도가 없는 잔잔한 인공 석호 · 패들보드 및 금요 불꽃놀이 명당', x: 645, y: 365, query: 'Duke Kahanamoku Lagoon Honolulu HI', url: 'https://www.hilton.com/en/hotels/hnlhvhh-hilton-hawaiian-village-waikiki-beach-resort/' },
+    { id: 'paradise_pool', cat: 'pool', icon: '🏊', name: 'Paradise Pool', desc: '그랜드 아일랜더·와이키키안 앞 워터슬라이드 가족 수영장', x: 480, y: 435, query: 'Paradise Pool Hilton Hawaiian Village Honolulu HI', url: 'https://www.hilton.com/en/hotels/hnlhvhh-hilton-hawaiian-village-waikiki-beach-resort/' },
+    { id: 'super_pool', cat: 'pool', icon: '🏊', name: 'Super Pool & Main Lobby', desc: '와이키키 해변 앞 대형 메인 수영장 및 메인 프론트 로비', x: 525, y: 205, query: 'Hilton Hawaiian Village Main Lobby Honolulu HI', url: 'https://www.hilton.com/en/hotels/hnlhvhh-hilton-hawaiian-village-waikiki-beach-resort/' }
+  ];
+
+  function createResortSvg() {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 520">
+      <rect width="820" height="520" fill="#f5f3ef"/>
+      <path d="M460 0 L820 0 L820 430 Q740 390 670 300 Q590 190 460 120 Z" fill="#bae6fd"/>
+      <path d="M430 0 L485 0 Q595 190 820 410 L820 445 Q575 220 430 0 Z" fill="#fef3c7"/>
+      <ellipse cx="645" cy="365" rx="95" ry="62" fill="#38bdf8" stroke="#fef3c7" stroke-width="10"/>
+      <text x="645" y="362" font-size="13" font-weight="800" text-anchor="middle" fill="#0c4a6e">듀크 카하나모쿠 석호</text>
+      <path d="M40 90 L430 90 M110 90 L110 490 M110 465 L490 465" stroke="#cbd5e1" stroke-width="22" fill="none"/>
+      <text x="235" y="82" font-size="12" font-weight="700" fill="#475569">칼리아 로드 (Kalia Rd) · 승차 공유 픽업</text>
+      <rect x="155" y="280" width="125" height="56" rx="10" fill="#fef08a" stroke="#d97706" stroke-width="3"/>
+      <text x="217" y="312" font-size="13" font-weight="900" text-anchor="middle" fill="#78350f">그랜드 아일랜더</text>
+      <rect x="185" y="215" width="120" height="50" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/>
+      <text x="245" y="245" font-size="13" font-weight="800" text-anchor="middle" fill="#1e293b">타파 타워</text>
+      <rect x="315" y="185" width="125" height="50" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/>
+      <text x="377" y="215" font-size="12" font-weight="800" text-anchor="middle" fill="#1e293b">다이아몬드 헤드 타워</text>
+      <rect x="475" y="238" width="125" height="52" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/>
+      <text x="537" y="268" font-size="13" font-weight="800" text-anchor="middle" fill="#1e293b">레인보우 타워</text>
+      <rect x="455" y="358" width="120" height="52" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/>
+      <text x="515" y="388" font-size="13" font-weight="800" text-anchor="middle" fill="#1e293b">라군 타워</text>
+      <rect x="285" y="388" width="135" height="52" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/>
+      <text x="352" y="418" font-size="13" font-weight="800" text-anchor="middle" fill="#1e293b">그랜드 와이키키안</text>
+      <rect x="105" y="340" width="105" height="48" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/>
+      <text x="157" y="368" font-size="12" font-weight="800" text-anchor="middle" fill="#1e293b">칼리아 타워</text>
+      <rect x="295" y="282" width="160" height="62" rx="12" fill="#ffedd5" stroke="#f97316" stroke-width="2" stroke-dasharray="5 3"/>
+      <text x="375" y="305" font-size="12" font-weight="800" text-anchor="middle" fill="#9a3412">레인보우 바자 (맛집 광장)</text>
+      <ellipse cx="480" cy="435" rx="48" ry="26" fill="#7dd3fc" stroke="#0284c7" stroke-width="2"/>
+      <text x="480" y="439" font-size="11" font-weight="800" text-anchor="middle" fill="#0369a1">파라다이스 풀</text>
+      <ellipse cx="525" cy="205" rx="45" ry="24" fill="#7dd3fc" stroke="#0284c7" stroke-width="2"/>
+      <text x="525" y="209" font-size="11" font-weight="800" text-anchor="middle" fill="#0369a1">슈퍼 풀 · 로비</text>
+      <rect x="655" y="25" width="145" height="105" rx="8" fill="#ffffff" stroke="#e11d48" stroke-width="3"/>
+      <text x="670" y="50" font-size="12" font-weight="900" fill="#1e293b">타워 &amp; 리조트</text>
+      <text x="670" y="70" font-size="11" font-weight="700" fill="#0284c7">수영장 및 석호</text>
+      <text x="670" y="90" font-size="11" font-weight="700" fill="#d97706">서비스 · 상점</text>
+      <text x="670" y="110" font-size="11" font-weight="700" fill="#16a34a">바 &amp; 레스토랑</text>
+    </svg>`;
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  }
+
+  function initResortMap() {
+    if (resortMap) return;
+    resortMap = L.map('resort-leaflet-map', { crs: L.CRS.Simple, minZoom: -1, maxZoom: 2, zoomSnap: 0.25, attributionControl: false });
+    L.imageOverlay(createResortSvg(), resortBounds).addTo(resortMap);
+    resortMap.fitBounds(resortBounds);
+
+    resortSpots.forEach(sp => {
+      const lat = 520 - sp.y;
+      const lng = sp.x;
+      const icon = L.divIcon({
+        className: '',
+        html: `<div class="resort-icon-pin ${sp.isHome ? 'our-home' : ''}">${sp.icon}</div>`,
+        iconSize: sp.isHome ? [32, 32] : [26, 26],
+        iconAnchor: sp.isHome ? [16, 16] : [13, 13]
+      });
+      const marker = L.marker([lat, lng], { icon }).addTo(resortMap);
+      marker.bindPopup(`<b>${sp.icon} ${sp.name}</b><br>${sp.desc}`);
+      marker.on('click', () => updateResortDetailCard(sp));
+      resortMarkers[sp.id] = { marker, lat, lng, spot: sp };
+    });
+
+    const makeChip = (sp) => `<button type="button" onclick="selectResortSpot('${sp.id}')" class="px-2.5 py-1 rounded-full text-[11.5px] font-bold bg-white border border-slate-300 hover:border-sky-500">${sp.icon} ${sp.name.split(' (')[0]}</button>`;
+    document.getElementById('legend-cat-tower').innerHTML = resortSpots.filter(s => s.cat === 'tower').map(makeChip).join('');
+    document.getElementById('legend-cat-food').innerHTML = resortSpots.filter(s => s.cat === 'food').map(makeChip).join('');
+    document.getElementById('legend-cat-pool').innerHTML = resortSpots.filter(s => s.cat === 'pool').map(makeChip).join('');
+  }
+
+  function updateResortDetailCard(sp) {
+    const titleEl = document.getElementById('resort-spot-title');
+    const descEl = document.getElementById('resort-spot-desc');
+    const gmapEl = document.getElementById('resort-spot-gmap');
+    const gnavEl = document.getElementById('resort-spot-gnav');
+    const linkEl = document.getElementById('resort-spot-link');
+    if (titleEl) { titleEl.textContent = `${sp.icon} ${sp.name} ↗`; titleEl.href = gMapDirQuery(sp.query); }
+    if (descEl) descEl.textContent = sp.desc;
+    if (gmapEl) gmapEl.href = gMapSearchQuery(sp.query);
+    if (gnavEl) gnavEl.href = gMapDirQuery(sp.query);
+    if (linkEl) linkEl.href = sp.url;
+  }
+
+  window.selectResortSpot = function(id) {
+    const entry = resortMarkers[id];
+    if (entry && resortMap) {
+      resortMap.setView([entry.lat, entry.lng], 0.5, { animate: true });
+      entry.marker.openPopup();
+      updateResortDetailCard(entry.spot);
+    }
+  };
+
+  // EXPENSES (공유 원장 · 자동 정산 계산)
+  const FAMILIES = ['A', 'B', 'C'];
+  const SPLIT_LABEL = { '8p': '8인 3:3:2', '6p': '선발6인 3:3:0', 'equal': '3가족 1:1:1' };
+  const SPLIT_RATIO = { '8p': { A: 3/8, B: 3/8, C: 2/8 }, '6p': { A: 1/2, B: 1/2, C: 0 }, 'equal': { A: 1/3, B: 1/3, C: 1/3 } };
+  const VALID_DATES = ['사전', '2/18', '2/19', '2/20', '2/21', '2/22', '2/23', '2/24', '2/25', '2/26', '2/27', '2/28'];
+
+  let expenses = [];          // DB에서 읽어온 원장 (무효 건 포함)
+  let sb = null;              // Supabase client
+  let lastSyncedAt = null;
+  let pendingReceiptBlob = null;
+  let ocrRunId = 0;
+
+  function esc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function setSyncStatus(text, tone) {
+    const el = document.getElementById('sync-status');
+    if (!el) return;
+    const tones = { ok: 'bg-emerald-50 text-emerald-800', warn: 'bg-amber-50 text-amber-800', err: 'bg-rose-50 text-rose-700', idle: 'bg-slate-100 text-slate-600' };
+    el.className = `px-2 py-0.5 rounded-full text-[11px] font-bold nowrap-btn ${tones[tone] || tones.idle}`;
+    el.textContent = text;
+  }
+
+  function receiptPublicUrl(path) {
+    if (!path || !sb) return '';
+    return sb.storage.from(RECEIPT_BUCKET).getPublicUrl(path).data.publicUrl;
+  }
+
+  function calcSettlement() {
+    let total = 0;
+    const paid = { A: 0, B: 0, C: 0 };
+    const owed = { A: 0, B: 0, C: 0 };
+    expenses.filter(item => !item.is_void).forEach(item => {
+      const amt = parseFloat(item.amount) || 0;
+      total += amt;
+      if (paid[item.payer] !== undefined) paid[item.payer] += amt;
+      const ratio = SPLIT_RATIO[item.split] || SPLIT_RATIO['8p'];
+      FAMILIES.forEach(f => { owed[f] += amt * ratio[f]; });
+    });
+
+    // 송금 경로: 보낼 가족 → 받을 가족 (센트 단위 반올림)
+    const net = {};
+    FAMILIES.forEach(f => { net[f] = Math.round((paid[f] - owed[f]) * 100); });
+    const debtors = FAMILIES.filter(f => net[f] < 0).map(f => ({ f, v: -net[f] })).sort((a, b) => b.v - a.v);
+    const creditors = FAMILIES.filter(f => net[f] > 0).map(f => ({ f, v: net[f] })).sort((a, b) => b.v - a.v);
+    const transfers = [];
+    let i = 0, j = 0;
+    while (i < debtors.length && j < creditors.length) {
+      const v = Math.min(debtors[i].v, creditors[j].v);
+      if (v > 0) transfers.push({ from: debtors[i].f, to: creditors[j].f, amount: v / 100 });
+      debtors[i].v -= v; creditors[j].v -= v;
+      if (debtors[i].v === 0) i++;
+      if (creditors[j].v === 0) j++;
+    }
+    return { total, paid, owed, transfers };
+  }
+
+  function renderExpenses() {
+    const { total, paid, owed, transfers } = calcSettlement();
+
+    document.getElementById('exp-total-usd').textContent = `$${total.toFixed(2)}`;
+    FAMILIES.forEach(fam => {
+      const key = fam.toLowerCase();
+      document.getElementById(`fam-${key}-share`).textContent = `$${owed[fam].toFixed(2)}`;
+      const net = paid[fam] - owed[fam];
+      document.getElementById(`fam-${key}-diff`).textContent = `결제 $${paid[fam].toFixed(0)} (${net >= 0 ? '받을돈' : '보낼돈'} $${Math.abs(net).toFixed(0)})`;
+    });
+
+    const transEl = document.getElementById('settle-transfers');
+    if (transEl) {
+      transEl.innerHTML = transfers.length
+        ? transfers.map(t => `
+            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[13px] font-extrabold">
+              <span>${t.from}가족 ➔ ${t.to}가족</span>
+              <span class="text-sky-800">$${t.amount.toFixed(2)}</span>
+            </div>`).join('')
+        : `<div class="text-[12.5px] text-slate-500 font-semibold">정산할 금액이 없습니다.</div>`;
+    }
+
+    const updEl = document.getElementById('exp-updated-at');
+    if (updEl) updEl.textContent = lastSyncedAt ? `마지막 동기화: ${lastSyncedAt.toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : '';
+
+    const listEl = document.getElementById('expense-list-container');
+    if (listEl) {
+      listEl.innerHTML = expenses.length
+        ? expenses.map(item => {
+            const photo = item.photo_path ? `<a href="${esc(receiptPublicUrl(item.photo_path))}" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🧾 영수증 ↗</a>` : '';
+            const voidCls = item.is_void ? 'opacity-50 line-through' : '';
+            const voidTag = item.is_void ? `<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[10.5px] font-extrabold no-underline">무효</span>` : '';
+            return `
+            <div class="py-3 flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[13.5px] font-extrabold text-slate-900 truncate ${voidCls}">${esc(item.title)}</span>
+                  ${voidTag}
+                </div>
+                <div class="text-[11px] text-slate-500">${esc(item.exp_date)} · ${esc(item.payer)}가족 결제 (${SPLIT_LABEL[item.split] || SPLIT_LABEL['8p']})${item.is_void && item.void_note ? ' · ' + esc(item.void_note) : ''}</div>
+                ${photo ? `<div class="pt-1">${photo}</div>` : ''}
+              </div>
+              <span class="text-[14px] font-extrabold nowrap-btn ${voidCls}">$${Number(item.amount).toFixed(2)}</span>
+            </div>`;
+          }).join('')
+        : `<div class="py-6 text-center text-[12.5px] text-slate-500 font-semibold">아직 등록된 지출이 없습니다.</div>`;
+    }
+  }
+
+  async function loadExpenses() {
+    if (!sb) return;
+    const { data, error } = await sb.from('expenses').select('*').order('created_at', { ascending: false });
+    if (error) { setSyncStatus('⚠️ 불러오기 실패', 'err'); return; }
+    expenses = data || [];
+    lastSyncedAt = new Date();
+    setSyncStatus('● 실시간 동기화', 'ok');
+    renderExpenses();
+  }
+
+  function initSupabase() {
+    if (!window.supabase || !window.supabase.createClient) { setSyncStatus('⚠️ 연결 불가', 'err'); renderExpenses(); return; }
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
+    loadExpenses();
+    sb.channel('expenses-feed')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, () => loadExpenses())
+      .subscribe(status => { if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') setSyncStatus('◐ 수동 새로고침', 'warn'); });
+  }
+
+  // ---- 영수증 사진: 축소 · 자동 인식 ----
+  function loadImage(file) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('image')); };
+      img.src = url;
+    });
+  }
+
+  async function shrinkImage(file, maxSide) {
+    const img = await loadImage(file);
+    const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(img.naturalWidth * scale);
+    canvas.height = Math.round(img.naturalHeight * scale);
+    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+    return new Promise(resolve => canvas.toBlob(b => resolve(b), 'image/jpeg', 0.82));
+  }
+
+  let tesseractLoading = null;
+  function loadTesseract() {
+    if (window.Tesseract) return Promise.resolve();
+    if (tesseractLoading) return tesseractLoading;
+    tesseractLoading = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = TESSERACT_CDN;
+      s.onload = () => resolve();
+      s.onerror = () => { tesseractLoading = null; reject(new Error('tesseract')); };
+      document.head.appendChild(s);
+    });
+    return tesseractLoading;
+  }
+
+  function parseReceiptText(text) {
+    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const amtRe = /\$?\s*(\d{1,5}(?:,\d{3})*[.,]\d{2})(?!\d)/g;
+    const amountsIn = l => [...l.matchAll(amtRe)].map(m => parseFloat(m[1].replace(/,(?=\d{3})/g, '').replace(',', '.'))).filter(n => n > 0);
+
+    // 1) 금액: GRAND TOTAL / AMOUNT DUE 류 → TOTAL(소계·세금 줄 제외) → 가장 큰 금액
+    let amount = null;
+    const strong = /(grand\s*total|total\s*due|amount\s*due|balance\s*due|total\s*amount)/i;
+    const plain = /\btotal\b/i;
+    const exclude = /(sub\s*-?\s*total|tax|tip|savings|discount|items?\s*sold|change)/i;
+    for (let i = lines.length - 1; i >= 0 && amount == null; i--) {
+      if (strong.test(lines[i])) { const a = amountsIn(lines[i]); if (a.length) amount = a[a.length - 1]; }
+    }
+    for (let i = lines.length - 1; i >= 0 && amount == null; i--) {
+      if (plain.test(lines[i]) && !exclude.test(lines[i])) { const a = amountsIn(lines[i]); if (a.length) amount = a[a.length - 1]; }
+    }
+    if (amount == null) {
+      const all = lines.flatMap(amountsIn).filter(n => n < 100000);
+      if (all.length) amount = Math.max(...all);
+    }
+
+    // 2) 상호: 상단 6줄 중 글자가 충분한 첫 줄
+    let title = '';
+    for (const l of lines.slice(0, 6)) {
+      const clean = l.replace(/[^A-Za-z0-9&'.\- ]/g, ' ').replace(/\s+/g, ' ').trim();
+      const letters = (clean.match(/[A-Za-z]/g) || []).length;
+      if (letters >= 3 && letters / Math.max(clean.length, 1) > 0.5) { title = clean.slice(0, 60); break; }
+    }
+
+    // 3) 날짜: 2월 18~28일이면 해당 일자로
+    let date = null;
+    const dm = text.match(/\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})\b/);
+    if (dm) {
+      const mo = parseInt(dm[1], 10), d = parseInt(dm[2], 10);
+      if (mo === 2 && d >= 18 && d <= 28) date = `2/${d}`;
+    }
+    return { amount, title, date };
+  }
+
+  async function handleReceiptFile(file) {
+    if (!file) return;
+    const runId = ++ocrRunId;
+    const statusEl = document.getElementById('ocr-status');
+    const wrap = document.getElementById('receipt-preview-wrap');
+    const preview = document.getElementById('receipt-preview');
+    wrap.classList.remove('hidden');
+    wrap.classList.add('flex');
+    statusEl.textContent = '📷 사진 준비 중…';
+
+    let blob;
+    try { blob = await shrinkImage(file, 1600); }
+    catch (e) { statusEl.textContent = '⚠️ 사진을 열 수 없습니다. 다른 사진을 선택해 주세요.'; return; }
+    if (runId !== ocrRunId) return;
+    pendingReceiptBlob = blob;
+    preview.src = URL.createObjectURL(blob);
+
+    try {
+      statusEl.textContent = '🔎 인식 엔진 불러오는 중… (처음 1회 약간 걸립니다)';
+      await loadTesseract();
+      const worker = await Tesseract.createWorker('eng', 1, {
+        logger: m => {
+          if (runId === ocrRunId && m.status === 'recognizing text') statusEl.textContent = `🔎 영수증 읽는 중… ${Math.round((m.progress || 0) * 100)}%`;
+        }
+      });
+      const { data } = await worker.recognize(blob);
+      await worker.terminate();
+      if (runId !== ocrRunId) return;
+
+      const r = parseReceiptText(data.text || '');
+      const titleEl = document.getElementById('exp-title-input');
+      const amountEl = document.getElementById('exp-amount-input');
+      if (r.title && !titleEl.value.trim()) titleEl.value = r.title;
+      if (r.amount != null) amountEl.value = r.amount.toFixed(2);
+      if (r.date) document.getElementById('exp-date-input').value = r.date;
+      statusEl.textContent = r.amount != null
+        ? `✅ 자동 입력 완료 — 금액 $${r.amount.toFixed(2)}가 영수증 합계(TOTAL)와 맞는지 확인해 주세요.`
+        : '⚠️ 금액을 찾지 못했습니다. 직접 입력해 주세요.';
+    } catch (e) {
+      if (runId === ocrRunId) statusEl.textContent = '⚠️ 자동 인식에 실패했습니다. 사진은 첨부되며, 내용은 직접 입력해 주세요.';
+    }
+  }
+
+  function clearReceipt() {
+    ocrRunId++;
+    pendingReceiptBlob = null;
+    const wrap = document.getElementById('receipt-preview-wrap');
+    wrap.classList.add('hidden');
+    wrap.classList.remove('flex');
+    document.getElementById('receipt-preview').removeAttribute('src');
+    document.getElementById('ocr-status').textContent = '';
+    document.getElementById('receipt-file').value = '';
+  }
+
+  function readSavedCode() { try { return localStorage.getItem('hawaii_trip_code') || ''; } catch (e) { return ''; } }
+  function saveCode(code) { try { localStorage.setItem('hawaii_trip_code', code); } catch (e) {} }
+
+  async function submitExpense() {
+    const btn = document.getElementById('add-expense-btn');
+    const title = document.getElementById('exp-title-input').value.trim();
+    const amount = parseFloat(document.getElementById('exp-amount-input').value);
+    const date = document.getElementById('exp-date-input').value;
+    const payer = document.getElementById('exp-payer-input').value;
+    const split = document.getElementById('exp-split-input').value;
+    const code = document.getElementById('exp-code-input').value.trim();
+
+    if (!sb) { showToast('저장소에 연결되지 않았습니다.'); return; }
+    if (!title || isNaN(amount) || amount <= 0) { showToast('항목명과 금액을 입력해 주세요.'); return; }
+    if (amount >= 100000) { showToast('금액을 다시 확인해 주세요.'); return; }
+    if (!VALID_DATES.includes(date)) { showToast('날짜를 선택해 주세요.'); return; }
+    if (!/^\d{6}$/.test(code)) { showToast('여행 코드 6자리를 입력해 주세요.'); return; }
+
+    const splitText = SPLIT_LABEL[split];
+    if (!confirm(`아래 내용으로 저장할까요? 저장 후에는 수정·삭제할 수 없습니다.\n\n${title}\n$${amount.toFixed(2)} · ${date} · ${payer}가족 결제 · ${splitText}`)) return;
+
+    btn.disabled = true;
+    btn.textContent = '저장 중…';
+    try {
+      const { data: ok, error: codeErr } = await sb.rpc('check_trip_code', { p_code: code });
+      if (codeErr) throw codeErr;
+      if (!ok) { showToast('여행 코드가 맞지 않습니다.'); return; }
+      saveCode(code);
+
+      let photoPath = null;
+      if (pendingReceiptBlob) {
+        const rand = Math.random().toString(36).slice(2, 10);
+        photoPath = `r/${Date.now()}-${rand}.jpg`;
+        const { error: upErr } = await sb.storage.from(RECEIPT_BUCKET).upload(photoPath, pendingReceiptBlob, { contentType: 'image/jpeg', upsert: false });
+        if (upErr) { photoPath = null; showToast('사진 업로드 실패 — 내역만 저장합니다.'); }
+      }
+
+      const { error } = await sb.rpc('add_expense', {
+        p_code: code, p_title: title, p_amount: Math.round(amount * 100) / 100,
+        p_date: date, p_payer: payer, p_split: split, p_photo_path: photoPath
+      });
+      if (error) throw error;
+
+      document.getElementById('exp-title-input').value = '';
+      document.getElementById('exp-amount-input').value = '';
+      clearReceipt();
+      showToast('지출 내역이 저장되었습니다.');
+      loadExpenses();
+    } catch (e) {
+      showToast('저장에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '+ 지출 내역 저장하기';
+    }
+  }
+
+  // CHECKLIST (조회 전용)
+  function renderChecklist() {
+    const wrap = document.getElementById('checklist-items');
+    if (wrap) {
+      wrap.innerHTML = checklistItems.map(item => `
+        <div class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+          <span class="w-5 text-center">${item.done ? '✅' : '⬜'}</span>
+          <span class="text-[13px] font-semibold ${item.done ? 'text-slate-500' : 'text-slate-900'}">${item.text}</span>
+        </div>
+      `).join('');
+    }
+  }
+
+  function switchMainScreen(targetId) {
+    document.querySelectorAll('.main-screen').forEach(sec => sec.classList.toggle('hidden', sec.id !== targetId));
+    document.querySelectorAll('.m3-nav-item').forEach(btn => btn.classList.toggle('active', btn.dataset.target === targetId));
+    if (targetId === 'tab-oahu') setTimeout(() => { if (oahuMap) oahuMap.invalidateSize(); else initOahuMap(); }, 100);
+    if (targetId === 'tab-resort') setTimeout(() => { if (resortMap) resortMap.invalidateSize(); else initResortMap(); }, 100);
+    if (targetId === 'tab-expense') loadExpenses();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    applyHeroTheme(getAutoThemeIdxByHour(), false);
+    document.getElementById('cycle-theme-btn').addEventListener('click', () => applyHeroTheme(currentHeroThemeIdx + 1, true));
+
+    renderScheduleDayGrid();
+    updateDayView(1);
+    renderOahuFilterGrid();
+    renderExpenses();
+    renderChecklist();
+    initSupabase();
+
+    document.getElementById('exp-code-input').value = readSavedCode();
+    document.getElementById('receipt-file').addEventListener('change', (e) => handleReceiptFile(e.target.files && e.target.files[0]));
+    document.getElementById('receipt-clear-btn').addEventListener('click', clearReceipt);
+    document.getElementById('add-expense-btn').addEventListener('click', submitExpense);
+
+    document.querySelectorAll('.m3-nav-item').forEach(btn => {
+      btn.addEventListener('click', () => switchMainScreen(btn.dataset.target));
+    });
+
+    document.getElementById('prev-day-btn').addEventListener('click', () => { if (currentDayIndex > 1) updateDayView(currentDayIndex - 1); });
+    document.getElementById('next-day-btn').addEventListener('click', () => { if (currentDayIndex < 11) updateDayView(currentDayIndex + 1); });
+
+    document.getElementById('toggle-oahu-sat-btn').addEventListener('click', (e) => {
+      if (!oahuMap) return;
+      isOahuSat = !isOahuSat;
+      if (isOahuSat) { oahuMap.removeLayer(oahuStreetLayer); oahuSatLayer.addTo(oahuMap); e.currentTarget.textContent = '🗺️ 일반 도로지도'; }
+      else { oahuMap.removeLayer(oahuSatLayer); oahuStreetLayer.addTo(oahuMap); e.currentTarget.textContent = '🛰️ 위성 사진으로 보기'; }
+    });
+
+    document.getElementById('reset-oahu-bounds-btn').addEventListener('click', () => filterOahuRoute('all'));
+    document.getElementById('reset-resort-map-btn').addEventListener('click', () => { if (resortMap) resortMap.fitBounds(resortBounds); });
+
+    document.getElementById('seg-resort-map-btn').addEventListener('click', () => {
+      document.getElementById('seg-resort-map-btn').classList.add('active');
+      document.getElementById('seg-resort-room-btn').classList.remove('active');
+      document.getElementById('resort-subpage-map').classList.remove('hidden');
+      document.getElementById('resort-subpage-room').classList.add('hidden');
+      setTimeout(() => { if (resortMap) resortMap.invalidateSize(); }, 100);
+    });
+
+    document.getElementById('seg-resort-room-btn').addEventListener('click', () => {
+      document.getElementById('seg-resort-room-btn').classList.add('active');
+      document.getElementById('seg-resort-map-btn').classList.remove('active');
+      document.getElementById('resort-subpage-room').classList.remove('hidden');
+      document.getElementById('resort-subpage-map').classList.add('hidden');
+    });
+
+    document.getElementById('seg-exp-summary-btn').addEventListener('click', () => {
+      document.getElementById('seg-exp-summary-btn').classList.add('active');
+      document.getElementById('seg-exp-list-btn').classList.remove('active');
+      document.getElementById('exp-subpage-summary').classList.remove('hidden');
+      document.getElementById('exp-subpage-list').classList.add('hidden');
+    });
+
+    document.getElementById('seg-exp-list-btn').addEventListener('click', () => {
+      document.getElementById('seg-exp-list-btn').classList.add('active');
+      document.getElementById('seg-exp-summary-btn').classList.remove('active');
+      document.getElementById('exp-subpage-list').classList.remove('hidden');
+      document.getElementById('exp-subpage-summary').classList.add('hidden');
+    });
+
+    document.querySelectorAll('.guide-seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.guide-seg-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const key = btn.dataset.guide;
+        document.querySelectorAll('.guide-subpage').forEach(sub => sub.classList.toggle('hidden', sub.id !== `guide-sub-${key}`));
+      });
+    });
+
+    const flightModal = document.getElementById('flight-modal');
+    document.getElementById('open-flight-modal-btn').addEventListener('click', () => { flightModal.classList.remove('hidden'); flightModal.classList.add('flex'); });
+    document.getElementById('close-flight-modal-btn').addEventListener('click', () => { flightModal.classList.add('hidden'); flightModal.classList.remove('flex'); });
+
+    document.getElementById('share-portal-btn').addEventListener('click', () => copyTextToClipboard(window.location.href, '앱 링크가 복사되었습니다.'));
+    const copyAlbumBtn = document.getElementById('copy-album-url-btn');
+    if (copyAlbumBtn) copyAlbumBtn.addEventListener('click', () => copyTextToClipboard(GOOGLE_PHOTOS_ALBUM_URL, '구글 포토 공유앨범 링크가 복사되었습니다.'));
+  });
+</script>
+</body>
+</html>
