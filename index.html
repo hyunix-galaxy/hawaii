@@ -15,7 +15,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611041345">
+  <link rel="stylesheet" href="/tailwind.css?v=202611041350">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -2390,7 +2390,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611041345').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611041350').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -3737,6 +3737,8 @@
       items: [['스테이크 플레이트 6oz / 10oz / 14oz', '약 $12~24 (비공식)']], note: '데리야키 소스 추천 · 주문 후 15~20분 · 야외 테이블이 적어 포장 추천 · 늦게 가면 품절될 수 있음 · 월~목 10:30~19:00, 금·토 10:00~19:30, 일 10:00~19:00 (비공식)', checked: '2026.10', src: 'https://hawaiitravelwithkids.com/best-restaurants-in-waikiki-for-budget-travelers/' },
     { cat: 'local', dish: '돼지곰탕 (미쉐린 서울 맛집)', name: '옥동식 호놀룰루 (OKDONGSIK)', area: '알라모아나 근처 (Sky Ala Moana 1층)', query: 'Okdongsik 1388 Kapiolani Blvd Honolulu HI', near: 'D2 알라모아나 쇼핑 때 · 월요일 휴무',
       items: [['돼지곰탕', '$18'], ['돈카츠 (하루 40인분 한정)', '$21'], ['아이용 곰탕', '$10'], ['김치 냉국수', '$16']], note: '바 카운터 좌석만 있어 8명은 나눠 앉을 수 있어요 · Resy 예약 (10분 넘게 늦으면 노쇼) · 점심 화~일 11:30~14:30, 저녁 화~목·일 17~21시, 금·토 17~22시 · 주차권 확인 가능 · 가격은 2025.7 개점 기사 기준', checked: '2025.07', src: 'https://www.honolulumagazine.com/?p=807462' },
+    { cat: 'local', dish: '포케볼 · 숯불 고기 플레이트 · 셰이브 아이스', name: 'Aloha food truck', area: '알라와이 항구 끝 · 카하나모쿠 비치 앞', query: 'Aloha food truck Ala Wai Boat Harbor Honolulu HI', near: '힐튼 단지 바로 옆 · 해변 놀다가 걸어가기 · 듀크 라군 날 (D1·D9·D10)',
+      items: [['아히 포케볼 · 그릴 고기+밥+옥수수 · 피시앤칩스', '가격 미확인 · 현장 확인'], ['패션프루트 셰이브 아이스(연유) · 아사이볼 · 버거', '가격 미확인 · 현장 확인']], note: '구글 지도 메뉴 사진 기준 메뉴예요 · 온라인에 공개 가격이 없어요 · 지도·후기 버튼에서 메뉴판 사진 확인', checked: '2026.11', src: '' },
     // ---- 유명 레스토랑 ----
     { cat: 'famous', dish: '훌라 파이 · 해변 레스토랑', name: "Duke's Waikiki", area: '와이키키 해변', query: "Duke's Waikiki Honolulu HI", near: '와이키키 해변 저녁',
       items: [['키모의 오리지널 훌라 파이', '$14.00'], ['마카다미아 크러스트 생선 (저녁)', '$39'], ['프라임 립 12oz / 24oz', '$44 / $83']], note: '저녁은 예약 추천 · 훌라 파이는 여럿이 나눠 먹는 크기 · 메인 요리 가격은 2024년 공식 메뉴라 조금 올랐을 수 있음', checked: '2026.11', src: 'https://www.dukeswaikiki.com/wp-content/uploads/2024/02/24_TS_DW_Vinyl-Dinner_web_FEB07.pdf' },
