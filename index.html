@@ -192,6 +192,11 @@
       border: 1px solid #CBD5E1;
     }
 
+    #resort-leaflet-map {
+      height: 560px;
+      background: #EEF3EA;
+    }
+
     .resort-icon-pin {
       width: 26px;
       height: 26px;
@@ -487,7 +492,7 @@
             <div class="text-[11.5px] font-extrabold text-slate-700 mb-1.5">🛎️ 서비스 · 상점 · 주차</div>
             <div id="legend-cat-service" class="flex flex-wrap gap-1.5"></div>
           </div>
-          <div class="text-[10.5px] text-slate-400 px-1">안내도 출처: Hilton Hawaiian Village 단지 안내도 (한글판: 세상의 모든 정보 Busy bee)</div>
+          <div class="text-[10.5px] text-slate-400 px-1">안내도 출처: Hilton Hawaiian Village 공식 한글 단지 안내도</div>
         </div>
       </div>
 
@@ -1403,8 +1408,8 @@
   let resortMap = null;
   let resortMarkers = {};
   let resortFocusMarker = null;
-  const RESORT_MAP_IMG = 'resort-map.jpg';
-  const RESORT_IMG_W = 789, RESORT_IMG_H = 512;
+  const RESORT_MAP_IMG = 'resort-map-v.jpg';
+  const RESORT_IMG_W = 1078, RESORT_IMG_H = 1537;
   const resortBounds = [[0, 0], [RESORT_IMG_H, RESORT_IMG_W]];
 
   /* [DATA] 단지 내 시설 */
@@ -1425,47 +1430,61 @@
     { id: 'super_pool', cat: 'pool', icon: '🏊', name: 'Super Pool & Main Lobby', desc: '와이키키 해변 앞 대형 메인 수영장 및 메인 프론트 로비', x: 525, y: 205, query: 'Hilton Hawaiian Village Main Lobby Honolulu HI', url: 'https://www.hilton.com/en/hotels/hnlhvhh-hilton-hawaiian-village-waikiki-beach-resort/' }
   ];
 
-  /* [보정 계층] 원본 안내도(789×512px) 기준 위치 — 위 resortSpots 원본 데이터의 x·y 대신 사용 */
+  /* [보정 계층] 힐튼 공식 세로형 안내도(1078×1537px) 기준 위치 — 위 resortSpots 원본 데이터의 x·y 대신 사용 */
   const RESORT_MAP_POS = {
-    grand_islander: [118, 72], tapa_tower: [133, 125], diamond_tower: [258, 62],
-    rainbow_tower: [540, 212], lagoon_tower: [442, 395], waikikian: [250, 425], kalia_tower: [80, 300],
-    lapperts: [366, 267], bluewater: [280, 321], roundtable: [321, 321], starbucks: [81, 257],
-    duke_lagoon: [640, 345], paradise_pool: [480, 447], super_pool: [480, 146]
+    grand_islander: [930, 250], tapa_tower: [730, 280], diamond_tower: [965, 640],
+    rainbow_tower: [595, 1150], lagoon_tower: [225, 940], waikikian: [130, 600], kalia_tower: [370, 215],
+    lapperts: [480, 860], bluewater: [395, 712], roundtable: [405, 848], starbucks: [490, 165],
+    duke_lagoon: [310, 1340], paradise_pool: [100, 1083], super_pool: [785, 1030]
   };
 
-  /* [DATA] 원본 안내도에 표시된 추가 시설 (설명은 안내도 표기 기준) */
+  /* [DATA] 힐튼 공식 안내도에 표시된 추가 시설 (설명은 안내도 표기 기준) */
   const HHV_URL = 'https://www.hilton.com/en/hotels/hnlhvhh-hilton-hawaiian-village-waikiki-beach-resort/';
   const hhvQuery = name => `${name} Hilton Hawaiian Village Honolulu HI`;
   const RESORT_EXTRA_SPOTS = [
-    { id: 'alii_tower', cat: 'tower', icon: '🏢', name: "Ali'i Tower", desc: '알리 타워 · 전용 알리 수영장 인접', x: 405, y: 35, query: hhvQuery("Ali'i Tower"), url: HHV_URL },
+    { id: 'alii_tower', cat: 'tower', icon: '🏢', name: "Ali'i Tower", desc: '알리이 타워 · 1층 위키 위키 마켓, 앞쪽 트로픽스 바 & 그릴', x: 945, y: 915, query: hhvQuery("Ali'i Tower"), url: HHV_URL },
 
-    { id: 'tropics', cat: 'food', icon: '🍹', name: 'Tropics Bar & Grill', desc: '알리 타워 앞 비치프론트 바 & 그릴 (D10 점심)', x: 462, y: 54, query: hhvQuery('Tropics Bar & Grill'), url: HHV_URL },
-    { id: 'hau_tree', cat: 'food', icon: '🍹', name: 'Hau Tree Bar', desc: '슈퍼 풀 옆 해변 쪽 바', x: 501, y: 125, query: hhvQuery('Hau Tree Bar'), url: HHV_URL },
-    { id: 'bali', cat: 'food', icon: '🍽️', name: 'Bali Oceanfront', desc: '레인보우 타워 해변 쪽 레스토랑', x: 547, y: 179, query: hhvQuery('Bali Oceanfront'), url: HHV_URL },
-    { id: 'tapa_bar', cat: 'food', icon: '🍹', name: 'Tapa Bar', desc: '타파 타워 · 타파 풀 쪽 바', x: 175, y: 153, query: hhvQuery('Tapa Bar'), url: HHV_URL },
-    { id: 'aloha_bowls', cat: 'food', icon: '🥣', name: 'Aloha Bowls & Tea', desc: '타파 풀 옆 볼·음료 매장', x: 282, y: 98, query: hhvQuery('Aloha Bowls & Tea'), url: HHV_URL },
-    { id: 'starbucks_alii', cat: 'food', icon: '☕', name: '스타벅스 (알리 타워 쪽)', desc: '단지 상단 알리 타워 인근 스타벅스', x: 352, y: 25, query: hhvQuery('Starbucks Rainbow Bazaar'), url: HHV_URL },
-    { id: 'wikiwiki', cat: 'food', icon: '🛒', name: 'Wiki Wiki Market', desc: '알리 타워 1층 마켓', x: 425, y: 80, query: hhvQuery('Wiki Wiki Market'), url: HHV_URL },
-    { id: 'aoki', cat: 'food', icon: '🍳', name: 'Aoki Teppanyaki', desc: '레인보우 바자 철판구이 레스토랑', x: 152, y: 267, query: hhvQuery('Aoki Teppanyaki'), url: HHV_URL },
-    { id: 'hatsuhana', cat: 'food', icon: '🍣', name: 'Hatsuhana', desc: '레인보우 바자 일식 레스토랑', x: 206, y: 311, query: hhvQuery('Hatsuhana'), url: HHV_URL },
-    { id: 'fresco', cat: 'food', icon: '🍝', name: 'Fresco Italian Restaurant', desc: '레인보우 바자 이탈리안 레스토랑', x: 327, y: 338, query: hhvQuery('Fresco Italian Restaurant'), url: HHV_URL },
-    { id: 'cjs_deli', cat: 'food', icon: '🥪', name: "CJ's Deli", desc: '레인보우 바자 델리', x: 275, y: 352, query: hhvQuery("CJ's Deli"), url: HHV_URL },
-    { id: 'starlight_luau', cat: 'food', icon: '🌺', name: 'Waikiki Starlight Luau', desc: '단지 내 루아우 디너쇼', x: 328, y: 356, query: hhvQuery('Waikiki Starlight Luau'), url: HHV_URL },
+    { id: 'tropics', cat: 'food', icon: '🍹', name: 'Tropics Bar & Grill', desc: '알리이 타워 앞 비치프론트 바 & 그릴 (D10 점심)', x: 951, y: 1020, query: hhvQuery('Tropics Bar & Grill'), url: HHV_URL },
+    { id: 'hau_tree', cat: 'food', icon: '🍹', name: 'Hau Tree Bar', desc: '슈퍼 풀 아래 해변 쪽 바', x: 805, y: 1162, query: hhvQuery('Hau Tree Bar'), url: HHV_URL },
+    { id: 'bali', cat: 'food', icon: '🍽️', name: 'Bali Oceanfront', desc: '레인보우 타워 1층 오션프런트 레스토랑', x: 580, y: 1286, query: hhvQuery('Bali Oceanfront'), url: HHV_URL },
+    { id: 'dq', cat: 'food', icon: '🍦', name: 'DQ / 오렌지 줄리어스', desc: '레인보우 타워 해변 쪽 매장', x: 610, y: 1345, query: hhvQuery('Dairy Queen Orange Julius'), url: HHV_URL },
+    { id: 'tapa_bar', cat: 'food', icon: '🍹', name: 'Tapa Bar', desc: '타파 타워 · 타파 풀장 쪽 바', x: 700, y: 553, query: hhvQuery('Tapa Bar'), url: HHV_URL },
+    { id: 'starbucks_alii', cat: 'food', icon: '☕', name: '스타벅스 (알리이 타워 쪽)', desc: '알리이 타워 플라자 옆 스타벅스', x: 1000, y: 800, query: hhvQuery("Starbucks Ali'i Tower"), url: HHV_URL },
+    { id: 'wikiwiki', cat: 'food', icon: '🛒', name: 'Wiki Wiki Market (알리이)', desc: '알리이 타워 1층 마켓', x: 950, y: 995, query: hhvQuery('Wiki Wiki Market'), url: HHV_URL },
+    { id: 'wikiwiki_lagoon', cat: 'food', icon: '🛒', name: 'Wiki Wiki Market (라군)', desc: '파라다이스 풀 · 화이트 비치 채플 옆 마켓', x: 125, y: 1160, query: hhvQuery('Wiki Wiki Market Lagoon'), url: HHV_URL },
+    { id: 'aoki', cat: 'food', icon: '🍳', name: 'Aoki Teppanyaki', desc: '미드퍼시픽 컨퍼런스 센터 건물 철판구이 레스토랑', x: 450, y: 325, query: hhvQuery('Aoki Teppanyaki'), url: HHV_URL },
+    { id: 'hatsuhana', cat: 'food', icon: '🍣', name: 'Hatsuhana', desc: '레인보우 바자 일식 레스토랑', x: 450, y: 620, query: hhvQuery('Hatsuhana'), url: HHV_URL },
+    { id: 'cjs_deli', cat: 'food', icon: '🥪', name: "CJ's NY Style Deli", desc: '레인보우 바자 뉴욕 스타일 델리카트슨', x: 395, y: 757, query: hhvQuery("CJ's Deli"), url: HHV_URL },
+    { id: 'fresco', cat: 'food', icon: '🍝', name: 'Fresco Italian Restaurant', desc: '레인보우 바자 이탈리안 레스토랑 (2층)', x: 470, y: 803, query: hhvQuery('Fresco Italian Restaurant'), url: HHV_URL },
+    { id: 'starlight_luau', cat: 'food', icon: '🌺', name: 'Waikiki Starlight Luau', desc: '그레이트 론에서 열리는 루아우 디너쇼', x: 370, y: 1013, query: hhvQuery('Waikiki Starlight Luau'), url: HHV_URL },
 
-    { id: 'tapa_pool', cat: 'pool', icon: '🏊', name: 'Tapa Pool', desc: '타파 타워 · 다이아몬드 헤드 타워 사이 수영장', x: 240, y: 132, query: hhvQuery('Tapa Pool'), url: HHV_URL },
-    { id: 'alii_pool', cat: 'pool', icon: '🏊', name: "Ali'i Pool", desc: '알리 타워 수영장', x: 410, y: 62, query: hhvQuery("Ali'i Pool"), url: HHV_URL },
-    { id: 'kalia_pool', cat: 'pool', icon: '🏊', name: '칼리아 성인용 수영장', desc: '칼리아 타워 성인 전용 수영장', x: 80, y: 325, query: hhvQuery('Kalia Tower Pool'), url: HHV_URL },
+    { id: 'tapa_pool', cat: 'pool', icon: '🏊', name: '타파 풀장', desc: '타파 타워 · 더 아칼라 채플 사이 수영장', x: 818, y: 545, query: hhvQuery('Tapa Pool'), url: HHV_URL },
+    { id: 'kalia_pool', cat: 'pool', icon: '🏊', name: '칼리아 풀 (만 18세 이상)', desc: '칼리아 타워 성인 전용 수영장', x: 490, y: 235, query: hhvQuery('Kalia Tower Pool'), url: HHV_URL },
 
-    { id: 'front_desk', cat: 'service', icon: '🛎️', name: '메인 로비 · 프런트 데스크', desc: '메인 로비 프런트 데스크 · 발레파킹 & 콜택시 · 투어&활동 데스크', x: 385, y: 178, query: hhvQuery('Main Lobby'), url: HHV_URL },
-    { id: 'self_parking', cat: 'service', icon: '🅿️', name: '셀프 주차 차고 (단지 내)', desc: '레인보우 바자 아래 단지 내 셀프 주차장', x: 237, y: 386, query: hhvQuery('Self Parking Garage'), url: HHV_URL },
-    { id: 'rideshare', cat: 'service', icon: '🚕', name: '승차 공유 픽업', desc: '우버·리프트 승차 위치', x: 249, y: 42, query: hhvQuery('Rideshare Pickup'), url: HHV_URL },
-    { id: 'baggage', cat: 'service', icon: '🧳', name: '수하물 센터', desc: '짐 보관 · 수하물 센터', x: 207, y: 42, query: hhvQuery('Bell Desk'), url: HHV_URL },
-    { id: 'abc_bazaar', cat: 'service', icon: '🏪', name: 'ABC 스토어 (레인보우 바자)', desc: '레인보우 바자 ABC 스토어', x: 263, y: 292, query: hhvQuery('ABC Store Rainbow Bazaar'), url: HHV_URL },
-    { id: 'abc_tapa', cat: 'service', icon: '🏪', name: 'ABC 스토어 · 투어 데스크 (타파)', desc: '타파 타워 ABC 스토어 · 투어&활동 데스크', x: 110, y: 145, query: hhvQuery('ABC Store Tapa Tower'), url: HHV_URL },
-    { id: 'tour_rainbow', cat: 'service', icon: '🎟️', name: '투어 데스크 (레인보우 타워)', desc: '레인보우 타워 투어&활동 데스크', x: 491, y: 202, query: hhvQuery('Rainbow Tower Activities Desk'), url: HHV_URL },
-    { id: 'atlantis', cat: 'service', icon: '🚤', name: '아틀란티스 잠수함 데스크', desc: '아틀란티스 잠수함 투어 데스크', x: 476, y: 106, query: hhvQuery('Atlantis Submarines'), url: HHV_URL },
-    { id: 'cruise_desk', cat: 'service', icon: '⛵', name: '와이키키 크루즈 데스크', desc: '안내도 표기: 포스트 와이키키 크루즈 데스크', x: 490, y: 72, query: hhvQuery('Waikiki Cruise Desk'), url: HHV_URL },
-    { id: 'mandara', cat: 'service', icon: '💆', name: '만다라 스파 & 피트니스 센터', desc: '칼리아 타워 스파 · 피트니스 센터', x: 80, y: 342, query: hhvQuery('Mandara Spa'), url: HHV_URL }
+    { id: 'front_desk', cat: 'service', icon: '🛎️', name: '메인 로비 프런트 데스크', desc: '메인 로비 프런트 데스크 (옆에 ATM · 액티비티 데스크 · 컨시어지)', x: 720, y: 808, query: hhvQuery('Main Lobby Front Desk'), url: HHV_URL },
+    { id: 'valet_taxi', cat: 'service', icon: '🚕', name: '발레파킹 및 택시', desc: '메인 로비 앞 발레파킹 · 택시 승차', x: 530, y: 910, query: hhvQuery('Valet Taxi'), url: HHV_URL },
+    { id: 'rideshare', cat: 'service', icon: '🚗', name: 'Uber & Lyft 픽업', desc: '다이아몬드 헤드 타워 쪽 차량 공유 승차 위치', x: 1023, y: 555, query: hhvQuery('Uber Lyft Pickup'), url: HHV_URL },
+    { id: 'bus_terminal', cat: 'service', icon: '🚌', name: '그랜드 아일랜더 버스 터미널', desc: '그랜드 아일랜더 1층 버스 터미널', x: 935, y: 300, query: hhvQuery('Grand Islander Bus Terminal'), url: HHV_URL },
+    { id: 'parking_entrance', cat: 'service', icon: '🅿️', name: '주차장 입구 (단지 내)', desc: '미드퍼시픽 컨퍼런스 센터 건물 주차장 입구', x: 330, y: 310, query: hhvQuery('Parking Entrance'), url: HHV_URL },
+    { id: 'parking_elevator', cat: 'service', icon: '🛗', name: '주차장 엘리베이터', desc: '레인보우 바자 쪽 주차장 엘리베이터', x: 400, y: 573, query: hhvQuery('Parking Elevator'), url: HHV_URL },
+    { id: 'abc_bazaar', cat: 'service', icon: '🏪', name: 'ABC 스토어 (레인보우 바자)', desc: '레인보우 바자 ABC 스토어', x: 412, y: 440, query: hhvQuery('ABC Store Rainbow Bazaar'), url: HHV_URL },
+    { id: 'abc_tapa', cat: 'service', icon: '🏪', name: 'ABC 스토어 (타파 타워)', desc: '타파 타워 ABC 스토어', x: 650, y: 335, query: hhvQuery('ABC Store Tapa Tower'), url: HHV_URL },
+    { id: 'activity_tapa', cat: 'service', icon: '🎟️', name: '액티비티 데스크 (타파 타워)', desc: '타파 타워 액티비티 데스크', x: 700, y: 473, query: hhvQuery('Tapa Tower Activity Desk'), url: HHV_URL },
+    { id: 'activity_lobby', cat: 'service', icon: '🎟️', name: '액티비티 데스크 (메인 로비)', desc: '메인 로비 액티비티 데스크', x: 745, y: 757, query: hhvQuery('Main Lobby Activity Desk'), url: HHV_URL },
+    { id: 'concierge_lobby', cat: 'service', icon: '💁', name: '컨시어지 (메인 로비)', desc: '메인 로비 컨시어지 데스크', x: 765, y: 855, query: hhvQuery('Concierge Main Lobby'), url: HHV_URL },
+    { id: 'concierge_rainbow', cat: 'service', icon: '💁', name: '컨시어지 (레인보우 타워)', desc: '레인보우 타워 컨시어지 데스크', x: 590, y: 1063, query: hhvQuery('Rainbow Tower Concierge'), url: HHV_URL },
+    { id: 'concierge_lagoon', cat: 'service', icon: '💁', name: '컨시어지 (라군 타워)', desc: '라군 타워 컨시어지 데스크', x: 215, y: 993, query: hhvQuery('Lagoon Tower Concierge'), url: HHV_URL },
+    { id: 'concierge_waikikian', cat: 'service', icon: '💁', name: '컨시어지 (그랜드 와이키키안)', desc: '그랜드 와이키키안 컨시어지 데스크', x: 145, y: 697, query: hhvQuery('Grand Waikikian Concierge'), url: HHV_URL },
+    { id: 'atm_tapa', cat: 'service', icon: '🏧', name: 'ATM (타파 타워)', desc: '타파 타워 ATM', x: 705, y: 247, query: hhvQuery('ATM Tapa Tower'), url: HHV_URL },
+    { id: 'atm_lobby', cat: 'service', icon: '🏧', name: 'ATM (메인 로비)', desc: '메인 로비 ATM', x: 723, y: 733, query: hhvQuery('ATM Main Lobby'), url: HHV_URL },
+    { id: 'cinema_4dx', cat: 'service', icon: '🎬', name: '4DX 시네마 & 아케이드', desc: '타파 타워 4DX 시네마 · 아케이드', x: 770, y: 450, query: hhvQuery('4DX Cinema Arcade'), url: HHV_URL },
+    { id: 'business_center', cat: 'service', icon: '📮', name: '우체국 · 비즈니스 & 패키지 센터', desc: '다이아몬드 헤드 타워 옆 우체국 · 비즈니스 · 택배 센터', x: 960, y: 465, query: hhvQuery('Business Center Post Office'), url: HHV_URL },
+    { id: 'atlantis', cat: 'service', icon: '🚤', name: '아틀란티스 잠수함', desc: '슈퍼 풀 해변 쪽 아틀란티스 잠수함 데스크', x: 860, y: 1088, query: hhvQuery('Atlantis Submarines'), url: HHV_URL },
+    { id: 'port_cruise', cat: 'service', icon: '⛵', name: '포트 와이키키 크루즈', desc: '알리이 타워 앞 해변 크루즈 승선 데스크', x: 1020, y: 1070, query: hhvQuery('Port Waikiki Cruises'), url: HHV_URL },
+    { id: 'port_hilton', cat: 'service', icon: '⛵', name: '포트 힐튼 (카타마란)', desc: '레인보우 타워 앞 바다 카타마란 선착장', x: 855, y: 1420, query: hhvQuery('Port Hilton Catamaran'), url: HHV_URL },
+    { id: 'mandara', cat: 'service', icon: '💆', name: '만다라 스파 & 피트니스 센터', desc: '칼리아 타워 4층 스파 · 살롱 · 피트니스 센터', x: 355, y: 225, query: hhvQuery('Mandara Spa'), url: HHV_URL },
+    { id: 'akala_chapel', cat: 'service', icon: '💒', name: '더 아칼라 채플', desc: '타파 풀장 옆 웨딩 채플', x: 835, y: 645, query: hhvQuery('Akala Chapel'), url: HHV_URL },
+    { id: 'white_chapel', cat: 'service', icon: '💒', name: '화이트 비치 채플', desc: '파라다이스 풀 · 라군 옆 웨딩 채플', x: 60, y: 1165, query: hhvQuery('White Beach Chapel'), url: HHV_URL }
   ];
 
   function getResortSpots() {
@@ -1478,7 +1497,7 @@
 
   function initResortMap() {
     if (resortMap) return;
-    resortMap = L.map('resort-leaflet-map', { crs: L.CRS.Simple, minZoom: -1, maxZoom: 2, zoomSnap: 0.25, attributionControl: false, maxBounds: [[-60, -60], [RESORT_IMG_H + 60, RESORT_IMG_W + 60]] });
+    resortMap = L.map('resort-leaflet-map', { crs: L.CRS.Simple, minZoom: -2.5, maxZoom: 1, zoomSnap: 0.25, attributionControl: false, maxBounds: [[-120, -120], [RESORT_IMG_H + 120, RESORT_IMG_W + 120]] });
     L.imageOverlay(RESORT_MAP_IMG, resortBounds).addTo(resortMap);
     resortMap.fitBounds(resortBounds);
 
@@ -1526,7 +1545,7 @@
       resortFocusMarker.bindPopup(`<b>${sp.icon} ${sp.name}</b><br>${sp.desc}`, { offset: [0, -10] });
       resortFocusMarker.openPopup();
     }
-    resortMap.setView([entry.lat, entry.lng], 0.75, { animate: true });
+    resortMap.setView([entry.lat, entry.lng], -0.5, { animate: true });
     updateResortDetailCard(sp);
     document.getElementById('resort-leaflet-map').scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
