@@ -4,6 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>🌺 하와이 3가족 오아후 트립 (2027.02.18 ~ 02.28)</title>
+  <!-- 앱 설치 (PWA) -->
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#006493">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="하와이 트립">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Leaflet CSS & JS -->
@@ -370,6 +378,9 @@
       <div class="flex items-center gap-1.5">
         <button id="open-flight-modal-btn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11.5px] font-bold bg-slate-900/65 text-white border border-white/25 nowrap-btn">
           ✈️ 대한항공 KE051/052
+        </button>
+        <button id="install-app-btn" type="button" class="hidden inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11.5px] font-extrabold bg-white text-sky-800 border border-white nowrap-btn">
+          📲 설치
         </button>
         <button id="share-portal-btn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11.5px] font-bold bg-slate-900/65 text-white border border-white/25 nowrap-btn">
           🔗 공유
@@ -803,6 +814,22 @@
       </div>
 
       <div id="guide-sub-tips" class="guide-subpage hidden space-y-3">
+        <div class="m3-card p-4 space-y-2.5">
+          <h3 class="text-[15.5px] font-extrabold text-slate-900">📲 휴대폰에 앱으로 설치하기</h3>
+          <p class="text-[12.5px] text-slate-600">설치하면 홈 화면 아이콘으로 바로 열리고, 주소창 없이 앱처럼 전체 화면으로 보입니다. 인터넷이 끊겨도 마지막으로 본 일정·단지 안내도는 열립니다.</p>
+          <button id="install-app-btn2" type="button" class="hidden w-full py-2.5 rounded-xl bg-sky-700 text-white text-[13px] font-extrabold">📲 지금 설치하기</button>
+          <div id="install-done-msg" class="hidden p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-[12px] font-bold text-emerald-800">✅ 앱으로 실행 중입니다.</div>
+          <div class="text-[12px] text-slate-700 leading-relaxed bg-slate-50 rounded-xl p-2.5 border border-slate-200">
+            <b>안드로이드 (크롬)</b><br>
+            ① 크롬에서 이 주소를 엽니다<br>
+            ② 오른쪽 위 <b>⋮</b> 메뉴 → <b>앱 설치</b> 또는 <b>홈 화면에 추가</b><br>
+            ③ <b>설치</b>를 누르면 홈 화면에 🌅 OAHU 아이콘이 생깁니다
+          </div>
+          <div class="text-[12px] text-slate-700 leading-relaxed bg-slate-50 rounded-xl p-2.5 border border-slate-200">
+            <b>아이폰 (사파리)</b><br>
+            아래 <b>공유 버튼(□↑)</b> → <b>홈 화면에 추가</b>
+          </div>
+        </div>
         <div class="m3-card p-4 bg-gradient-to-br from-sky-50 to-white border-sky-200 space-y-2.5">
           <h3 class="text-[15.5px] font-extrabold text-slate-900">📸 3가족 실시간 공유 사진첩</h3>
           <p class="text-[12.5px] text-slate-600">여행 중 촬영한 사진을 아래 구글 포토 공유 앨범에 함께 올려주세요.</p>
@@ -2252,6 +2279,29 @@
     const flightModal = document.getElementById('flight-modal');
     document.getElementById('open-flight-modal-btn').addEventListener('click', () => { flightModal.classList.remove('hidden'); flightModal.classList.add('flex'); });
     document.getElementById('close-flight-modal-btn').addEventListener('click', () => { flightModal.classList.add('hidden'); flightModal.classList.remove('flex'); });
+
+    // 앱 설치 (PWA)
+    const installBtns = [document.getElementById('install-app-btn'), document.getElementById('install-app-btn2')];
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    if (isStandalone) document.getElementById('install-done-msg').classList.remove('hidden');
+    let deferredInstall = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstall = e;
+      installBtns.forEach(b => b && b.classList.remove('hidden'));
+    });
+    installBtns.forEach(b => b && b.addEventListener('click', async () => {
+      if (!deferredInstall) { showToast('크롬 ⋮ 메뉴 → 앱 설치를 눌러 주세요.'); return; }
+      deferredInstall.prompt();
+      const choice = await deferredInstall.userChoice;
+      deferredInstall = null;
+      installBtns.forEach(x => x && x.classList.add('hidden'));
+      if (choice && choice.outcome === 'accepted') showToast('홈 화면에 설치되었습니다.');
+    }));
+    window.addEventListener('appinstalled', () => installBtns.forEach(x => x && x.classList.add('hidden')));
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
 
     document.getElementById('share-portal-btn').addEventListener('click', () => copyTextToClipboard(window.location.href, '앱 링크가 복사되었습니다.'));
     const copyAlbumBtn = document.getElementById('copy-album-url-btn');
