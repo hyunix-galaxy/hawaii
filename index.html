@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611040747">
+  <link rel="stylesheet" href="/tailwind.css?v=202611040753">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -1250,6 +1250,13 @@
       '해외 발급 카드는 주유기가 미국 우편번호(ZIP)를 물으며 결제가 막힐 수 있어요. 막히면 매장 안에서 Costco Shop Card(충전식 선불카드)를 사서 그 카드로 주유하는 방법이 있어요 (일반적으로 알려진 방법이니 현장에서 확인).',
       '셀프 주유예요. 렌터카 연료 종류(레귤러)를 주유구 덮개나 계약서에서 확인하고, 점심 전후에는 줄이 길 수 있어요.'
     ] }, after: 'HNL 공항 픽업' },
+    // 한인택시 (호놀룰루)
+    { day: 'D11', addItem: { place: '한인택시 (호놀룰루)', tips: [
+      '하나택시 & 투어(Hana Taxi & Tour): 와이키키와 한인타운 사이에 있는 한인 택시회사로, 정액 요금 공항 픽업·샌딩을 해요. 마이리얼트립에서도 예약할 수 있어요 (평점 4.5, 후기 329개, 최근 후기 2026.07).',
+      '그 밖에 알려진 한인택시 전화번호: 하나택시 (808) 955-2255 · 로얄택시 (808) 946-8282 · 포니택시 (808) 944-8282 · 코아택시 (808) 944-0000 — 2019년 하와이 여행 카페 정보라 지금은 다를 수 있으니 예약 전에 꼭 확인하세요.',
+      '요금은 공항↔와이키키 팁 포함 약 $40~50 (같은 2019년 정보) · 대부분 승용차 기준 4명이라, 4~5명 + 캐리어 8개 정도면 밴(미니밴)으로 요청하거나 2대로 나누세요.',
+      '한국어로 시간·인원·캐리어 수를 정확히 말할 수 있는 게 장점이에요. 가격만 보면 Charley\'s 정액($38)이 조금 더 싸요.'
+    ] }, after: "Charley's Taxi (공항)" },
     // D11: 택시 + 미니밴 두 팀 이동
     { day: 'D11', addItem: { place: "Charley's Taxi (공항)", tips: ["와이키키→공항 정액 $38 · 미니밴 한 대에 짐 있으면 5명까지 · 1인당 캐리어 1 + 기내 가방 1 무료, 추가 짐 개당 $0.75 · 팁 15~20% 별도 (Charley's 공식).", '하루 전에 웹사이트나 전화(808-233-3333)로 예약하세요. 힐튼 메인 로비에 Charley\'s Taxi 데스크도 있어요 (영문 지도 125번).', '택시팀이 먼저 대한항공 카운터에서 캐리어를 부쳐 두면, 미니밴팀은 렌터카 반납 후 바로 합류할 수 있어요.'] }, after: '체크아웃 · 짐 보관' },
     // D8: 파인애플 농장 워크업 투어 → Dole Plantation 기념품샵 → 와이켈레 점심·쇼핑
@@ -1600,10 +1607,11 @@
     { day: 11, slot: '오전', set: { desc: '🧳 10:00 체크아웃 ➔ 두 팀으로 나눠 이동: 택시팀(4~5명 + 캐리어 대부분)은 공항 직행 · 미니밴팀(나머지 + 남은 짐)은 코스트코 경유' } },
     { day: 11, addSlot: { label: '택시', color: 'bg-yellow-100 text-yellow-900', placeName: "Charley's Taxi ➔ HNL 공항", placeId: 'charleys', time: '10:30', mapQuery: 'Daniel K. Inouye International Airport Terminal 2 Honolulu HI', siteUrl: 'https://www.charleystaxi.com/airport',
       desc: "🚕 택시팀: 10:30 Charley's Taxi 미니밴(짐 있으면 5명까지)으로 공항 제2터미널 직행 ➔ 대한항공 카운터에서 캐리어 먼저 부치기",
-      note: 'ℹ️ 와이키키→공항 정액 $38 (팁 15~20% 별도) · 1인당 캐리어 1 + 기내 가방 1 무료, 추가 짐 개당 $0.75 · 하루 전 예약 (808-233-3333)' }, after: '오전' },
+      note: "ℹ️ 와이키키→공항 정액 $38 (팁 15~20% 별도) · 1인당 캐리어 1 + 기내 가방 1 무료, 추가 짐 개당 $0.75 · 하루 전 예약 (808-233-3333) · 한국어가 편하면 한인택시(하나택시 등)도 가능 — 꿀팁 참고" }, after: '오전' },
     { day: 11, slot: '점심', set: { desc: '⛽ 미니밴팀: 코스트코 이윌레이 만충 주유 및 푸드코트 이른 점심 (택시팀은 공항에서 점심)' } },
     { day: 11, slot: '오후', set: { desc: '✈️ 미니밴팀: 11:50 공항 렌터카 반납 ➔ 셔틀로 터미널 이동, 택시팀과 합류 ➔ 14:25 대한항공 KE052 호놀룰루 출발' } },
-    { day: 11, addCost: "Charley's Taxi 와이키키→공항 정액 $38 (팁 별도, 추가 짐 개당 $0.75)" },
+    { day: 11, addCost: "Charley's Taxi 와이키키→공항 정액 $38 (팁 별도, 추가 짐 개당 $0.75) · 한인택시는 미터·정액 약 $40~50대 (업체별 확인)" },
+    { day: 11, costIndex: 1, cost: 'Costco Gas 레귤러 약 $5.10/갤런 (2026.11 공식 페이지 $5.099, 수시 변동)' },
     // 카할라 일정: D9(금) 애프터눈 티 → D10(토) Plumeria Beach House 점심으로 이동 (2026.11.04 결정)
     { day: 9, daySet: { title: 'Day 9 · 진주만 투어 · 휴식 & 2차 불꽃놀이', badge: '불꽃놀이 피날레' } },
     { day: 9, slot: '오후', set: { placeName: "Lappert's Hawaii", mapQuery: "Lappert's Hawaii Hilton Hawaiian Village Honolulu HI", siteUrl: 'https://www.lappertshawaii.com/', extraLinks: [], desc: '🍦 숙소 복귀 후 휴식 · 라퍼츠 하와이 수제 와플콘 아이스크림 & 지인 선물 정리' } },
@@ -2029,7 +2037,7 @@
     'Fook Yuen Seafood': 'fookyuen', "Tantalus Lookout (Pu'u Ualaka'a)": 'tantalus', 'Makapuu Point': 'halona',
     "Boots & Kimo's": 'boots', 'Lanikai Beach': 'lanikai', 'Diamond Head': 'diamond', "Wolfgang's Steakhouse": 'wolfgang',
     'Kualoa Ranch': 'kualoa', "Giovanni's Shrimp Truck": 'giovanni_haleiwa', "Ho'omaluhia Botanical Garden": 'hoomaluhia',
-    'Dole Plantation': 'dole', 'Dole Pineapple Farm Tour & Store': 'dole_farm', 'Enterprise 렌트카 (힐튼 단지)': 'enterprise_hhv', 'Costco 주유 (이윌레이)': 'costco_gas', "Charley's Taxi (공항)": 'charleys', "Kaya's Store": 'kayas',   // Dole Plantation 꿀팁은 TIP_UPDATES로 기념품샵 내용으로 바꿈
+    'Dole Plantation': 'dole', 'Dole Pineapple Farm Tour & Store': 'dole_farm', 'Enterprise 렌트카 (힐튼 단지)': 'enterprise_hhv', 'Costco 주유 (이윌레이)': 'costco_gas', '한인택시 (호놀룰루)': 'charleys', "Charley's Taxi (공항)": 'charleys', "Kaya's Store": 'kayas',   // Dole Plantation 꿀팁은 TIP_UPDATES로 기념품샵 내용으로 바꿈
     'Waikele Premium Outlets': 'waikele', 'Pearl Harbor': 'pearl',
     'The Kahala — Plumeria Beach House': 'plumeria'
   };
@@ -2149,7 +2157,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611040747').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611040753').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -3247,8 +3255,8 @@
     { place: 'kualoa', set: { note: '무비 사이트 투어 11:20 회차(오전 마지막) 예약 · 10:45까지 도착 · UTV 랩터 투어로 하면 약 2시간' } },
     { add: { place: 'enterprise_hhv', time: '08:00', lead: '2~4주 전', tone: 'amber', note: 'D7 하루 렌트카 1대 (미니밴과 2대로 나눠 이동) · 08:00 픽업, 같은 날 반납 · 소형~중형 승용차/SUV면 충분',
       costKeys: ['렌트카'], links: [{ label: 'Enterprise 힐튼 지점', url: 'https://www.enterprise.co.uk/en/car-hire/locations/us/hi/hilton-hawaiian-village-36hv.html' }] } },
-    { add: { place: 'charleys', lead: '하루 전', tone: 'amber', note: 'D11 택시팀 공항 이동 (미니밴 1대, 짐 있으면 5명까지) · 와이키키→공항 정액 · 예약 시 인원·캐리어 수 알려 주기',
-      costKeys: ["Charley's"], links: [{ label: "Charley's Taxi 공항 예약", url: 'https://www.charleystaxi.com/airport' }] } },
+    { add: { place: 'charleys', lead: '하루 전', tone: 'amber', note: "D11 택시팀 공항 이동 (미니밴 1대, 짐 있으면 5명까지) · 와이키키→공항 정액 · 예약 시 인원·캐리어 수 알려 주기 · 한국어 예약을 원하면 한인택시(하나택시 & 투어 등)도 가능",
+      costKeys: ["Charley's"], links: [{ label: "Charley's Taxi 공항 예약", url: 'https://www.charleystaxi.com/airport' }, { label: '하나택시 (마이리얼트립)', url: 'https://www.myrealtrip.com/guides/9170' }] } },
     { add: { place: 'dole_farm', lead: '예약 없음', tone: 'sky', note: '워크업 투어는 예약 없이 현장 참여 · 당일 아침 매장(808-219-9398)에 운영 여부 전화 확인',
       costKeys: ['워크업'], links: [{ label: '농장 투어 안내', url: 'https://www.dolefruithawaii.com/pages/pineapple-farm-tours' }] } }
   ];
