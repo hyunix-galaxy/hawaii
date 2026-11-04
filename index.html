@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611040821">
+  <link rel="stylesheet" href="/tailwind.css?v=202611040827">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -860,7 +860,7 @@
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block text-[12px] font-bold text-slate-600 mb-1">달러 ($)</label>
-            <input id="fx-usd" type="number" inputmode="decimal" step="0.01" placeholder="0.00" class="w-full px-3 py-3 rounded-xl border border-slate-300 text-[18px] font-extrabold">
+            <input id="fx-usd" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00" class="w-full px-3 py-3 rounded-xl border border-slate-300 text-[18px] font-extrabold">
           </div>
           <div>
             <label class="block text-[12px] font-bold text-slate-600 mb-1">원 (₩)</label>
@@ -876,7 +876,7 @@
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block text-[12px] font-bold text-slate-600 mb-1">표시 가격 ($)</label>
-            <input id="fx-bill" type="number" inputmode="decimal" step="0.01" placeholder="0.00" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-[16px] font-extrabold">
+            <input id="fx-bill" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-[16px] font-extrabold">
           </div>
           <div>
             <label class="block text-[12px] font-bold text-slate-600 mb-1">나눌 인원</label>
@@ -2250,7 +2250,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611040821').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611040827').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -3765,30 +3765,50 @@
     syncFxInputs('usd');
     renderBill();
   }
+  // 금액 입력칸: 세 자리마다 쉼표 (decimals = 소수 자리 수, 원화 0 · 달러 2). 입력 중인 커서 위치는 유지
+  function formatMoneyInput(el, decimals) {
+    const v = el.value;
+    const caret = el.selectionStart != null ? el.selectionStart : v.length;
+    const keep = ch => /\d/.test(ch) || (decimals && ch === '.');
+    const keptBefore = [...v.slice(0, caret)].filter(keep).length;
+    let raw = [...v].filter(keep).join('');
+    if (decimals) {
+      const dot = raw.indexOf('.');
+      if (dot >= 0) raw = raw.slice(0, dot + 1) + raw.slice(dot + 1).replace(/\./g, '').slice(0, decimals);
+    }
+    let [ip, fp] = raw.split('.');
+    ip = (ip || '').replace(/^0+(?=\d)/, '');
+    if (fp !== undefined && ip === '') ip = '0';
+    const out = (ip ? Number(ip).toLocaleString('en-US') : '') + (fp !== undefined ? '.' + fp : '');
+    el.value = out;
+    if (document.activeElement === el) {
+      let pos = 0, seen = 0;
+      while (pos < out.length && seen < keptBefore) { if (keep(out[pos])) seen++; pos++; }
+      try { el.setSelectionRange(pos, pos); } catch (e) {}
+    }
+    const n = parseFloat(out.replace(/,/g, ''));
+    return isNaN(n) ? null : n;
+  }
+
   function syncFxInputs(from) {
     const rate = fxRate();
     const u = document.getElementById('fx-usd'), k = document.getElementById('fx-krw');
     if (!rate || !u) return;
-    if (from === 'usd') k.value = u.value !== '' ? fmtWon(parseFloat(u.value) * rate) : '';
+    if (from === 'usd') {
+      const n = formatMoneyInput(u, 2);
+      k.value = n != null ? fmtWon(n * rate) : '';
+    }
     if (from === 'krw') {
-      // 원화 칸: 숫자만 남기고 세 자리마다 쉼표 (입력 중인 커서 위치는 유지)
-      const caret = k.selectionStart != null ? k.selectionStart : k.value.length;
-      const digitsBefore = k.value.slice(0, caret).replace(/\D/g, '').length;
-      const raw = k.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
-      k.value = raw ? Number(raw).toLocaleString('ko-KR') : '';
-      if (document.activeElement === k) {
-        let pos = 0, seen = 0;
-        while (pos < k.value.length && seen < digitsBefore) { if (/\d/.test(k.value[pos])) seen++; pos++; }
-        try { k.setSelectionRange(pos, pos); } catch (e) {}
-      }
-      u.value = raw ? (Number(raw) / rate).toFixed(2) : '';
+      const n = formatMoneyInput(k, 0);
+      u.value = n != null ? fmtUsd(n / rate) : '';
     }
   }
   function renderBill() {
     const out = document.getElementById('fx-bill-result');
     if (!out) return;
     const rate = fxRate();
-    const bill = parseFloat(document.getElementById('fx-bill').value);
+    const billEl = document.getElementById('fx-bill');
+    const bill = formatMoneyInput(billEl, 2);
     const people = parseInt(document.getElementById('fx-people').value, 10) || 1;
     const withTax = document.getElementById('fx-tax').checked;
     document.querySelectorAll('#fx-tip [data-tip]').forEach(b => b.classList.toggle('fx-on', parseFloat(b.dataset.tip) === fxTip));
