@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611041152">
+  <link rel="stylesheet" href="/tailwind.css?v=202611041158">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -933,6 +933,10 @@
           <h3 class="text-[15px] font-extrabold text-slate-900">✈️ 대한항공 (Korean Air) 공식 스케줄</h3>
           <div id="flight-list" class="space-y-2.5"></div>
         </div>
+        <div class="m3-card p-4 space-y-3">
+          <h3 class="text-[15px] font-extrabold text-slate-900">🚐 렌터카 (본 예약)</h3>
+          <div id="rental-list" class="space-y-2.5"></div>
+        </div>
       </div>
 
       <div id="guide-sub-check" class="guide-subpage hidden">
@@ -1353,6 +1357,16 @@
       '셀프 주유예요. 렌터카 연료 종류(레귤러)를 주유구 덮개나 계약서에서 확인하고, 점심 전후에는 줄이 길 수 있어요.'
     ] }, after: 'HNL 공항 픽업' },
     // 한인택시 (호놀룰루)
+    { day: 'D1', addItem: { place: 'Dollar 렌터카 픽업 (공항)', tips: [
+      '예약: Dollar Rent A Car (Discount Hawaii Car Rental 통해 예약) · 미니밴 기아 카니발급 8인승 자동 · 2/18 12:00 픽업 ~ 2/28 12:00 반납, 둘 다 공항(300 Rodgers Blvd).',
+      '예약 번호와 예약자 정보는 예약 메일에 있어요. 카운터에서 메일 화면을 보여 주면 돼요.',
+      '포함: 주행거리 무제한 · 세금·수수료 · 자차 면책(LDW, 자기부담금 없음) · 대인·대물 기본(LIS) · 추가 배상(SLI) $300,000 · 무보험차 상해(UMI).',
+      '⚠️ 이미 보험이 포함돼 있으니 카운터에서 권하는 보험·연료 선결제·업그레이드는 필요 없으면 거절하세요. 서명하면 추가된 요금도 내야 해요.',
+      '운전자 본인 이름의 신용카드가 필요해요 (체크카드는 제한이 있을 수 있음). 다른 사람도 운전할 거면 카운터에서 추가 운전자로 등록하세요 (요금은 현장 확인).',
+      '공항 혼잡 시: 운전자만 먼저 렌터카 카운터로 가고, 나머지 일행이 짐을 찾으면 기다리는 시간이 줄어요 (예약 메일 안내).',
+      '문제가 생기면 예약 대행사 Discount Hawaii Car Rental 1-800-292-1930 (현지 808-800-4183).'
+    ] }, after: 'Daniel K. Inouye Airport (HNL)' },
+    { place: '렌터카 반납 · 공항', addTips: ['Dollar 반납 예약은 2/28 12:00 공항이에요. 일정상 11:50 반납이라 여유 있어요. 반납 전 코스트코에서 기름을 채워 두세요.'] },
     { day: 'D11', addItem: { place: '한인택시 (호놀룰루)', tips: [
       '하나택시 & 투어(Hana Taxi & Tour): 와이키키와 한인타운 사이에 있는 한인 택시회사로, 정액 요금 공항 픽업·샌딩을 해요. 마이리얼트립에서도 예약할 수 있어요 (평점 4.5, 후기 329개, 최근 후기 2026.07).',
       '그 밖에 알려진 한인택시 전화번호: 하나택시 (808) 955-2255 · 로얄택시 (808) 946-8282 · 포니택시 (808) 944-8282 · 코아택시 (808) 944-0000 — 2019년 하와이 여행 카페 정보라 지금은 다를 수 있으니 예약 전에 꼭 확인하세요.',
@@ -1663,6 +1677,11 @@
     { day: 5, costIndex: 0, cost: "Boots & Kimo's Banana Pancake w/ Macadamia Nut Sauce $16.99 · Macadamia Nut Sauce Pancakes $15.99 (2026.11 공식 메뉴)" },
     { day: 3, slot: '오전', set: { mapQuery: '66-190 Kamehameha Hwy Haleiwa HI' } },
     { day: 3, costIndex: 0, cost: "Ray's 통닭 1마리 약 $16 (토·일 10:00~16:00경 · 전화 예약 808-351-6258 · 현금 준비)" },
+    // 본 렌터카 예약 확정: Dollar Rent A Car 미니밴 (2/18 12:00 픽업 ~ 2/28 12:00 반납, 공항) (2026.11.04 예약 메일 반영)
+    { day: 1, slot: '오전', set: { desc: '✈️ KE051 인천 22:20 출발 ➔ 호놀룰루 11:10 도착 ➔ 입국·짐 찾기 후 셔틀로 렌터카 센터 이동 ➔ 12:00 Dollar 렌터카 미니밴(기아 카니발급 8인승) 픽업' },
+      note: 'ℹ️ 운전자 본인 명의 신용카드·면허증·국제면허증 지참 · 서명 전에 총액 $937.62와 추가 요금이 붙지 않았는지 확인' },
+    { day: 1, addCost: 'Dollar 렌터카 미니밴 10일 $937.62 (1주 $660.30 + 추가 3일 $277.32 · 세금·수수료·기본 보험 포함, 기름 별도)' },
+    { day: 11, slot: '오후', set: { desc: '✈️ 미니밴팀: 11:50 공항 Dollar 렌터카 반납 (반납 예약 12:00) ➔ 셔틀로 터미널 이동, 택시팀과 합류 ➔ 14:25 대한항공 KE052 호놀룰루 출발' } },
     // 가족 이름: C가족 → 신림 가족 (2026.11.04)
     { day: 4, daySet: { title: 'Day 4 · 후발대 신림 가족 픽업(8인 완전체) & 랍스터' } },
     { day: 4, slot: '오전', set: { desc: '✈️ KE051 후발대(신림 가족 2인) HNL 11:10 도착 픽업 · 8인 완전체 합류!' } },
@@ -2149,7 +2168,7 @@
   };
   // 장소가 아니라 특정 칸에 붙는 꿀팁 ('일차-칸')
   const TIP_SLOT = {
-    '힐튼 금요 불꽃놀이': '2-저녁', '힐튼 2차 불꽃놀이': '9-저녁', 'HNL 공항 픽업': '4-오전',
+    '힐튼 금요 불꽃놀이': '2-저녁', '힐튼 2차 불꽃놀이': '9-저녁', 'HNL 공항 픽업': '4-오전', 'Dollar 렌터카 픽업 (공항)': '1-오전',
     '체크아웃 · 짐 보관': '11-오전', 'Costco 주유': '11-점심', '렌터카 반납 · 공항': '11-오후'
   };
   function allTipItems() {
@@ -2263,7 +2282,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611041152').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611041158').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -3568,6 +3587,8 @@
       costKeys: ['렌트카'], links: [{ label: 'Enterprise 힐튼 지점', url: 'https://www.enterprise.co.uk/en/car-hire/locations/us/hi/hilton-hawaiian-village-36hv.html' }] } },
     { add: { place: 'charleys', lead: '하루 전', tone: 'amber', note: "D11 택시팀 공항 이동 (미니밴 1대, 짐 있으면 5명까지) · 와이키키→공항 정액 · 예약 시 인원·캐리어 수 알려 주기 · 한국어 예약을 원하면 한인택시(하나택시 & 투어 등)도 가능",
       costKeys: ["Charley's"], links: [{ label: "Charley's Taxi 공항 예약", url: 'https://www.charleystaxi.com/airport' }, { label: '하나택시 (마이리얼트립)', url: 'https://www.myrealtrip.com/guides/9170' }] } },
+    { add: { place: 'hnl', time: '12:00', lead: '✅ 예약 완료', tone: 'emerald', note: 'Dollar 렌터카 미니밴 (기아 카니발급 8인승) · 2/18 12:00 공항 픽업 ~ 2/28 12:00 공항 반납 · 예약 번호는 예약 메일 참고',
+      costKeys: ['Dollar'], links: [{ label: 'Discount Hawaii Car Rental', url: 'https://www.discounthawaiicarrental.com' }] } },
     { add: { place: 'dole_farm', lead: '예약 없음', tone: 'sky', note: '워크업 투어는 예약 없이 현장 참여 · 당일 아침 매장(808-219-9398)에 운영 여부 전화 확인',
       costKeys: ['워크업'], links: [{ label: '농장 투어 안내', url: 'https://www.dolefruithawaii.com/pages/pineapple-farm-tours' }] } }
   ];
@@ -3624,7 +3645,31 @@
     { kind: '출국', no: 'KE051', aircraft: 'B787-9', route: '인천(ICN T2) 22:20 ➔ 호놀룰루(HNL T2) 11:10', note: '선발대 6인: 2/18(목) · 후발대 2인: 2/21(일) 동일 스케줄', tone: 'sky' },
     { kind: '귀국', no: 'KE052', aircraft: 'B787-9', route: '호놀룰루(HNL T2) 14:25 ➔ 인천(ICN T2) 20:20 (+1일)', note: '8인 전원: 2/28(일) 출발 ➔ 3/1(월) 도착', tone: 'slate' }
   ];
+  /* [DATA] 렌터카 — 2026.11.04 예약 메일 기준 (예약 번호·연락처는 메일에서 확인) */
+  const RENTALS = [
+    { title: 'Dollar Rent A Car · 미니밴', car: '기아 카니발 또는 동급 · 8인승 · 자동 · 에어컨',
+      pick: '2/18 (목) 12:00 · 호놀룰루 공항 (300 Rodgers Blvd)', ret: '2/28 (일) 12:00 · 호놀룰루 공항',
+      price: '$937.62 (1주 $660.30 + 추가 3일 $277.32) · 현지 결제',
+      incl: '주행거리 무제한 · 세금·수수료 · 자차 면책 LDW(자기부담금 없음) · LIS · 추가 배상 SLI $300,000 · 무보험차 상해',
+      note: 'Discount Hawaii Car Rental 통해 예약 · 문의 1-800-292-1930', url: 'https://www.discounthawaiicarrental.com' }
+  ];
+  function renderRentals() {
+    const el = document.getElementById('rental-list');
+    if (!el) return;
+    el.innerHTML = RENTALS.map(r => `
+      <div class="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-1">
+        <div class="flex items-center justify-between gap-2"><div class="font-extrabold text-emerald-900">${r.title}</div><span class="px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[11.5px] font-extrabold nowrap-btn">예약 완료</span></div>
+        <div class="text-[13px] font-bold text-slate-800">${r.car}</div>
+        <div class="text-[12.5px] text-slate-700">• 픽업: ${r.pick}</div>
+        <div class="text-[12.5px] text-slate-700">• 반납: ${r.ret}</div>
+        <div class="text-[12.5px] font-bold text-slate-800">• 요금: ${r.price}</div>
+        <div class="text-[12px] text-slate-600">• 포함: ${r.incl}</div>
+        <div class="text-[12px] text-slate-600">• ${r.note}</div>
+        <div class="pt-1"><a href="${r.url}" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 예약 사이트 ↗</a></div>
+      </div>`).join('');
+  }
   function renderFlights() {
+    renderRentals();
     const html = FLIGHTS.map(f => `
       <div class="p-3 rounded-2xl ${f.tone === 'sky' ? 'bg-sky-50/70 border border-sky-200' : 'bg-slate-50 border border-slate-200'} space-y-1">
         <div class="font-extrabold ${f.tone === 'sky' ? 'text-sky-900' : 'text-slate-800'}">${f.kind} · ${f.no} (${f.aircraft})</div>
