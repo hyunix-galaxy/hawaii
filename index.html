@@ -12,15 +12,15 @@
   <meta name="apple-mobile-web-app-title" content="하와이 트립">
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Leaflet CSS & JS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- Supabase (지출 공유 저장소) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Google Fonts: Pretendard -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
+  <link rel="stylesheet" href="/tailwind.css?v=202611040536">
+  <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
+  <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
+  <script defer src="/vendor/leaflet/leaflet.js"></script>
+  <script defer src="/vendor/supabase.js"></script>
+  <!-- 글꼴: Pretendard (화면에 쓰인 글자만 나눠 받는 방식) -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css" />
   <style>
     :root {
       --m3-primary: #006493;
@@ -350,6 +350,35 @@
       font-weight: 800;
     }
 
+    /* ---- 보기 편하게 (2026.11 보정): 터치 영역 34px 이상, 작은 글씨 키움 ---- */
+    .gmap-chip, .gnav-chip, .ext-link-chip, .menu-chip, .tip-chip {
+      min-height: 34px;
+      padding: 6px 12px;
+      font-size: 12.5px;
+    }
+    .menu-chip, .tip-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      border-radius: 9999px;
+      font-weight: 800;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .menu-chip { background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; }
+    .tip-chip  { background: #F8FAFC; color: #334155; border: 1px solid #CBD5E1; }
+    .day-chip { min-height: 46px; font-size: 13px; }
+    .oahu-filter-chip { min-height: 40px; font-size: 13px; }
+    .day-chip.is-today:not(.active) { border: 2px solid #0284C7; color: #075985; background: #F0F9FF; }
+    .m3-nav-item { font-size: 12px; }
+
+    /* 일정표 외 화면에서 헤더를 한 줄로 */
+    .hero-banner.hero-compact { padding: 8px 14px; }
+    .hero-compact .hero-room { display: none !important; }
+    .hero-compact .hero-title { margin-bottom: 0; }
+    .hero-compact .hero-title h1 { font-size: 16px; }
+    .hero-compact .hero-top { margin-bottom: 6px; }
+
     #app-toast {
       position: fixed;
       bottom: 88px;
@@ -453,7 +482,7 @@
 <div class="app-shell">
   <!-- TOP HERO HEADER (Time-Adaptive Hawaiian Panorama) -->
   <header id="app-hero-banner" class="hero-banner">
-    <div class="flex items-center justify-between gap-1.5 mb-2.5">
+    <div class="hero-top flex items-center justify-between gap-1.5 mb-2.5">
       <button id="cycle-theme-btn" type="button" title="터치하여 시간대별 풍경 미리보기 전환"
               class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-amber-400 text-slate-950 nowrap-btn shadow-sm cursor-pointer">
         <span id="theme-badge-label">☀️ 에메랄드 와이키키</span>
@@ -472,7 +501,7 @@
       </div>
     </div>
 
-    <div class="mb-3">
+    <div class="hero-title mb-3">
       <div class="flex items-baseline justify-between gap-2 flex-wrap">
         <h1 class="text-[20px] font-extrabold tracking-tight text-white drop-shadow-sm">
           하와이 3가족 오아후 트립
@@ -483,7 +512,7 @@
       </div>
     </div>
 
-    <div class="flex items-center justify-between gap-2 bg-slate-900/65 backdrop-blur-md border border-white/20 rounded-2xl px-3 py-2">
+    <div class="hero-room flex items-center justify-between gap-2 bg-slate-900/65 backdrop-blur-md border border-white/20 rounded-2xl px-3 py-2">
       <div class="flex items-center gap-2 min-w-0">
         <span class="text-lg">🏨</span>
         <div class="truncate">
@@ -493,7 +522,7 @@
           </div>
         </div>
       </div>
-      <a href="https://photos.app.goo.gl/T7oLKmuA24sTGZky6" target="_blank" rel="noopener noreferrer"
+      <a href="https://photos.app.goo.gl/T7oLKmuA24sTGZky6" data-album-link target="_blank" rel="noopener noreferrer"
          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white text-slate-900 text-[12px] font-extrabold shadow-sm nowrap-btn">
         📸 공유앨범 ↗
       </a>
@@ -507,8 +536,8 @@
     <section id="tab-schedule" class="main-screen space-y-3">
       <div class="m3-card p-2.5 sched-daypicker">
         <div class="flex items-center justify-between mb-2 px-1">
-          <span class="text-[12px] font-extrabold text-slate-700">📅 일자별 타임라인 선택 (D1 ~ D11)</span>
-          <span id="current-day-indicator" class="text-[11.5px] font-bold text-sky-700">1 / 11일차</span>
+          <span id="day-picker-label" class="text-[12.5px] font-extrabold text-slate-700">📅 일자별 일정</span>
+          <span id="current-day-indicator" class="text-[12.5px] font-bold text-sky-700">1 / 11일차</span>
         </div>
         <div id="schedule-day-grid" class="day-grid"></div>
       </div>
@@ -519,7 +548,7 @@
         <div class="m3-card p-3 space-y-2">
           <div class="flex items-center justify-between gap-2">
             <h3 id="schedule-side-title" class="text-[14px] font-extrabold text-slate-900">🗺️ 동선</h3>
-            <button type="button" onclick="jumpToDayRoute(currentDayIndex)" class="px-2.5 py-1 rounded-full bg-sky-50 text-sky-800 border border-sky-200 text-[11.5px] font-bold nowrap-btn">크게 보기 ↗</button>
+            <button type="button" onclick="jumpToDayRoute(currentDayIndex)" class="px-2.5 py-1 rounded-full bg-sky-50 text-sky-800 border border-sky-200 text-[12.5px] font-bold nowrap-btn">크게 보기 ↗</button>
           </div>
           <div id="schedule-side-map"></div>
           <div id="schedule-side-list" class="space-y-1"></div>
@@ -530,10 +559,9 @@
         <button id="prev-day-btn" type="button" class="m3-card px-3.5 py-2.5 text-[12.5px] font-extrabold text-slate-700 nowrap-btn">
           ◀ 이전 날
         </button>
-        <a href="https://photos.app.goo.gl/T7oLKmuA24sTGZky6" target="_blank" rel="noopener noreferrer"
-           class="m3-card px-3.5 py-2.5 text-[12.5px] font-extrabold text-sky-700 bg-sky-50/70 border-sky-200 nowrap-btn">
-          📸 구글포토 공유앨범 ↗
-        </a>
+        <button id="today-day-btn" type="button" class="hidden m3-card px-3.5 py-2.5 text-[13px] font-extrabold text-white bg-sky-700 border-sky-700 nowrap-btn">
+          📍 오늘 일정
+        </button>
         <button id="next-day-btn" type="button" class="m3-card px-3.5 py-2.5 text-[12.5px] font-extrabold text-slate-700 nowrap-btn">
           다음 날 ▶
         </button>
@@ -544,8 +572,8 @@
     <section id="tab-oahu" class="main-screen hidden space-y-3">
       <div class="m3-card p-3.5 space-y-3">
         <div>
-          <h2 class="text-[16px] font-extrabold text-slate-900">🗺️ Oahu Island Drive Route Map</h2>
-          <p class="text-[12px] text-slate-600 mt-0.5">일자를 선택하면 해당 날 방문하는 거점과 실제 고속도로·해안도로 주행 선형이 표시됩니다.</p>
+          <h2 class="text-[16px] font-extrabold text-slate-900">🗺️ 오아후 동선 지도</h2>
+          <p class="text-[12px] text-slate-600 mt-0.5">일자를 누르면 그날 일정표의 방문 순서와 대략적인 이동 경로가 표시돼요. 일정이 바뀌면 동선도 자동으로 바뀝니다.</p>
         </div>
 
         <div class="grid grid-cols-2 gap-2">
@@ -590,7 +618,7 @@
           </a>
         </div>
 
-        <div id="resort-en-note" class="hidden p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11.5px] font-semibold text-slate-600">
+        <div id="resort-en-note" class="hidden p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[12.5px] font-semibold text-slate-600">
           영문·일본어 표기 지도입니다. 손가락으로 확대하면 작은 글씨까지 선명하게 보입니다. 지도 위 색깔 번호는 아래 번호 안내표에서 찾을 수 있습니다.
         </div>
 
@@ -609,42 +637,42 @@
         </div>
 
         <div id="resort-legend-wrap" class="space-y-2.5 pt-1">
-          <div class="text-[11.5px] font-semibold text-slate-500 px-1">아래 이름을 누르면 안내도에서 위치를 표시합니다.</div>
+          <div class="text-[12.5px] font-semibold text-slate-500 px-1">아래 이름을 누르면 안내도에서 위치를 표시합니다.</div>
           <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
-            <div class="text-[11.5px] font-extrabold text-slate-700 mb-1.5">🏨 숙소 타워</div>
+            <div class="text-[12.5px] font-extrabold text-slate-700 mb-1.5">🏨 숙소 타워</div>
             <div id="legend-cat-tower" class="flex flex-wrap gap-1.5"></div>
           </div>
           <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
-            <div class="text-[11.5px] font-extrabold text-slate-700 mb-1.5">🍕 식당 · 바 · 카페 · 마켓</div>
+            <div class="text-[12.5px] font-extrabold text-slate-700 mb-1.5">🍕 식당 · 바 · 카페 · 마켓</div>
             <div id="legend-cat-food" class="flex flex-wrap gap-1.5"></div>
           </div>
           <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
-            <div class="text-[11.5px] font-extrabold text-slate-700 mb-1.5">🏊 수영장 · 석호</div>
+            <div class="text-[12.5px] font-extrabold text-slate-700 mb-1.5">🏊 수영장 · 석호</div>
             <div id="legend-cat-pool" class="flex flex-wrap gap-1.5"></div>
           </div>
           <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
-            <div class="text-[11.5px] font-extrabold text-slate-700 mb-1.5">🛎️ 서비스 · 상점 · 주차</div>
+            <div class="text-[12.5px] font-extrabold text-slate-700 mb-1.5">🛎️ 서비스 · 상점 · 주차</div>
             <div id="legend-cat-service" class="flex flex-wrap gap-1.5"></div>
           </div>
-          <div class="text-[10.5px] text-slate-400 px-1">안내도 출처: Hilton Hawaiian Village 공식 한글 단지 안내도 · 영문 지도: Hilton Hawaiian Village 공식 리조트 맵 (일본 공식 사이트 PDF)</div>
+          <div class="text-[11.5px] text-slate-500 px-1">안내도 출처: Hilton Hawaiian Village 공식 한글 단지 안내도 · 영문 지도: Hilton Hawaiian Village 공식 리조트 맵 (일본 공식 사이트 PDF)</div>
         </div>
 
         <div id="resort-en-index" class="hidden space-y-2.5 pt-1">
           <div class="px-1">
             <div class="text-[13px] font-extrabold text-slate-900">🔢 번호 안내표</div>
-            <div class="text-[11.5px] font-semibold text-slate-500 mt-0.5">지도의 <b>원 색깔 + 번호</b>로 찾으세요. 같은 번호라도 색이 다르면 다른 시설입니다. <b>항목을 누르면 지도에서 위치를 보여 줘요.</b></div>
+            <div class="text-[12.5px] font-semibold text-slate-500 mt-0.5">지도의 <b>원 색깔 + 번호</b>로 찾으세요. 같은 번호라도 색이 다르면 다른 시설입니다. <b>항목을 누르면 지도에서 위치를 보여 줘요.</b></div>
           </div>
           <input id="hhv-index-search" type="search" placeholder="검색: 한국어, Starbucks, 짐, ABC …" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-[13px] font-semibold">
           <div id="hhv-index-chips" class="flex flex-wrap gap-1.5"></div>
           <div id="hhv-index-list" class="space-y-2.5"></div>
-          <div class="text-[10.5px] text-slate-400 px-1">출처: Hilton Hawaiian Village 공식 리조트 맵 2쪽 안내표 (일본 공식 사이트 PDF) · ATM은 번호 없이 아이콘으로만 표시됨</div>
+          <div class="text-[11.5px] text-slate-500 px-1">출처: Hilton Hawaiian Village 공식 리조트 맵 2쪽 안내표 (일본 공식 사이트 PDF) · ATM은 번호 없이 아이콘으로만 표시됨</div>
         </div>
       </div>
 
       <div id="resort-subpage-room" class="hidden space-y-3">
         <div class="grid grid-cols-2 gap-2.5">
           <div class="m3-card p-3.5 space-y-1.5">
-            <div class="text-[11.5px] font-bold text-slate-500">숙소 타워 · 호수</div>
+            <div class="text-[12.5px] font-bold text-slate-500">숙소 타워 · 호수</div>
             <a href="https://www.google.com/maps/dir/?api=1&destination=The+Grand+Islander+by+Hilton+Grand+Vacations+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="text-[14.5px] font-extrabold text-sky-800 underline block">📍 The Grand Islander</a>
             <div class="text-[12.5px] font-bold text-slate-700">#2307 (2BR Suite)</div>
             <div class="flex gap-1 pt-1">
@@ -653,7 +681,7 @@
             </div>
           </div>
           <div class="m3-card p-3.5 space-y-1.5">
-            <div class="text-[11.5px] font-bold text-slate-500">연계 주차장 (도보 5분)</div>
+            <div class="text-[12.5px] font-bold text-slate-500">연계 주차장 (도보 5분)</div>
             <a href="https://www.google.com/maps/dir/?api=1&destination=Hale+Koa+Hotel+Parking+Garage+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="text-[14.5px] font-extrabold text-emerald-800 underline block">📍 Hale Koa Garage</a>
             <div class="text-[12px] font-semibold text-slate-600">Kalia Tower 맞은편</div>
             <div class="flex gap-1 pt-1">
@@ -662,14 +690,14 @@
             </div>
           </div>
           <div class="m3-card p-3.5">
-            <div class="text-[11.5px] font-bold text-slate-500">체크인 / 체크아웃</div>
+            <div class="text-[12.5px] font-bold text-slate-500">체크인 / 체크아웃</div>
             <div class="text-[15px] font-extrabold text-slate-900 mt-1">16:00 / 10:00</div>
-            <div class="text-[11.5px] text-slate-500 mt-0.5">전용 3층 로비 데스크</div>
+            <div class="text-[12.5px] text-slate-500 mt-0.5">전용 3층 로비 데스크</div>
           </div>
           <div class="m3-card p-3.5">
-            <div class="text-[11.5px] font-bold text-slate-500">와이파이 접속</div>
+            <div class="text-[12.5px] font-bold text-slate-500">와이파이 접속</div>
             <div class="text-[14px] font-extrabold text-sky-700 mt-1">HGVC_Guest</div>
-            <div class="text-[11.5px] text-slate-500 mt-0.5">객실호수 + 투숙객 성(Last Name)</div>
+            <div class="text-[12.5px] text-slate-500 mt-0.5">객실호수 + 투숙객 성(Last Name)</div>
           </div>
         </div>
       </div>
@@ -683,46 +711,11 @@
       </div>
 
       <div id="exp-subpage-summary" class="space-y-3">
-        <div class="m3-card p-4 space-y-3">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="text-[11.5px] font-bold text-slate-500">누적 공용 지출 총액</div>
-              <div id="exp-total-usd" class="text-[24px] font-extrabold text-slate-900">$0.00</div>
-            </div>
-            <span class="px-2.5 py-1 rounded-full bg-sky-50 text-sky-800 border border-sky-200 text-[11.5px] font-bold nowrap-btn">
-              3:3:2 자동계산
-            </span>
-          </div>
-
-          <div class="grid grid-cols-3 gap-2">
-            <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
-              <div class="text-[11.5px] font-extrabold text-sky-800">A가족 (3명)</div>
-              <div id="fam-a-share" class="text-[15px] font-extrabold text-slate-900 mt-1">$0.00</div>
-              <div id="fam-a-diff" class="text-[11px] font-bold text-slate-500 mt-0.5">결제 $0</div>
-            </div>
-            <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
-              <div class="text-[11.5px] font-extrabold text-emerald-800">B가족 (3명)</div>
-              <div id="fam-b-share" class="text-[15px] font-extrabold text-slate-900 mt-1">$0.00</div>
-              <div id="fam-b-diff" class="text-[11px] font-bold text-slate-500 mt-0.5">결제 $0</div>
-            </div>
-            <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
-              <div class="text-[11.5px] font-extrabold text-amber-800">C가족 (2명)</div>
-              <div id="fam-c-share" class="text-[15px] font-extrabold text-slate-900 mt-1">$0.00</div>
-              <div id="fam-c-diff" class="text-[11px] font-bold text-slate-500 mt-0.5">결제 $0</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="m3-card p-4 space-y-2.5">
-          <h3 class="text-[14.5px] font-extrabold text-slate-900">💸 최종 송금 안내</h3>
-          <div id="settle-transfers" class="space-y-1.5"></div>
-        </div>
-
         <!-- 영수증 촬영 · 지출 등록 -->
         <div class="m3-card p-4 space-y-3">
           <div class="flex items-center justify-between gap-2">
             <h3 class="text-[14.5px] font-extrabold text-slate-900">🧾 영수증 촬영 · 지출 등록</h3>
-            <span id="sync-status" class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11px] font-bold nowrap-btn">연결 중…</span>
+            <span id="sync-status" class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[12px] font-bold nowrap-btn">연결 중…</span>
           </div>
 
           <label class="block cursor-pointer">
@@ -736,42 +729,29 @@
             <img id="receipt-preview" alt="영수증 미리보기" class="w-20 h-28 object-cover rounded-lg border border-slate-300 bg-slate-100">
             <div class="flex-1 min-w-0 space-y-1.5">
               <div id="ocr-status" class="text-[12px] font-semibold text-slate-600"></div>
-              <button id="receipt-clear-btn" type="button" class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-[11.5px] font-bold nowrap-btn">✕ 사진 빼기</button>
+              <button id="receipt-clear-btn" type="button" class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-[12.5px] font-bold nowrap-btn">✕ 사진 빼기</button>
             </div>
           </div>
 
           <div class="space-y-2">
             <div class="grid grid-cols-3 gap-2">
               <div class="col-span-2">
-                <label class="block text-[11px] font-bold text-slate-600 mb-1">항목명</label>
+                <label class="block text-[12px] font-bold text-slate-600 mb-1">항목명</label>
                 <input id="exp-title-input" type="text" maxlength="80" placeholder="예: Costco Wholesale" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-[13px] font-semibold">
               </div>
               <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1">금액 ($)</label>
+                <label class="block text-[12px] font-bold text-slate-600 mb-1">금액 ($)</label>
                 <input id="exp-amount-input" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-[13px] font-extrabold">
               </div>
             </div>
 
             <div class="grid grid-cols-3 gap-2">
               <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1">날짜</label>
-                <select id="exp-date-input" class="w-full px-2.5 py-2 rounded-xl border border-slate-300 text-[12.5px] font-bold bg-white">
-                  <option value="사전">사전 결제</option>
-                  <option value="2/18">2/18 (D1)</option>
-                  <option value="2/19">2/19 (D2)</option>
-                  <option value="2/20">2/20 (D3)</option>
-                  <option value="2/21">2/21 (D4)</option>
-                  <option value="2/22">2/22 (D5)</option>
-                  <option value="2/23">2/23 (D6)</option>
-                  <option value="2/24">2/24 (D7)</option>
-                  <option value="2/25">2/25 (D8)</option>
-                  <option value="2/26">2/26 (D9)</option>
-                  <option value="2/27">2/27 (D10)</option>
-                  <option value="2/28">2/28 (D11)</option>
-                </select>
+                <label class="block text-[12px] font-bold text-slate-600 mb-1">날짜</label>
+<select id="exp-date-input" class="w-full px-2.5 py-2 rounded-xl border border-slate-300 text-[13px] font-bold bg-white"></select>
               </div>
               <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1">결제 가족</label>
+                <label class="block text-[12px] font-bold text-slate-600 mb-1">결제 가족</label>
                 <select id="exp-payer-input" class="w-full px-2.5 py-2 rounded-xl border border-slate-300 text-[12.5px] font-bold bg-white">
                   <option value="A">A가족</option>
                   <option value="B">B가족</option>
@@ -779,7 +759,7 @@
                 </select>
               </div>
               <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1">분담 방식</label>
+                <label class="block text-[12px] font-bold text-slate-600 mb-1">분담 방식</label>
                 <select id="exp-split-input" class="w-full px-2.5 py-2 rounded-xl border border-slate-300 text-[12.5px] font-bold bg-white">
                   <option value="8p">8인 (3:3:2)</option>
                   <option value="6p">선발6인 (3:3:0)</option>
@@ -789,11 +769,11 @@
             </div>
 
             <div>
-              <label class="block text-[11px] font-bold text-slate-600 mb-1">여행 코드 (6자리)</label>
+              <label class="block text-[12px] font-bold text-slate-600 mb-1">여행 코드 (6자리)</label>
               <input id="exp-code-input" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••••" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-[13px] font-extrabold tracking-widest">
             </div>
 
-            <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[11.5px] font-semibold text-amber-900">
+            <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[12.5px] font-semibold text-amber-900">
               ⚠️ 자동 인식 결과를 꼭 확인·수정한 뒤 저장해 주세요. 저장 후에는 수정·삭제할 수 없습니다.
             </div>
 
@@ -803,10 +783,45 @@
           </div>
         </div>
 
+        <div class="m3-card p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-[12.5px] font-bold text-slate-500">누적 공용 지출 총액</div>
+              <div id="exp-total-usd" class="text-[24px] font-extrabold text-slate-900">$0.00</div>
+            </div>
+            <span class="px-2.5 py-1 rounded-full bg-sky-50 text-sky-800 border border-sky-200 text-[12.5px] font-bold nowrap-btn">
+              3:3:2 자동계산
+            </span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2">
+            <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
+              <div class="text-[12.5px] font-extrabold text-sky-800">A가족 (3명)</div>
+              <div id="fam-a-share" class="text-[15px] font-extrabold text-slate-900 mt-1">$0.00</div>
+              <div id="fam-a-diff" class="text-[12px] font-bold text-slate-500 mt-0.5">결제 $0</div>
+            </div>
+            <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
+              <div class="text-[12.5px] font-extrabold text-emerald-800">B가족 (3명)</div>
+              <div id="fam-b-share" class="text-[15px] font-extrabold text-slate-900 mt-1">$0.00</div>
+              <div id="fam-b-diff" class="text-[12px] font-bold text-slate-500 mt-0.5">결제 $0</div>
+            </div>
+            <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
+              <div class="text-[12.5px] font-extrabold text-amber-800">C가족 (2명)</div>
+              <div id="fam-c-share" class="text-[15px] font-extrabold text-slate-900 mt-1">$0.00</div>
+              <div id="fam-c-diff" class="text-[12px] font-bold text-slate-500 mt-0.5">결제 $0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="m3-card p-4 space-y-2.5">
+          <h3 class="text-[14.5px] font-extrabold text-slate-900">💸 최종 송금 안내</h3>
+          <div id="settle-transfers" class="space-y-1.5"></div>
+        </div>
+
         <div class="m3-card p-4 space-y-1.5 bg-slate-50">
           <div class="text-[12px] font-extrabold text-slate-700">ℹ️ 분담 방식 안내</div>
           <div class="text-[12px] text-slate-600 leading-relaxed">• 8인 전원: A 3 : B 3 : C 2<br>• 선발 6인: A 3 : B 3 : C 0<br>• 3가족 균등: A 1 : B 1 : C 1</div>
-          <div class="text-[11.5px] text-slate-500 pt-1">저장된 내역의 수정·삭제는 총무에게 요청해 주세요.<br><span id="exp-updated-at"></span></div>
+          <div class="text-[12.5px] text-slate-500 pt-1">저장된 내역의 수정·삭제는 총무에게 요청해 주세요.<br><span id="exp-updated-at"></span></div>
         </div>
       </div>
 
@@ -828,100 +843,15 @@
       <div id="guide-sub-dday" class="guide-subpage space-y-2.5">
         <div class="m3-card p-3.5 space-y-2.5">
           <h3 class="text-[15px] font-extrabold text-slate-900">⏰ 사전 예약 필수 타임라인 & 길안내</h3>
-
-          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
-            <div class="flex items-center justify-between gap-2">
-              <a href="https://www.google.com/maps/dir/?api=1&destination=Hanauma+Bay+Nature+Preserve+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="text-[13.5px] font-extrabold text-sky-900 underline">1. 📍 Hanauma Bay (2/19 금 · 11:00)</a>
-              <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[11px] font-extrabold nowrap-btn">30~60일 전</span>
-            </div>
-            <p class="text-[12px] text-slate-600">Roberts Hawaii 사전예약 또는 방문 2일 전 시영 PROS 예약 ($25/성인)</p>
-            <div class="flex flex-wrap gap-1.5 pt-1">
-              <a href="https://www.google.com/maps/search/?api=1&query=Hanauma+Bay+Nature+Preserve+Honolulu+HI" target="_blank" rel="noopener noreferrer" class="gmap-chip">📍 구글맵 ↗</a>
-              <a href="https://www.google.com/maps/dir/?api=1&destination=Hanauma+Bay+Nature+Preserve+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 길안내 ↗</a>
-              <a href="https://hbay.robertshawaii.com/" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 Roberts Hawaii 예약 ↗</a>
-              <a href="https://web5.hnl.info/pros-ticketing/event/hbay-online-reservation" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 시영 PROS 예약 ↗</a>
-            </div>
-          </div>
-
-          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
-            <div class="flex items-center justify-between gap-2">
-              <a href="https://www.google.com/maps/dir/?api=1&destination=Diamond+Head+State+Monument+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="text-[13.5px] font-extrabold text-sky-900 underline">2. 📍 Diamond Head (2/23 화 · 06:00)</a>
-              <span class="px-2 py-0.5 rounded-full bg-sky-100 text-sky-900 text-[11px] font-extrabold nowrap-btn">30일 전</span>
-            </div>
-            <p class="text-[12px] text-slate-600">입장권($5/인) 및 차량 주차권($10/대) 사전 예약 필수</p>
-            <div class="flex flex-wrap gap-1.5 pt-1">
-              <a href="https://www.google.com/maps/search/?api=1&query=Diamond+Head+State+Monument+Honolulu+HI" target="_blank" rel="noopener noreferrer" class="gmap-chip">📍 구글맵 ↗</a>
-              <a href="https://www.google.com/maps/dir/?api=1&destination=Diamond+Head+State+Monument+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 길안내 ↗</a>
-              <a href="https://gostateparks.hawaii.gov/diamondhead" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 주립공원 예약 ↗</a>
-            </div>
-          </div>
-
-          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
-            <div class="flex items-center justify-between gap-2">
-              <a href="https://www.google.com/maps/dir/?api=1&destination=Kualoa+Ranch+Kaneohe+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="text-[13.5px] font-extrabold text-sky-900 underline">3. 📍 Kualoa Ranch (2/24 수)</a>
-              <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 text-[11px] font-extrabold nowrap-btn">1~2개월 전</span>
-            </div>
-            <p class="text-[12px] text-slate-600">무비 사이트 투어($59.95/성인) 또는 UTV 랩터 투어($149.95/성인)</p>
-            <div class="flex flex-wrap gap-1.5 pt-1">
-              <a href="https://www.google.com/maps/search/?api=1&query=Kualoa+Ranch+Kaneohe+HI" target="_blank" rel="noopener noreferrer" class="gmap-chip">📍 구글맵 ↗</a>
-              <a href="https://www.google.com/maps/dir/?api=1&destination=Kualoa+Ranch+Kaneohe+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 길안내 ↗</a>
-              <a href="https://www.kualoa.com/tours-and-activities/movie-sites-ranch-tour" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 투어 예약 ↗</a>
-            </div>
-          </div>
-
-          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
-            <div class="flex items-center justify-between gap-2">
-              <a href="https://www.google.com/maps/dir/?api=1&destination=Pearl+Harbor+National+Memorial+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="text-[13.5px] font-extrabold text-sky-900 underline">4. 📍 Pearl Harbor (2/26 금)</a>
-              <span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-900 text-[11px] font-extrabold nowrap-btn">8주 전</span>
-            </div>
-            <p class="text-[12px] text-slate-600">USS Arizona 보트 예약($1/인) · 가방 반입 금지</p>
-            <div class="flex flex-wrap gap-1.5 pt-1">
-              <a href="https://www.google.com/maps/dir/?api=1&destination=Pearl+Harbor+National+Memorial+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 진주만 길안내 ↗</a>
-              <a href="https://www.recreation.gov/ticket/facility/233338" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 진주만 예약 ↗</a>
-            </div>
-          </div>
-
-          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
-            <div class="flex items-center justify-between gap-2">
-              <a href="https://www.google.com/maps/dir/?api=1&destination=Wolfgang%27s+Steakhouse+Waikiki+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="text-[13.5px] font-extrabold text-sky-900 underline">4-1. 📍 Wolfgang's Steakhouse (2/23 화 · 15:30)</a>
-              <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[11px] font-extrabold nowrap-btn">2~4주 전</span>
-            </div>
-            <p class="text-[12px] text-slate-600">실내 다이닝은 OpenTable 예약 · 야외 라나이 해피아워는 예약 없이 선착순</p>
-            <div class="flex flex-wrap gap-1.5 pt-1">
-              <a href="https://www.google.com/maps/dir/?api=1&destination=Wolfgang%27s+Steakhouse+Waikiki+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 길안내 ↗</a>
-              <a href="https://www.opentable.com/restaurant/profile/27859" target="_blank" rel="noopener noreferrer" class="ext-link-chip">📅 OpenTable 예약 ↗</a>
-            </div>
-          </div>
-
-          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
-            <div class="flex items-center justify-between gap-2">
-              <a href="https://www.google.com/maps/dir/?api=1&destination=Plumeria+Beach+House+The+Kahala+Hotel+and+Resort+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="text-[13.5px] font-extrabold text-sky-900 underline">5. 📍 The Kahala · Plumeria Beach House (2/27 토 · 12:00)</a>
-              <span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-900 text-[11px] font-extrabold nowrap-btn">2~4주 전</span>
-            </div>
-            <p class="text-[12px] text-slate-600">8인 점심 예약 ($31~50/인) · $50 이상 결제 시 주차 4시간 무료 · 3부부 기념 스냅</p>
-            <div class="flex flex-wrap gap-1.5 pt-1">
-              <a href="https://www.google.com/maps/dir/?api=1&destination=Plumeria+Beach+House+The+Kahala+Hotel+and+Resort+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 카할라 길안내 ↗</a>
-              <a href="https://www.opentable.com/restaurant/profile/58801" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 점심 예약 ↗</a>
-              <a href="https://www.kahalaresort.com/luxury-hotel/faqs/" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 주차 안내 ↗</a>
-            </div>
-          </div>
-          </div>
+          <p class="text-[12.5px] text-slate-600">날짜·시각·비용은 일정표에서 자동으로 가져와요. 일정이 바뀌면 여기도 같이 바뀝니다.</p>
+          <div id="reservation-list" class="space-y-2.5"></div>
         </div>
       </div>
 
       <div id="guide-sub-flight" class="guide-subpage hidden space-y-2.5">
         <div class="m3-card p-4 space-y-3">
           <h3 class="text-[15px] font-extrabold text-slate-900">✈️ 대한항공 (Korean Air) 공식 스케줄</h3>
-          <div class="p-3 rounded-2xl bg-sky-50/70 border border-sky-200 space-y-1">
-            <div class="font-extrabold text-sky-900">출국 · KE051 (B787-9)</div>
-            <div class="text-[14px] font-extrabold text-slate-900">인천(ICN T2) 22:20 ➔ 호놀룰루(HNL T2) 11:10</div>
-            <div class="text-[12px] text-slate-700">• 선발대 6인: 2.18(목) / 후발대 2인: 2.21(일) 동일 스케줄</div>
-          </div>
-          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
-            <div class="font-extrabold text-slate-800">귀국 · KE052 (B787-9)</div>
-            <div class="text-[14px] font-extrabold text-slate-900">호놀룰루(HNL T2) 14:25 ➔ 인천(ICN T2) 20:20 (+1일)</div>
-            <div class="text-[12px] text-slate-700">• 8인 전원: 2.28(일) 출발 ➔ 3.01(월) 도착</div>
-          </div>
+          <div id="flight-list" class="space-y-2.5"></div>
         </div>
       </div>
 
@@ -936,11 +866,11 @@
         <div class="m3-card p-4 space-y-2.5">
           <div class="flex items-center justify-between gap-2">
             <h3 class="text-[15.5px] font-extrabold text-slate-900">💡 장소별 꼭 알아둘 것</h3>
-            <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10.5px] font-bold nowrap-btn">2026.11 확인 기준</span>
+            <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11.5px] font-bold nowrap-btn">2026.11 확인 기준</span>
           </div>
           <p class="text-[12px] text-slate-600">날짜를 누르면 펼쳐집니다. <span class="font-extrabold text-rose-700">⚠️</span> 표시는 현재 일정표 내용과 달라 확인이 필요한 항목입니다.</p>
           <div id="place-tips-list" class="space-y-2"></div>
-          <div class="text-[10.5px] text-slate-400">영업시간·요금·예약 규칙은 바뀔 수 있으니 방문 전 공식 사이트에서 한 번 더 확인하세요.</div>
+          <div class="text-[11.5px] text-slate-500">영업시간·요금·예약 규칙은 바뀔 수 있으니 방문 전 공식 사이트에서 한 번 더 확인하세요.</div>
         </div>
         <div class="m3-card p-4 space-y-2.5">
           <h3 class="text-[15.5px] font-extrabold text-slate-900">📲 휴대폰에 앱으로 설치하기</h3>
@@ -962,7 +892,7 @@
           <h3 class="text-[15.5px] font-extrabold text-slate-900">📸 3가족 실시간 공유 사진첩</h3>
           <p class="text-[12.5px] text-slate-600">여행 중 촬영한 사진을 아래 구글 포토 공유 앨범에 함께 올려주세요.</p>
           <div class="grid grid-cols-2 gap-2">
-            <a href="https://photos.app.goo.gl/T7oLKmuA24sTGZky6" target="_blank" rel="noopener noreferrer"
+            <a href="https://photos.app.goo.gl/T7oLKmuA24sTGZky6" data-album-link target="_blank" rel="noopener noreferrer"
                class="py-2.5 px-3 rounded-xl bg-sky-700 text-white text-[12.5px] font-extrabold text-center">
               📸 공유앨범 열기 ↗
             </a>
@@ -1007,16 +937,7 @@
       <h3 class="text-[16px] font-extrabold text-slate-900">✈️ 대한항공 스케줄 (KE051 / KE052)</h3>
       <button id="close-flight-modal-btn" type="button" class="w-8 h-8 rounded-full bg-slate-100 font-extrabold">✕</button>
     </div>
-    <div class="space-y-2 text-[12.5px]">
-      <div class="p-3 rounded-2xl bg-sky-50">
-        <div class="font-extrabold text-sky-900">출국 KE051: 인천(T2) 22:20 ➔ 호놀룰루(T2) 11:10</div>
-        <div class="text-slate-600 mt-1">• 선발대 6인(2/18 목) · 후발대 2인(2/21 일) 동일 편명</div>
-      </div>
-      <div class="p-3 rounded-2xl bg-slate-50">
-        <div class="font-extrabold text-slate-900">귀국 KE052: 호놀룰루(T2) 14:25 ➔ 인천(T2) 20:20 (+1일)</div>
-        <div class="text-slate-600 mt-1">• 8인 전원: 2/28(일) 출발 ➔ 3/1(월) 저녁 도착</div>
-      </div>
-    </div>
+    <div id="flight-modal-list" class="space-y-2 text-[13px]"></div>
   </div>
 </div>
 
@@ -1027,7 +948,7 @@
     <div class="flex items-start justify-between gap-2 px-4 pt-4 pb-2 border-b border-slate-100">
       <div class="min-w-0">
         <div id="menu-sheet-title" class="text-[16px] font-extrabold text-slate-900 leading-snug"></div>
-        <div id="menu-sheet-sub" class="text-[11px] font-bold text-slate-500 mt-0.5"></div>
+        <div id="menu-sheet-sub" class="text-[12px] font-bold text-slate-500 mt-0.5"></div>
       </div>
       <button id="menu-sheet-close" type="button" class="w-8 h-8 rounded-full bg-slate-100 font-extrabold shrink-0">✕</button>
     </div>
@@ -1206,16 +1127,16 @@
     if (fc && fc.hi != null) {
       const [icon, label] = WMO[fc.code] || ['🌡️', '예보'];
       const pop = fc.pop != null ? ` · 강수 ${fc.pop}%` : '';
-      weatherHtml = `<span class="px-1.5 py-0.5 rounded bg-sky-600 text-white text-[10px] font-extrabold">예보</span>
+      weatherHtml = `<span class="px-1.5 py-0.5 rounded bg-sky-600 text-white text-[11px] font-extrabold">예보</span>
         <span>${icon} ${label} ${Math.round(fc.hi)}° / ${Math.round(fc.lo)}°${pop}</span>`;
     } else {
-      weatherHtml = `<span class="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 text-[10px] font-extrabold">평년</span>
+      weatherHtml = `<span class="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 text-[11px] font-extrabold">평년</span>
         <span>🌡️ ${Math.round(env.normHi)}° / ${Math.round(env.normLo)}° · 비 온 해 ${env.rainYears}/${ENV_YEARS}</span>`;
     }
     return `
       <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] font-bold text-slate-700">
         <span class="inline-flex items-center gap-1.5">${weatherHtml}</span>
-        <span class="inline-flex items-center gap-2 nowrap-btn">🌅 ${env.sunrise} <span class="text-slate-400">·</span> 🌇 ${env.sunset}</span>
+        <span class="inline-flex items-center gap-2 nowrap-btn">🌅 ${env.sunrise} <span class="text-slate-500">·</span> 🌇 ${env.sunset}</span>
       </div>`;
   }
 
@@ -1314,26 +1235,55 @@
     ]}
   ];
 
+  // 꿀팁 화면: 장소가 지금 일정의 어느 날에 있는지 따라 자동으로 묶음 (일정이 바뀌면 꿀팁도 그 날로 이동)
   function renderPlaceTips() {
     const wrap = document.getElementById('place-tips-list');
     if (!wrap) return;
-    wrap.innerHTML = PLACE_TIPS.map((g, gi) => {
-      const hasWarn = g.items.some(it => it.warn);
+    const groups = [];
+    PLACE_TIPS.filter(g => !/^D\d+/.test(g.day)).forEach(g => groups.push({ head: g.day, title: g.title, items: g.items }));
+
+    const byDay = {};
+    allTipItems().filter(it => it.origDay != null).forEach(it => {
+      let d = it.origDay, missing = false;
+      const pid = TIP_PLACE[it.place];
+      if (pid) {
+        const days = placeDays(pid);
+        if (!days.length) missing = true;
+        else if (!days.includes(d)) d = days[0];
+      } else if (TIP_SLOT[it.place]) {
+        d = +TIP_SLOT[it.place].split('-')[0];
+      }
+      (byDay[d] = byDay[d] || []).push(Object.assign({}, it, { missing }));
+    });
+    Object.keys(byDay).map(Number).sort((a, b) => a - b).forEach(d => {
+      const day = getScheduleDay(d);
+      const orig = PLACE_TIPS.find(g => new RegExp(`^D${d}\\b`).test(g.day));
+      const allHere = orig && byDay[d].every(it => it.origDay === d);
+      groups.push({
+        head: day ? `D${d} · ${day.date.split(' ')[0]}` : `D${d}`,
+        title: allHere ? orig.title : (day ? day.title.replace(/^Day \d+ · /, '') : ''),
+        items: byDay[d]
+      });
+    });
+
+    wrap.innerHTML = groups.map((g, gi) => {
+      const hasWarn = g.items.some(it => it.warn || it.missing);
       return `
         <details class="rounded-2xl border border-slate-200 bg-slate-50 overflow-hidden" ${gi === 0 ? 'open' : ''}>
-          <summary class="cursor-pointer list-none px-3 py-2.5 flex items-center justify-between gap-2">
-            <span class="text-[13px] font-extrabold text-slate-900">${g.day} <span class="font-bold text-slate-500">· ${g.title}</span></span>
+          <summary class="cursor-pointer list-none px-3 py-3 flex items-center justify-between gap-2">
+            <span class="text-[13.5px] font-extrabold text-slate-900">${g.head} <span class="font-bold text-slate-500">· ${g.title}</span></span>
             <span class="flex items-center gap-1 nowrap-btn">
-              ${hasWarn ? '<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[10.5px] font-extrabold">⚠️ 확인</span>' : ''}
-              <span class="text-slate-400 text-[12px]">▾</span>
+              ${hasWarn ? '<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[12.5px] font-extrabold">⚠️ 확인</span>' : ''}
+              <span class="text-slate-500 text-[13px]">▾</span>
             </span>
           </summary>
           <div class="px-3 pb-3 space-y-2.5">
             ${g.items.map(it => `
-              <div class="bg-white rounded-xl border ${it.warn ? 'border-rose-200' : 'border-slate-200'} p-2.5">
-                <div class="text-[12.5px] font-extrabold text-sky-900 mb-1">📍 ${it.place}</div>
+              <div class="bg-white rounded-xl border ${it.warn || it.missing ? 'border-rose-200' : 'border-slate-200'} p-2.5">
+                <div class="text-[13px] font-extrabold text-sky-900 mb-1">📍 ${it.place}</div>
+                ${it.missing ? '<div class="text-[12px] font-bold text-rose-700 mb-1">⚠️ 지금 일정표에 없는 장소예요</div>' : ''}
                 <ul class="space-y-1">
-                  ${it.tips.map(t => `<li class="text-[12px] leading-relaxed ${t.startsWith('⚠️') ? 'text-rose-700 font-bold' : 'text-slate-700'}">${t.startsWith('⚠️') ? '' : '• '}${t}</li>`).join('')}
+                  ${it.tips.map(t => `<li class="text-[12.5px] leading-relaxed ${t.startsWith('⚠️') ? 'text-rose-700 font-bold' : 'text-slate-700'}">${t.startsWith('⚠️') ? '' : '• '}${t}</li>`).join('')}
                 </ul>
               </div>`).join('')}
           </div>
@@ -1370,6 +1320,14 @@
     const id = MENU_SLOT_MAP[`${day}-${label}`];
     return id && MENUS[id] ? id : null;
   }
+  // 칸에 연결된 장소의 메뉴 우선 (장소가 다른 날로 옮겨 가도 메뉴가 따라감) · 장소 연결이 없을 때만 칸 기준 연결 사용
+  function menuIdForSlot(day, slot) {
+    if (slot.placeIds && slot.placeIds.length) {
+      for (const id of slot.placeIds) { const m = PLACES[id] && PLACES[id].menu; if (m && MENUS[m]) return m; }
+      return null;
+    }
+    return menuIdFor(day, slot.label);
+  }
 
   function openMenuSheet(id) {
     const m = MENUS[id];
@@ -1382,11 +1340,11 @@
           <div class="text-[13px] font-extrabold text-slate-900 leading-snug">${it.name}</div>
           <div class="text-[12px] text-slate-600 leading-snug mt-0.5">${it.ko || ''}</div>
         </div>
-        <div class="text-[12.5px] font-extrabold text-sky-800 nowrap-btn text-right">${it.price || '<span class="text-slate-400 font-bold">가격 현장 확인</span>'}</div>
+        <div class="text-[12.5px] font-extrabold text-sky-800 nowrap-btn text-right">${it.price || '<span class="text-slate-500 font-bold">가격 현장 확인</span>'}</div>
       </div>`).join('');
     const tips = (m.tips || []).length ? `
       <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 space-y-1">
-        <div class="text-[11.5px] font-extrabold text-amber-900">👨‍👩‍👧‍👦 8인 주문 팁</div>
+        <div class="text-[12.5px] font-extrabold text-amber-900">👨‍👩‍👧‍👦 8인 주문 팁</div>
         ${m.tips.map(t => `<div class="text-[12px] text-amber-900 leading-relaxed">• ${t}</div>`).join('')}
       </div>` : '';
     const link = (m.officialMenuUrl ? `<a href="${m.officialMenuUrl}" target="_blank" rel="noopener noreferrer" class="block w-full py-2.5 rounded-xl bg-slate-900 text-white text-[13px] font-extrabold text-center">📋 전체 메뉴 보기 (공식) ↗</a>` : '')
@@ -1552,24 +1510,152 @@
     10: { spots: ['hgvc', 'kahala', 'hgvc'], roadPath: [[21.2835,-157.8378],[21.2810,-157.8050],[21.2800,-157.7950],[21.2715,-157.7734],[21.2800,-157.7950],[21.2810,-157.8050],[21.2835,-157.8378]] }
   };
 
+  /* =====================================================================
+   * [연결 계층] 일정 칸 ↔ 장소 · 시간
+   *   SLOT_PLACES: '일차-칸' → 장소 id (아래 PLACES 목록) · 동선 지도·메뉴·꿀팁·예약이 모두 이 연결을 따라감
+   *   SLOT_TIME:   '일차-칸' → 시작 시각 (원본 문장에 적힌 확정 시각만)
+   *   일정을 바꿀 때 SCHEDULE_UPDATES 의 set 에 placeId / time 을 함께 적으면 나머지가 자동으로 따라옵니다.
+   * ===================================================================== */
+  const SLOT_PLACES = {
+    '1-오전': 'hnl', '1-점심': 'nicos', '1-오후': 'costco', '1-저녁': 'duke_lagoon',
+    '2-오전': 'hanauma', '2-점심': 'hanauma', '2-오후': 'alamoana', '2-저녁': 'bluewater',
+    '3-오전': 'rays', '3-점심': 'matsumoto', '3-오후': 'sharkscove', '3-저녁': 'paradise_pool',
+    '4-오전': 'hnl', '4-점심': 'fookyuen', '4-오후': 'tantalus', '4-저녁': 'hgvc',
+    '5-오전': 'halona', '5-점심': 'boots', '5-오후': 'lanikai', '5-저녁': 'hgvc',
+    '6-오전': ['diamond', 'bogarts'], '6-점심': 'iyasume', '6-오후': 'wolfgang', '6-저녁': 'waikiki_beach',
+    '7-오전': 'kualoa', '7-점심': 'giovanni', '7-오후': 'hoomaluhia', '7-저녁': 'hgvc',
+    '8-오전': 'hgvc', '8-점심': 'roundtable', '8-오후': ['dole', 'waikele'], '8-저녁': 'hgvc',
+    '9-오전': 'pearl', '9-점심': 'ward', '9-오후': 'lapperts', '9-저녁': 'duke_lagoon',
+    '10-오전': 'duke_lagoon', '10-점심': 'plumeria', '10-오후': 'tropics', '10-저녁': 'hgvc',
+    '11-오전': 'hgvc', '11-점심': 'costco_food', '11-오후': 'car_return', '11-저녁': 'incheon'
+  };
+  const SLOT_TIME = {
+    '1-오전': '11:10', '2-오전': '11:00', '2-저녁': '19:45', '4-오전': '11:10',
+    '6-오전': '06:00', '6-점심': '12:00', '6-오후': '15:30', '9-저녁': '19:45',
+    '10-점심': '12:00', '11-오전': '10:00', '11-오후': '11:50'
+  };
+  // '지금·다음' 표시용 기본 시각 (확정 시각이 없는 칸)
+  const SLOT_DEFAULT_MIN = { '오전': 9 * 60, '점심': 12 * 60, '오후': 14 * 60 + 30, '저녁': 18 * 60 };
+
+  const TOTAL_DAYS = scheduleData.length;
+  const TRIP_TZ = 'Pacific/Honolulu';
+  const TRIP_YEAR = 2027;
+
+  // ---- 데이터 점검 (일정 수정 후 연결이 끊긴 곳을 자동으로 찾아냄) ----
+  const DATA_ISSUES = [];
+  function reportDataIssue(msg) {
+    if (DATA_ISSUES.includes(msg)) return;
+    DATA_ISSUES.push(msg);
+    try { console.warn('[데이터 점검] ' + msg); } catch (e) {}
+  }
+
+  function toArr(v) { return v == null ? [] : (Array.isArray(v) ? v.slice() : [v]); }
+  function slotKey(day, label) { return `${day}-${label}`; }
+  function findSlotIdx(slots, label, index) {
+    const hits = [];
+    slots.forEach((s, i) => { if (s.label === label) hits.push(i); });
+    return hits.length ? hits[Math.min(index || 0, hits.length - 1)] : -1;
+  }
+  function timeToMin(t) {
+    const m = /^(\d{1,2}):(\d{2})$/.exec(t || '');
+    return m ? (+m[1]) * 60 + (+m[2]) : null;
+  }
+
+  /* 일정 하루치 = 원본 + 보정 계층 적용 결과
+   *   SCHEDULE_UPDATES 항목 형식
+   *   { day, slot, set:{...}, note }                 칸 내용 바꾸기 (같은 이름 칸이 여럿이면 index: 0,1…)
+   *   { day, addSlot:{label, placeName, desc, ...}, after:'점심' }   칸 추가 (after 없으면 맨 뒤)
+   *   { day, removeSlot:'저녁' }                       칸 빼기
+   *   { day, daySet:{title, badge} }                   날짜 제목 바꾸기
+   *   { day, costIndex, cost } / { day, addCost }      비용 줄 바꾸기 / 추가
+   *   at: '2026.11.04'                                 수정일 (없으면 SCHEDULE_UPDATED_AT) */
   function getScheduleDay(dayNum) {
-    const base = scheduleData.find(d => d.day === dayNum) || scheduleData[0];
-    const day = Object.assign({}, base, { slots: base.slots.map(sl => Object.assign({}, sl)), costs: (base.costs || []).slice() });
-    let updated = false;
+    const base = scheduleData.find(d => d.day === dayNum);
+    if (!base) { reportDataIssue(`D${dayNum}: 원본 일정에 없는 날짜입니다`); return null; }
+    const day = Object.assign({}, base, {
+      slots: base.slots.map(sl => Object.assign({}, sl, {
+        placeIds: toArr(SLOT_PLACES[slotKey(base.day, sl.label)]),
+        time: SLOT_TIME[slotKey(base.day, sl.label)] || null
+      })),
+      costs: (base.costs || []).slice()
+    });
+    let updated = false, updatedAt = null;
+    const touch = u => { updated = true; const at = u.at || SCHEDULE_UPDATED_AT; if (!updatedAt || at > updatedAt) updatedAt = at; };
     SCHEDULE_UPDATES.filter(u => u.day === day.day).forEach(u => {
-      if (u.daySet) { Object.assign(day, u.daySet); updated = true; }
-      if (u.slot) {
-        const sl = day.slots.find(x => x.label === u.slot);
-        if (sl) {
-          if (u.set) Object.assign(sl, u.set);
+      if (u.daySet) { Object.assign(day, u.daySet); touch(u); }
+      if (u.removeSlot) {
+        const idx = findSlotIdx(day.slots, u.removeSlot, u.index);
+        if (idx < 0) reportDataIssue(`D${day.day}: 빼려는 칸 '${u.removeSlot}'이 없습니다`);
+        else { day.slots.splice(idx, 1); touch(u); }
+      }
+      if (u.addSlot) {
+        const s = Object.assign({ color: 'bg-slate-100 text-slate-800', placeName: '', desc: '', placeIds: [], time: null }, u.addSlot);
+        if (u.addSlot.placeId) s.placeIds = [u.addSlot.placeId];
+        if (u.addSlot.placeIds) s.placeIds = toArr(u.addSlot.placeIds);
+        let at = day.slots.length;
+        if (u.after) {
+          const idx = findSlotIdx(day.slots, u.after, u.afterIndex);
+          if (idx < 0) reportDataIssue(`D${day.day}: '${u.after}' 칸이 없어 새 칸을 맨 뒤에 붙였습니다`);
+          else at = idx + 1;
+        }
+        day.slots.splice(at, 0, s);
+        touch(u);
+      } else if (u.slot) {
+        const idx = findSlotIdx(day.slots, u.slot, u.index);
+        if (idx < 0) reportDataIssue(`D${day.day}: 바꾸려는 칸 '${u.slot}'이 없어 수정이 적용되지 않았습니다`);
+        else {
+          const sl = day.slots[idx];
+          if (u.set) {
+            Object.assign(sl, u.set);
+            if (u.set.placeId) sl.placeIds = [u.set.placeId];
+            if (u.set.placeIds) sl.placeIds = toArr(u.set.placeIds);
+          }
           if (u.note) sl.note = u.note;
-          updated = true;
+          touch(u);
         }
       }
-      if (u.costIndex != null && u.cost) { day.costs[u.costIndex] = u.cost; updated = true; }
+      if (u.costIndex != null && u.cost) {
+        if (u.costIndex > day.costs.length) reportDataIssue(`D${day.day}: 비용 ${u.costIndex + 1}번째 줄이 없어 맨 뒤에 붙였습니다`);
+        day.costs[Math.min(u.costIndex, day.costs.length)] = u.cost; touch(u);
+      }
+      if (u.addCost) { day.costs.push(u.addCost); touch(u); }
+    });
+    day.slots.forEach(sl => {
+      sl.placeIds = sl.placeIds.filter(id => {
+        if (PLACES[id]) return true;
+        reportDataIssue(`D${day.day} ${sl.label}: 장소 목록에 없는 id '${id}'`);
+        return false;
+      });
+      if (!sl.mapQuery) sl.mapQuery = sl.placeIds.length ? PLACES[sl.placeIds[0]].query : sl.placeName;
+      sl.startMin = timeToMin(sl.time);
     });
     day.updated = updated;
+    day.updatedAt = updatedAt;
     return day;
+  }
+
+  // ---- 하와이 현지 날짜·시각 ----
+  const URL_PARAMS = (() => { try { return new URLSearchParams(location.search); } catch (e) { return new URLSearchParams(''); } })();
+  function hawaiiNowParts() {
+    try {
+      const p = new Intl.DateTimeFormat('en-US', { timeZone: TRIP_TZ, year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hourCycle: 'h23' }).formatToParts(new Date());
+      const g = t => (p.find(x => x.type === t) || {}).value;
+      let md = `${g('month')}/${g('day')}`, year = +g('year'), min = (+g('hour')) * 60 + (+g('minute'));
+      // 확인용: ?today=2/23&now=13:00
+      if (URL_PARAMS.get('today')) { md = URL_PARAMS.get('today'); year = TRIP_YEAR; }
+      if (URL_PARAMS.get('now') && timeToMin(URL_PARAMS.get('now')) != null) min = timeToMin(URL_PARAMS.get('now'));
+      return { year, md, min };
+    } catch (e) { return null; }
+  }
+  function tripTodayDay() {
+    const n = hawaiiNowParts();
+    if (!n || n.year !== TRIP_YEAR) return null;
+    const d = scheduleData.find(x => x.date.split(' ')[0] === n.md);
+    return d ? d.day : null;
+  }
+  function tripTodayMD() {
+    const t = tripTodayDay();
+    return t ? scheduleData.find(x => x.day === t).date.split(' ')[0] : null;
   }
 
   let currentDayIndex = 1;
@@ -1577,72 +1663,104 @@
   function renderScheduleDayGrid() {
     const grid = document.getElementById('schedule-day-grid');
     if (!grid) return;
+    const today = tripTodayDay();
     grid.innerHTML = scheduleData.map(item => `
-      <button type="button" data-day="${item.day}" class="day-chip ${item.day === currentDayIndex ? 'active' : ''}">
+      <button type="button" data-day="${item.day}" class="day-chip ${item.day === currentDayIndex ? 'active' : ''} ${item.day === today ? 'is-today' : ''}">
         <span>D${item.day}</span>
-        <span class="text-[10px] font-medium opacity-85">${item.date.split(' ')[0]}</span>
+        <span class="text-[12px] font-medium opacity-85">${item.day === today ? '오늘' : item.date.split(' ')[0]}</span>
       </button>
     `).join('');
 
     grid.querySelectorAll('.day-chip').forEach(btn => {
       btn.addEventListener('click', () => updateDayView(parseInt(btn.dataset.day, 10)));
     });
+    const label = document.getElementById('day-picker-label');
+    if (label) label.textContent = `📅 일자별 일정 (D1 ~ D${TOTAL_DAYS})`;
+    const todayBtn = document.getElementById('today-day-btn');
+    if (todayBtn) todayBtn.classList.toggle('hidden', !today);
+  }
+
+  // 칸별 '지금 · 다음' (오늘 일정에서만)
+  function slotNowNext(day) {
+    if (day.day !== tripTodayDay()) return {};
+    const n = hawaiiNowParts();
+    if (!n) return {};
+    const starts = day.slots.map(s => s.startMin != null ? s.startMin : (SLOT_DEFAULT_MIN[s.label] != null ? SLOT_DEFAULT_MIN[s.label] : null));
+    let cur = -1;
+    starts.forEach((m, i) => { if (m != null && m <= n.min) cur = i; });
+    const next = starts.findIndex((m, i) => i > cur && m != null);
+    return { cur, next };
   }
 
   function updateDayView(dayNum) {
-    currentDayIndex = dayNum;
     const data = getScheduleDay(dayNum);
+    if (!data) return;
+    currentDayIndex = dayNum;
 
     document.querySelectorAll('#schedule-day-grid .day-chip').forEach(chip => {
       chip.classList.toggle('active', parseInt(chip.dataset.day, 10) === dayNum);
     });
 
     const indicator = document.getElementById('current-day-indicator');
-    if (indicator) indicator.textContent = `Day ${dayNum} / 11 (${data.date})`;
+    if (indicator) indicator.textContent = `Day ${dayNum} / ${TOTAL_DAYS} (${data.date})`;
 
     const container = document.getElementById('day-card-container');
     if (container) {
-      const slotsHtml = (data.slots || []).map(slot => {
+      const nn = slotNowNext(data);
+      const slotsHtml = (data.slots || []).map((slot, si) => {
         const searchUrl = gMapSearchQuery(slot.mapQuery);
         const dirUrl = gMapDirQuery(slot.mapQuery);
         const extraHtml = (slot.extraLinks || []).map(ex => `
           <a href="${ex.url}" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 ${ex.label} ↗</a>
         `).join('');
+        const menuId = menuIdForSlot(data.day, slot);
+        const tips = tipsForSlot(data.day, slot);
+        const tipsHtml = tips.length ? `
+          <div class="slot-tips hidden bg-white rounded-xl border border-amber-200 p-2.5 space-y-1.5">
+            ${tips.map(it => `
+              <div>
+                <div class="text-[12.5px] font-extrabold text-amber-900">💡 ${it.place}</div>
+                <ul class="space-y-0.5">${it.tips.map(t => `<li class="text-[12.5px] leading-relaxed ${t.startsWith('⚠️') ? 'text-rose-700 font-bold' : 'text-slate-700'}">${t.startsWith('⚠️') ? '' : '• '}${t}</li>`).join('')}</ul>
+              </div>`).join('')}
+          </div>` : '';
+        const isNow = si === nn.cur, isNext = si === nn.next;
 
         return `
-          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-2">
-            <div class="flex items-center justify-between gap-2">
-              <div class="flex items-center gap-1.5 min-w-0">
-                <span class="px-2 py-0.5 rounded-lg ${slot.color} text-[11px] font-extrabold nowrap-btn">${slot.label}</span>
-                <a href="${dirUrl}" target="_blank" rel="noopener noreferrer" class="place-title-link text-[13px] truncate">
-                  📍 ${slot.placeName} ↗
-                </a>
-              </div>
+          <div class="slot-card p-3 rounded-2xl ${isNow ? 'bg-sky-50 border-2 border-sky-500' : 'bg-slate-50 border border-slate-200/90'} space-y-2">
+            <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
+              <span class="px-2 py-0.5 rounded-lg ${slot.color} text-[12px] font-extrabold nowrap-btn">${slot.label}${slot.time ? ` · ${slot.time}` : ''}</span>
+              ${isNow ? '<span class="px-2 py-0.5 rounded-lg bg-sky-600 text-white text-[12.5px] font-extrabold nowrap-btn">▶ 지금</span>' : ''}
+              ${isNext ? '<span class="px-2 py-0.5 rounded-lg bg-white text-sky-800 border border-sky-300 text-[12.5px] font-extrabold nowrap-btn">다음</span>' : ''}
+              <a href="${searchUrl}" target="_blank" rel="noopener noreferrer" class="place-title-link text-[14px] min-w-0 truncate" title="구글맵에서 장소 정보 보기">
+                📍 ${slot.placeName} ↗
+              </a>
             </div>
-            <p class="text-[13px] font-semibold text-slate-900 leading-relaxed">${slot.desc}</p>
-            ${slot.note ? `<p class="text-[12px] font-bold leading-relaxed ${slot.note.startsWith('⚠️') ? 'text-rose-700' : 'text-amber-700'}">${slot.note}</p>` : ''}
+            <p class="text-[13.5px] font-semibold text-slate-900 leading-relaxed">${slot.desc}</p>
+            ${slot.note ? `<p class="text-[12.5px] font-bold leading-relaxed ${slot.note.startsWith('⚠️') ? 'text-rose-700' : 'text-amber-700'}">${slot.note}</p>` : ''}
             <div class="flex flex-wrap items-center gap-1.5 pt-0.5">
-              <a href="${searchUrl}" target="_blank" rel="noopener noreferrer" class="gmap-chip">📍 구글맵 ↗</a>
               <a href="${dirUrl}" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 길안내 ↗</a>
-              ${menuIdFor(data.day, slot.label) ? `<button type="button" onclick="openMenuSheet('${menuIdFor(data.day, slot.label)}')" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11.5px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200 nowrap-btn">🍽️ 메뉴</button>` : ''}
+              ${menuId ? `<button type="button" onclick="openMenuSheet('${menuId}')" class="menu-chip">🍽️ 메뉴</button>` : ''}
+              ${tips.length ? `<button type="button" onclick="this.closest('.slot-card').querySelector('.slot-tips').classList.toggle('hidden')" class="tip-chip">💡 꿀팁 ${tips.reduce((n, it) => n + it.tips.length, 0)}</button>` : ''}
               ${slot.siteUrl ? `<a href="${slot.siteUrl}" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 공식홈 ↗</a>` : ''}
               ${extraHtml}
             </div>
+            ${tipsHtml}
           </div>
         `;
       }).join('');
 
-      const costsHtml = (data.costs || []).map(c => `<div class="text-[12px] text-slate-700 font-semibold leading-snug">• ${c}</div>`).join('');
+      const costsHtml = (data.costs || []).map(c => `<div class="text-[12.5px] text-slate-700 font-semibold leading-snug">• ${c}</div>`).join('');
 
       container.innerHTML = `
         <article class="m3-card p-4 space-y-3">
           <div class="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5">
             <div>
-              <div class="flex items-center gap-1.5">
-                <span class="px-2 py-0.5 rounded-md bg-sky-100 text-sky-900 text-[11px] font-extrabold nowrap-btn">${data.date}</span>
-                <span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 text-[11px] font-extrabold nowrap-btn">${data.badge}</span>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="px-2 py-0.5 rounded-md bg-sky-100 text-sky-900 text-[12px] font-extrabold nowrap-btn">${data.date}</span>
+                <span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 text-[12px] font-extrabold nowrap-btn">${data.badge}</span>
+                ${data.day === tripTodayDay() ? '<span class="px-2 py-0.5 rounded-md bg-sky-600 text-white text-[12px] font-extrabold nowrap-btn">오늘</span>' : ''}
               </div>
-              <h2 class="text-[16px] font-extrabold text-slate-900 mt-1.5 leading-snug">${data.title}</h2>
+              <h2 class="text-[17px] font-extrabold text-slate-900 mt-1.5 leading-snug">${data.title}</h2>
               ${renderDayEnv(data.date.split(' ')[0])}
             </div>
           </div>
@@ -1651,20 +1769,14 @@
 
           <div class="pt-2 border-t border-slate-200 flex flex-col gap-2.5">
             <div class="bg-slate-50 rounded-xl p-2.5 border border-slate-200 space-y-1">
-              <div class="text-[11px] font-extrabold text-slate-500">💰 주요 비용 (현재 기준 단가)${data.updated ? ` <span class="ml-1 px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px]">🔄 ${SCHEDULE_UPDATED_AT} 최신 반영</span>` : ''}</div>
+              <div class="text-[12px] font-extrabold text-slate-500">💰 주요 비용 (현재 기준 단가)${data.updated ? ` <span class="ml-1 px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[12px]">🔄 ${data.updatedAt} 최신 반영</span>` : ''}</div>
               ${costsHtml}
             </div>
 
-            <div class="grid grid-cols-2 gap-2">
-              <a href="${GOOGLE_PHOTOS_ALBUM_URL}" target="_blank" rel="noopener noreferrer"
-                 class="py-2.5 px-3 rounded-xl bg-slate-100 text-slate-900 text-[12.5px] font-extrabold text-center nowrap-btn">
-                📸 사진첩 (공유앨범) ↗
-              </a>
-              <button type="button" onclick="jumpToDayRoute(${data.day})"
-                      class="py-2.5 px-3 rounded-xl bg-sky-700 text-white text-[12.5px] font-extrabold text-center nowrap-btn shadow-sm">
-                🗺️ Day ${data.day} 동선보기
-              </button>
-            </div>
+            <button type="button" onclick="jumpToDayRoute(${data.day})"
+                    class="w-full py-3 px-3 rounded-xl bg-sky-700 text-white text-[13.5px] font-extrabold text-center nowrap-btn shadow-sm">
+              🗺️ Day ${data.day} 동선 지도 보기
+            </button>
           </div>
         </article>
       `;
@@ -1675,7 +1787,7 @@
     const prevBtn = document.getElementById('prev-day-btn');
     const nextBtn = document.getElementById('next-day-btn');
     if (prevBtn) { prevBtn.disabled = dayNum <= 1; prevBtn.style.opacity = dayNum <= 1 ? '0.4' : '1'; }
-    if (nextBtn) { nextBtn.disabled = dayNum >= 11; nextBtn.style.opacity = dayNum >= 11 ? '0.4' : '1'; }
+    if (nextBtn) { nextBtn.disabled = dayNum >= TOTAL_DAYS; nextBtn.style.opacity = dayNum >= TOTAL_DAYS ? '0.4' : '1'; }
   }
 
   // OAHU MAP (Real Highway Curved Coordinates)
@@ -1729,11 +1841,185 @@
     11: { spots: ['hgvc', 'costco', 'hnl'], roadPath: [[21.2835,-157.8378],[21.2950,-157.8480],[21.3156,-157.8689],[21.3250,-157.8950],[21.3245,-157.9251]] }
   };
 
+  /* =====================================================================
+   * [DATA] 장소 목록 — 일정·동선 지도·메뉴·꿀팁·예약이 함께 쓰는 한 곳
+   *   위 oahuSpots(원본 거점)를 그대로 가져오고, 일정에만 있던 장소를 더함
+   *   node: 동선 지도에서 묶어 보여 줄 거점 (예: 힐튼 단지 안 식당 → 숙소)
+   *   query: 구글맵 검색어 (일정표와 같은 검색어) · menu: 메뉴 미리보기 id
+   * ===================================================================== */
+  const PLACE_EXTRA = {
+    duke_lagoon:   { name: 'Duke Kahanamoku Lagoon', icon: '🏄', node: 'hgvc', query: 'Duke Kahanamoku Lagoon Honolulu HI' },
+    bluewater:     { name: 'Blue Water Shrimp', icon: '🦐', node: 'hgvc', query: 'Blue Water Shrimp Hilton Hawaiian Village Honolulu HI', menu: 'bluewater' },
+    paradise_pool: { name: 'Paradise Pool', icon: '🏊', node: 'hgvc', query: 'Paradise Pool Hilton Hawaiian Village Honolulu HI' },
+    roundtable:    { name: 'Round Table Pizza', icon: '🍕', node: 'hgvc', query: 'Round Table Pizza Hilton Hawaiian Village Honolulu HI', menu: 'roundtable' },
+    lapperts:      { name: "Lappert's Hawaii", icon: '🍦', node: 'hgvc', query: "Lappert's Hawaii Hilton Hawaiian Village Honolulu HI", menu: 'lapperts' },
+    tropics:       { name: 'Tropics Bar & Grill', icon: '🍹', node: 'hgvc', query: 'Tropics Bar & Grill Honolulu HI', menu: 'tropics' },
+    rays:          { name: "Ray's Kiawe Broiled Chicken", icon: '🍗', node: 'haleiwa', query: '66-190 Kamehameha Hwy Haleiwa HI', menu: 'rays' },
+    matsumoto:     { name: 'Matsumoto Shave Ice', icon: '🍧', node: 'haleiwa', query: 'Matsumoto Shave Ice Haleiwa HI', menu: 'matsumoto' },
+    iyasume:       { name: 'Musubi Cafe Iyasume', icon: '🍙', lat: 21.2797, lng: -157.8306, query: 'Musubi Cafe Iyasume Waikiki Beach Walk Honolulu HI', menu: 'iyasume' },
+    waikiki_beach: { name: 'Waikiki Beach', icon: '🌇', lat: 21.2760, lng: -157.8275, query: 'Waikiki Beach Honolulu HI' },
+    ward:          { name: 'Ward Village', icon: '🥗', lat: 21.2950, lng: -157.8560, query: 'Ward Village Honolulu HI' },
+    plumeria:      { name: 'Plumeria Beach House (The Kahala)', icon: '💐', node: 'kahala', query: 'Plumeria Beach House The Kahala Hotel and Resort Honolulu HI', menu: 'plumeria' },
+    costco_food:   { name: 'Costco Food Court', icon: '🌭', node: 'costco', query: 'Costco Wholesale Iwilei Honolulu HI', menu: 'costco' },
+    car_return:    { name: 'HNL Rent-A-Car Return', icon: '🚙', node: 'hnl', query: 'Consolidated Rent-A-Car Facility Honolulu HI' },
+    incheon:       { name: 'Incheon Airport T2', icon: '🇰🇷', offOahu: true, query: 'Incheon International Airport Terminal 2' }
+  };
+  // 원본 거점의 구글맵 검색어·메뉴 (거점 이름 그대로 검색하면 엉뚱한 곳이 나오는 문제 보정)
+  const PLACE_INFO = {
+    hnl: { query: 'Daniel K. Inouye International Airport Honolulu HI' },
+    nicos: { query: "Nico's Pier 38 Honolulu HI", menu: 'nicos' },
+    costco: { query: 'Costco Wholesale 525 Alakawa St Honolulu HI' },
+    hgvc: { query: 'The Grand Islander Honolulu HI' },
+    hanauma: { query: 'Hanauma Bay Nature Preserve Honolulu HI' },
+    alamoana: { query: 'Ala Moana Center Honolulu HI' },
+    sharkscove: { query: 'Laniakea Beach Haleiwa HI' },
+    haleiwa: { query: 'Haleiwa Town Center Haleiwa HI' },
+    fookyuen: { query: 'Fook Yuen Seafood Restaurant Honolulu HI', menu: 'fookyuen' },
+    tantalus: { query: 'Puu Ualakaa State Wayside Honolulu HI' },
+    halona: { query: 'Makapuu Point Lookout Waimanalo HI' },
+    boots: { query: "Boots & Kimo's Kailua HI", menu: 'boots' },
+    lanikai: { query: 'Lanikai Beach Kailua HI' },
+    diamond: { query: 'Diamond Head State Monument Honolulu HI' },
+    bogarts: { query: "Bogart's Cafe Honolulu HI", menu: 'bogarts' },
+    wolfgang: { query: "Wolfgang's Steakhouse Waikiki Honolulu HI", menu: 'wolfgang' },
+    kualoa: { query: 'Kualoa Ranch Kaneohe HI' },
+    giovanni: { query: "Giovanni's Shrimp Truck Kahuku HI", menu: 'giovanni' },
+    hoomaluhia: { query: "Ho'omaluhia Botanical Garden Kaneohe HI" },
+    dole: { query: 'Dole Plantation Wahiawa HI' },
+    waikele: { query: 'Waikele Premium Outlets Waipahu HI' },
+    pearl: { query: 'Pearl Harbor National Memorial Honolulu HI' },
+    kahala: { query: 'The Kahala Hotel and Resort Honolulu HI' }
+  };
+  const PLACES = (() => {
+    const all = {};
+    Object.values(oahuSpots).forEach(s => { all[s.id] = Object.assign({}, s); });
+    Object.entries(PLACE_EXTRA).forEach(([id, p]) => { all[id] = Object.assign({ id }, p); });
+    Object.entries(PLACE_INFO).forEach(([id, info]) => { if (all[id]) Object.assign(all[id], info); });
+    Object.values(all).forEach(p => {
+      if (!p.query) p.query = `${p.name} Oahu HI`;
+      if (p.node && all[p.node] && p.lat == null) { p.lat = all[p.node].lat; p.lng = all[p.node].lng; }
+    });
+    return all;
+  })();
+  function placeNode(id) { const p = PLACES[id]; return p ? (p.node || id) : null; }
+
+  // 꿀팁 ↔ 장소 연결 (꿀팁 원본의 장소 이름 → 장소 id)
+  const TIP_PLACE = {
+    'Costco Iwilei': 'costco', "Nico's Pier 38 Fish Market": 'nicos', 'Hanauma Bay': 'hanauma',
+    "Ray's Kiawe Broiled Chicken": 'rays', 'Matsumoto Shave Ice': 'matsumoto', 'Laniakea Beach (거북이)': 'sharkscove',
+    'Fook Yuen Seafood': 'fookyuen', "Tantalus Lookout (Pu'u Ualaka'a)": 'tantalus', 'Makapuu Point': 'halona',
+    "Boots & Kimo's": 'boots', 'Lanikai Beach': 'lanikai', 'Diamond Head': 'diamond', "Wolfgang's Steakhouse": 'wolfgang',
+    'Kualoa Ranch': 'kualoa', "Giovanni's Shrimp Truck": 'giovanni', "Ho'omaluhia Botanical Garden": 'hoomaluhia',
+    'Dole Plantation': 'dole', 'Waikele Premium Outlets': 'waikele', 'Pearl Harbor': 'pearl',
+    'The Kahala — Plumeria Beach House': 'plumeria'
+  };
+  // 장소가 아니라 특정 칸에 붙는 꿀팁 ('일차-칸')
+  const TIP_SLOT = {
+    '힐튼 금요 불꽃놀이': '2-저녁', '힐튼 2차 불꽃놀이': '9-저녁', 'HNL 공항 픽업': '4-오전',
+    '체크아웃 · 짐 보관': '11-오전', 'Costco 주유': '11-점심', '렌터카 반납 · 공항': '11-오후'
+  };
+  function allTipItems() {
+    const out = [];
+    PLACE_TIPS.forEach(g => {
+      const m = /^D(\d+)/.exec(g.day);
+      g.items.forEach(it => out.push(Object.assign({}, it, { origDay: m ? +m[1] : null, group: g })));
+    });
+    return out;
+  }
+  function tipsForSlot(day, slot) {
+    const key = slotKey(day, slot.label);
+    return allTipItems().filter(it => (TIP_PLACE[it.place] && slot.placeIds.includes(TIP_PLACE[it.place])) || TIP_SLOT[it.place] === key);
+  }
+  // 장소가 지금 일정의 몇 일차에 있는지
+  function placeDays(id) {
+    const days = [];
+    for (let d = 1; d <= TOTAL_DAYS; d++) {
+      const day = getScheduleDay(d);
+      if (day && day.slots.some(s => s.placeIds.includes(id))) days.push(d);
+    }
+    return days;
+  }
+  function placeSlot(id) {
+    for (let d = 1; d <= TOTAL_DAYS; d++) {
+      const day = getScheduleDay(d);
+      const slot = day && day.slots.find(s => s.placeIds.includes(id));
+      if (slot) return { day, slot };
+    }
+    return null;
+  }
+
+  /* ---- 동선: 일정 칸의 장소 순서에서 자동으로 만듦 ----
+   *   첫날은 공항에서 시작, 마지막 날은 공항에서 끝, 그 외에는 숙소 출발·복귀
+   *   경로선은 원본 동선(dayRoutes)·보정 동선(ROUTE_UPDATES)의 구간을 다시 쓰고, 없는 구간은 직선으로 이음 */
+  const ROUTE_FORCE = {};   // 자동 동선 대신 꼭 써야 할 동선이 있을 때만: { 일차: { spots:[...], roadPath:[...] } }
+  const ROUTE_LEGS = (() => {
+    const legs = {};
+    const near = (p, s) => Math.abs(p[0] - s.lat) < 1e-4 && Math.abs(p[1] - s.lng) < 1e-4;
+    [dayRoutes, ROUTE_UPDATES].forEach(src => Object.values(src).forEach(r => {
+      let from = 0;
+      for (let k = 0; k < r.spots.length - 1; k++) {
+        const a = oahuSpots[r.spots[k]], b = oahuSpots[r.spots[k + 1]];
+        if (!a || !b) return;
+        let ia = -1, ib = -1;
+        for (let j = from; j < r.roadPath.length; j++) if (near(r.roadPath[j], a)) { ia = j; break; }
+        if (ia < 0) return;
+        for (let j = ia + 1; j < r.roadPath.length; j++) if (near(r.roadPath[j], b)) { ib = j; break; }
+        if (ib < 0) return;
+        const seg = r.roadPath.slice(ia, ib + 1);
+        const key = `${r.spots[k]}>${r.spots[k + 1]}`, rkey = `${r.spots[k + 1]}>${r.spots[k]}`;
+        if (!legs[key]) legs[key] = seg;
+        if (!legs[rkey]) legs[rkey] = seg.slice().reverse();
+        from = ib;
+      }
+    }));
+    return legs;
+  })();
+
+  function deriveRoute(dayNum) {
+    if (ROUTE_FORCE[dayNum]) return Object.assign({ approx: false }, ROUTE_FORCE[dayNum]);
+    const day = getScheduleDay(dayNum);
+    if (!day) return null;
+    const spots = [];
+    const push = id => {
+      const n = placeNode(id), p = PLACES[n];
+      if (!p || p.offOahu || p.lat == null) return;
+      if (spots[spots.length - 1] !== n) spots.push(n);
+    };
+    if (dayNum > 1) push('hgvc');
+    day.slots.forEach(sl => sl.placeIds.forEach(push));
+    if (dayNum < TOTAL_DAYS) push('hgvc');
+    if (!spots.length) push('hgvc');
+    const roadPath = [];
+    let approx = false;
+    for (let i = 0; i < spots.length - 1; i++) {
+      let seg = ROUTE_LEGS[`${spots[i]}>${spots[i + 1]}`];
+      if (!seg) { const a = PLACES[spots[i]], b = PLACES[spots[i + 1]]; seg = [[a.lat, a.lng], [b.lat, b.lng]]; approx = true; }
+      roadPath.push(...(roadPath.length ? seg.slice(1) : seg));
+    }
+    if (spots.length === 1) roadPath.push([PLACES[spots[0]].lat, PLACES[spots[0]].lng]);
+    return { spots, roadPath, approx };
+  }
+
+  // 출발지 = 도착지(숙소)이면 핀 하나로 합침
+  function routeMarkers(route) {
+    const n = route.spots.length;
+    const loop = n > 2 && route.spots[0] === route.spots[n - 1];
+    return route.spots.slice(0, loop ? n - 1 : n).map((id, idx) => ({ id, sp: PLACES[id], badge: loop && idx === 0 ? `1·${n}` : String(idx + 1) }));
+  }
+  function placePopupLinks(sp) {
+    return `<div style="display:flex;gap:4px;flex-wrap:wrap;">
+      <a href="${gMapSearchQuery(sp.query)}" target="_blank" rel="noopener noreferrer" style="padding:4px 8px;background:#ecfdf5;color:#047857;font-weight:800;font-size:12px;border-radius:99px;text-decoration:none;">📍 구글맵 ↗</a>
+      <a href="${gMapDirQuery(sp.query)}" target="_blank" rel="noopener noreferrer" style="padding:4px 8px;background:#eff6ff;color:#1d4ed8;font-weight:800;font-size:12px;border-radius:99px;text-decoration:none;">🚗 길안내 ↗</a>
+    </div>`;
+  }
+  const OSM_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
+  const ESRI_ATTR = 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics';
+
   function renderOahuFilterGrid() {
     const grid = document.getElementById('oahu-day-filter-grid');
     if (!grid) return;
     let html = `<button type="button" data-filter="all" class="oahu-filter-chip active">전체</button>`;
-    for (let d = 1; d <= 11; d++) {
+    for (let d = 1; d <= TOTAL_DAYS; d++) {
       html += `<button type="button" data-filter="${d}" class="oahu-filter-chip">D${d}</button>`;
     }
     grid.innerHTML = html;
@@ -1747,13 +2033,22 @@
     if (oahuMap) return;
     oahuMap = L.map('oahu-leaflet-map', { zoomControl: true }).setView([21.4389, -157.9480], 10);
 
-    oahuStreetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(oahuMap);
-    oahuSatLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 });
+    oahuStreetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: OSM_ATTR }).addTo(oahuMap);
+    oahuSatLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: ESRI_ATTR });
 
     oahuRouteGroup = L.layerGroup().addTo(oahuMap);
     oahuMarkersGroup = L.layerGroup().addTo(oahuMap);
 
     filterOahuRoute(currentOahuFilter);
+  }
+
+  function spotIcon(sp, badge) {
+    return L.divIcon({
+      className: '',
+      html: `<div class="oahu-spot-pin">${sp.icon}${badge ? `<span class="oahu-seq-badge">${badge}</span>` : ''}</div>`,
+      iconSize: [30, 30],
+      iconAnchor: [15, 15]
+    });
   }
 
   function filterOahuRoute(filterKey) {
@@ -1769,85 +2064,58 @@
     const summaryEl = document.getElementById('oahu-route-summary');
 
     if (filterKey === 'all') {
+      // 지금 일정에 들어 있는 거점만 표시
+      const used = [];
+      for (let d = 1; d <= TOTAL_DAYS; d++) { const r = deriveRoute(d); if (r) r.spots.forEach(id => { if (!used.includes(id)) used.push(id); }); }
       const bounds = L.latLngBounds();
-      const allList = Object.values(oahuSpots);
-      allList.forEach(sp => {
+      used.forEach(id => {
+        const sp = PLACES[id];
         bounds.extend([sp.lat, sp.lng]);
-        const icon = L.divIcon({
-          className: '',
-          html: `<div class="oahu-spot-pin">${sp.icon}</div>`,
-          iconSize: [30, 30],
-          iconAnchor: [15, 15]
-        });
-        L.marker([sp.lat, sp.lng], { icon })
-          .bindPopup(`
-            <div style="min-width:185px;">
-              <div style="font-weight:800;font-size:13px;margin-bottom:6px;">${sp.icon} ${sp.name}</div>
-              <div style="display:flex;gap:4px;">
-                <a href="${gMapSearchQuery(sp.name + ' Oahu HI')}" target="_blank" rel="noopener noreferrer" style="padding:3px 7px;background:#ecfdf5;color:#047857;font-weight:800;font-size:11px;border-radius:99px;text-decoration:none;">📍 구글맵 ↗</a>
-                <a href="${gMapDirQuery(sp.name + ' Oahu HI')}" target="_blank" rel="noopener noreferrer" style="padding:3px 7px;background:#eff6ff;color:#1d4ed8;font-weight:800;font-size:11px;border-radius:99px;text-decoration:none;">🚗 길안내 ↗</a>
-              </div>
-            </div>
-          `)
+        L.marker([sp.lat, sp.lng], { icon: spotIcon(sp) })
+          .bindPopup(`<div style="min-width:185px;"><div style="font-weight:800;font-size:13px;margin-bottom:6px;">${sp.icon} ${sp.name}</div>${placePopupLinks(sp)}</div>`)
           .addTo(oahuMarkersGroup);
       });
-      oahuMap.fitBounds(bounds, { padding: [26, 26] });
-      if (summaryEl) summaryEl.innerHTML = `<div class="text-[12px] font-extrabold text-slate-800">📌 오아후 전체 거점 표시 중 (상단 D1~D11을 누르면 일자별 실제 도로 경로가 표시됩니다)</div>`;
+      if (used.length) oahuMap.fitBounds(bounds, { padding: [26, 26] });
+      if (summaryEl) summaryEl.innerHTML = `<div class="text-[12.5px] font-extrabold text-slate-800">📌 여행 전체 거점 ${used.length}곳 (위 D1~D${TOTAL_DAYS}를 누르면 그날 방문 순서가 나와요)</div>`;
       return;
     }
 
     const dayNum = parseInt(filterKey, 10);
-    const routeInfo = ROUTE_UPDATES[dayNum] || dayRoutes[dayNum];
-    if (!routeInfo) return;
+    const route = deriveRoute(dayNum);
+    if (!route) return;
 
     const bounds = L.latLngBounds();
-    routeInfo.spots.forEach((id, idx) => {
-      const sp = oahuSpots[id];
-      if (!sp) return;
+    routeMarkers(route).forEach(({ sp, badge }) => {
       bounds.extend([sp.lat, sp.lng]);
-      const seq = idx + 1;
-      const icon = L.divIcon({
-        className: '',
-        html: `<div class="oahu-spot-pin">${sp.icon}<span class="oahu-seq-badge">${seq}</span></div>`,
-        iconSize: [30, 30],
-        iconAnchor: [15, 15]
-      });
-      L.marker([sp.lat, sp.lng], { icon })
-        .bindPopup(`
-          <div style="min-width:185px;">
-            <div style="font-weight:800;font-size:13px;margin-bottom:6px;">[${seq}] ${sp.icon} ${sp.name}</div>
-            <div style="display:flex;gap:4px;">
-              <a href="${gMapSearchQuery(sp.name + ' Oahu HI')}" target="_blank" rel="noopener noreferrer" style="padding:3px 7px;background:#ecfdf5;color:#047857;font-weight:800;font-size:11px;border-radius:99px;text-decoration:none;">📍 구글맵 ↗</a>
-              <a href="${gMapDirQuery(sp.name + ' Oahu HI')}" target="_blank" rel="noopener noreferrer" style="padding:3px 7px;background:#eff6ff;color:#1d4ed8;font-weight:800;font-size:11px;border-radius:99px;text-decoration:none;">🚗 길안내 ↗</a>
-            </div>
-          </div>
-        `)
+      L.marker([sp.lat, sp.lng], { icon: spotIcon(sp, badge) })
+        .bindPopup(`<div style="min-width:185px;"><div style="font-weight:800;font-size:13px;margin-bottom:6px;">[${badge}] ${sp.icon} ${sp.name}</div>${placePopupLinks(sp)}</div>`)
         .addTo(oahuMarkersGroup);
     });
 
-    if (routeInfo.roadPath.length > 1) {
-      L.polyline(routeInfo.roadPath, { color: '#006493', weight: 4.5, opacity: 0.9 }).addTo(oahuRouteGroup);
+    if (route.roadPath.length > 1) {
+      L.polyline(route.roadPath, { color: '#006493', weight: 4.5, opacity: 0.9 }).addTo(oahuRouteGroup);
     }
-    if (routeInfo.spots.length === 1) {
-      const only = oahuSpots[routeInfo.spots[0]];
+    if (route.spots.length === 1) {
+      const only = PLACES[route.spots[0]];
       oahuMap.setView([only.lat, only.lng], 15);
     } else {
       oahuMap.fitBounds(bounds, { padding: [36, 36], maxZoom: 14 });
     }
 
     if (summaryEl) {
-      const rows = routeInfo.spots.map((id, idx) => {
-        const sp = oahuSpots[id];
+      const rows = route.spots.map((id, idx) => {
+        const sp = PLACES[id];
         return `
-          <div class="flex items-center justify-between bg-white p-2 rounded-xl border border-slate-200 text-[12px] font-extrabold gap-2">
-            <span class="truncate">${idx+1}. ${sp.icon} ${sp.name}</span>
+          <div class="flex items-center justify-between bg-white p-2 rounded-xl border border-slate-200 text-[12.5px] font-extrabold gap-2">
+            <span class="truncate">${idx + 1}. ${sp.icon} ${sp.name}</span>
             <div class="flex gap-1 shrink-0">
-              <a href="${gMapSearchQuery(sp.name + ' Oahu HI')}" target="_blank" rel="noopener noreferrer" class="gmap-chip">📍 구글맵</a>
-              <a href="${gMapDirQuery(sp.name + ' Oahu HI')}" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 길안내</a>
+              <a href="${gMapSearchQuery(sp.query)}" target="_blank" rel="noopener noreferrer" class="gmap-chip">📍 구글맵</a>
+              <a href="${gMapDirQuery(sp.query)}" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 길안내</a>
             </div>
           </div>`;
       }).join('');
-      summaryEl.innerHTML = `<div class="text-[12px] font-extrabold text-slate-800 mb-1">🚗 Day ${dayNum} 실제 도로 동선 & 방문 순번</div><div class="space-y-1.5">${rows}</div>`;
+      summaryEl.innerHTML = `<div class="text-[12.5px] font-extrabold text-slate-800 mb-1">🚗 Day ${dayNum} 방문 순서</div><div class="space-y-1.5">${rows}</div>
+        <div class="text-[12.5px] font-semibold text-slate-500 pt-1">지도의 선은 대략적인 이동 방향이에요${route.approx ? ' (일부 구간은 직선)' : ''}. 실제 길은 🚗 길안내로 확인하세요.</div>`;
     }
   }
 
@@ -1857,31 +2125,28 @@
 
   function updateScheduleSideMap(dayNum) {
     if (!WIDE_MQ.matches || typeof L === 'undefined') return;
-    const routeInfo = ROUTE_UPDATES[dayNum] || dayRoutes[dayNum];
-    if (!routeInfo) return;
+    const route = deriveRoute(dayNum);
+    if (!route) return;
     if (!sideMap) {
-      sideMap = L.map('schedule-side-map', { zoomControl: true, attributionControl: false });
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(sideMap);
+      sideMap = L.map('schedule-side-map', { zoomControl: true });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: OSM_ATTR }).addTo(sideMap);
       sideLayer = L.layerGroup().addTo(sideMap);
     }
     sideMap.invalidateSize();
     sideLayer.clearLayers();
     const bounds = L.latLngBounds();
-    routeInfo.spots.forEach((id, idx) => {
-      const sp = oahuSpots[id];
-      if (!sp) return;
+    routeMarkers(route).forEach(({ sp, badge }) => {
       bounds.extend([sp.lat, sp.lng]);
-      const icon = L.divIcon({ className: '', html: `<div class="oahu-spot-pin">${sp.icon}<span class="oahu-seq-badge">${idx + 1}</span></div>`, iconSize: [30, 30], iconAnchor: [15, 15] });
-      L.marker([sp.lat, sp.lng], { icon }).bindPopup(`<b>${idx + 1}. ${sp.icon} ${sp.name}</b>`).addTo(sideLayer);
+      L.marker([sp.lat, sp.lng], { icon: spotIcon(sp, badge) }).bindPopup(`<b>${badge}. ${sp.icon} ${sp.name}</b>${placePopupLinks(sp)}`).addTo(sideLayer);
     });
-    if (routeInfo.roadPath.length > 1) L.polyline(routeInfo.roadPath, { color: '#006493', weight: 4.5, opacity: 0.9 }).addTo(sideLayer);
-    if (routeInfo.spots.length === 1) { const o = oahuSpots[routeInfo.spots[0]]; sideMap.setView([o.lat, o.lng], 15); }
+    if (route.roadPath.length > 1) L.polyline(route.roadPath, { color: '#006493', weight: 4.5, opacity: 0.9 }).addTo(sideLayer);
+    if (route.spots.length === 1) { const o = PLACES[route.spots[0]]; sideMap.setView([o.lat, o.lng], 15); }
     else sideMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
     const day = getScheduleDay(dayNum);
     document.getElementById('schedule-side-title').textContent = `🗺️ Day ${dayNum} 동선 (${day.date})`;
-    document.getElementById('schedule-side-list').innerHTML = routeInfo.spots.map((id, idx) => {
-      const sp = oahuSpots[id];
-      return sp ? `<div class="text-[12px] font-bold text-slate-700">${idx + 1}. ${sp.icon} ${sp.name}</div>` : '';
+    document.getElementById('schedule-side-list').innerHTML = route.spots.map((id, idx) => {
+      const sp = PLACES[id];
+      return `<div class="text-[12.5px] font-bold text-slate-700">${idx + 1}. ${sp.icon} ${sp.name}</div>`;
     }).join('');
   }
 
@@ -2203,7 +2468,7 @@
     const q = (document.getElementById('hhv-index-search').value || '').trim().toLowerCase();
 
     chipsEl.innerHTML = [{ key: 'all', label: '전체', color: '#475569' }].concat(HHV_INDEX_CATS).map(c => `
-      <button type="button" data-hhvcat="${c.key}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11.5px] font-bold border ${hhvIndexCat === c.key ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700 border-slate-300'}">
+      <button type="button" data-hhvcat="${c.key}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12.5px] font-bold border ${hhvIndexCat === c.key ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700 border-slate-300'}">
         <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${c.color}"></span>${c.label}
       </button>`).join('');
     chipsEl.querySelectorAll('[data-hhvcat]').forEach(b => b.addEventListener('click', () => { hhvIndexCat = b.dataset.hhvcat; renderHhvIndex(); }));
@@ -2216,7 +2481,7 @@
         <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
           <div class="flex items-center gap-1.5 text-[12px] font-extrabold text-slate-800 mb-1.5">
             <span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${c.color}"></span>${c.label}
-            <span class="text-[11px] font-bold text-slate-400">${rows.length}</span>
+            <span class="text-[12px] font-bold text-slate-500">${rows.length}</span>
           </div>
           <div class="divide-y divide-slate-200">
             ${rows.map(it => {
@@ -2227,9 +2492,9 @@
                 <span class="hhv-num" style="background:${c.color}">${it.n}</span>
                 <div class="min-w-0 flex-1">
                   <div class="text-[12.5px] font-bold text-slate-900 leading-snug">${it.name}</div>
-                  <div class="text-[11px] text-slate-500">${it.ko ? it.ko + ' · ' : ''}${it.loc}</div>
+                  <div class="text-[12px] text-slate-500">${it.ko ? it.ko + ' · ' : ''}${it.loc}</div>
                 </div>
-                ${has ? '<span class="text-[11px] font-bold text-sky-700 shrink-0 pt-0.5">📍 위치</span>' : '<span class="text-[10.5px] font-semibold text-slate-400 shrink-0 pt-0.5">지도 번호 없음</span>'}
+                ${has ? '<span class="text-[12px] font-bold text-sky-700 shrink-0 pt-0.5">📍 위치</span>' : '<span class="text-[11.5px] font-semibold text-slate-500 shrink-0 pt-0.5">지도 번호 없음</span>'}
               </div>`; }).join('')}
           </div>
         </div>`;
@@ -2379,7 +2644,7 @@
     resortMap = L.map('resort-leaflet-map', { crs: L.CRS.Simple, minZoom: -2.5, maxZoom: 0, zoomSnap: 0.25, attributionControl: false });
     buildKoLayers();
 
-    const makeChip = (sp) => `<button type="button" onclick="selectResortSpot('${sp.id}')" class="px-2.5 py-1 rounded-full text-[11.5px] font-bold bg-white border border-slate-300 hover:border-sky-500">${sp.icon} ${sp.name.split(' (#')[0]}</button>`;
+    const makeChip = (sp) => `<button type="button" onclick="selectResortSpot('${sp.id}')" class="px-2.5 py-1 rounded-full text-[12.5px] font-bold bg-white border border-slate-300 hover:border-sky-500">${sp.icon} ${sp.name.split(' (#')[0]}</button>`;
     const all = getResortSpots();
     ['tower', 'food', 'pool', 'service'].forEach(cat => {
       const el = document.getElementById(`legend-cat-${cat}`);
@@ -2421,7 +2686,32 @@
   const FAMILIES = ['A', 'B', 'C'];
   const SPLIT_LABEL = { '8p': '8인 3:3:2', '6p': '선발6인 3:3:0', 'equal': '3가족 1:1:1' };
   const SPLIT_RATIO = { '8p': { A: 3/8, B: 3/8, C: 2/8 }, '6p': { A: 1/2, B: 1/2, C: 0 }, 'equal': { A: 1/3, B: 1/3, C: 1/3 } };
-  const VALID_DATES = ['사전', '2/18', '2/19', '2/20', '2/21', '2/22', '2/23', '2/24', '2/25', '2/26', '2/27', '2/28'];
+  const VALID_DATES = ['사전'].concat(scheduleData.map(d => d.date.split(' ')[0]));   // 일정표 날짜에서 자동 생성
+
+  // 지출 입력 기본값: 여행 중이면 오늘(하와이 날짜), 결제 가족·분담 방식은 이 휴대폰에서 마지막으로 쓴 값
+  const LAST_PAYER_KEY = 'hawaii_last_payer', LAST_SPLIT_KEY = 'hawaii_last_split';
+  function initExpenseForm() {
+    const sel = document.getElementById('exp-date-input');
+    if (sel) {
+      sel.innerHTML = VALID_DATES.map(v => {
+        const d = scheduleData.find(x => x.date.split(' ')[0] === v);
+        return `<option value="${v}">${v === '사전' ? '사전 결제' : `${v} (D${d.day})`}</option>`;
+      }).join('');
+      const t = tripTodayMD();
+      sel.value = t && VALID_DATES.includes(t) ? t : '사전';
+    }
+    try {
+      const lp = localStorage.getItem(LAST_PAYER_KEY), ls = localStorage.getItem(LAST_SPLIT_KEY);
+      if (lp && FAMILIES.includes(lp)) document.getElementById('exp-payer-input').value = lp;
+      if (ls && SPLIT_LABEL[ls]) document.getElementById('exp-split-input').value = ls;
+    } catch (e) {}
+    // 입력 내용이 바뀌면 새 저장 요청으로 취급 (같은 내용 재시도만 중복 방지)
+    ['exp-title-input', 'exp-amount-input', 'exp-date-input', 'exp-payer-input', 'exp-split-input'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', () => { pendingClientRef = null; });
+    });
+  }
+  let pendingClientRef = null;   // 응답이 끊겨 다시 눌러도 같은 건이 두 번 저장되지 않도록 하는 요청 번호
 
   let expenses = [];          // DB에서 읽어온 원장 (무효 건 포함)
   let sb = null;              // Supabase client
@@ -2437,7 +2727,7 @@
     const el = document.getElementById('sync-status');
     if (!el) return;
     const tones = { ok: 'bg-emerald-50 text-emerald-800', warn: 'bg-amber-50 text-amber-800', err: 'bg-rose-50 text-rose-700', idle: 'bg-slate-100 text-slate-600' };
-    el.className = `px-2 py-0.5 rounded-full text-[11px] font-bold nowrap-btn ${tones[tone] || tones.idle}`;
+    el.className = `px-2 py-0.5 rounded-full text-[12px] font-bold nowrap-btn ${tones[tone] || tones.idle}`;
     el.textContent = text;
   }
 
@@ -2506,7 +2796,7 @@
         ? expenses.map(item => {
             const photo = item.photo_path ? `<a href="${esc(receiptPublicUrl(item.photo_path))}" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🧾 영수증 ↗</a>` : '';
             const voidCls = item.is_void ? 'opacity-50 line-through' : '';
-            const voidTag = item.is_void ? `<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[10.5px] font-extrabold no-underline">무효</span>` : '';
+            const voidTag = item.is_void ? `<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[11.5px] font-extrabold no-underline">무효</span>` : '';
             return `
             <div class="py-3 flex items-center justify-between gap-2">
               <div class="min-w-0">
@@ -2514,7 +2804,7 @@
                   <span class="text-[13.5px] font-extrabold text-slate-900 truncate ${voidCls}">${esc(item.title)}</span>
                   ${voidTag}
                 </div>
-                <div class="text-[11px] text-slate-500">${esc(item.exp_date)} · ${esc(item.payer)}가족 결제 (${SPLIT_LABEL[item.split] || SPLIT_LABEL['8p']})${item.is_void && item.void_note ? ' · ' + esc(item.void_note) : ''}</div>
+                <div class="text-[12px] text-slate-500">${esc(item.exp_date)} · ${esc(item.payer)}가족 결제 (${SPLIT_LABEL[item.split] || SPLIT_LABEL['8p']})${item.is_void && item.void_note ? ' · ' + esc(item.void_note) : ''}</div>
                 ${photo ? `<div class="pt-1">${photo}</div>` : ''}
               </div>
               <span class="text-[14px] font-extrabold nowrap-btn ${voidCls}">$${Number(item.amount).toFixed(2)}</span>
@@ -2618,6 +2908,7 @@
   }
 
   async function handleReceiptFile(file) {
+    pendingClientRef = null;
     if (!file) return;
     const runId = ++ocrRunId;
     const statusEl = document.getElementById('ocr-status');
@@ -2661,6 +2952,7 @@
   }
 
   function clearReceipt() {
+    pendingClientRef = null;
     ocrRunId++;
     pendingReceiptBlob = null;
     const wrap = document.getElementById('receipt-preview-wrap');
@@ -2692,6 +2984,7 @@
     const splitText = SPLIT_LABEL[split];
     if (!confirm(`아래 내용으로 저장할까요? 저장 후에는 수정·삭제할 수 없습니다.\n\n${title}\n$${amount.toFixed(2)} · ${date} · ${payer}가족 결제 · ${splitText}`)) return;
 
+    if (!pendingClientRef) pendingClientRef = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
     btn.disabled = true;
     btn.textContent = '저장 중…';
     try {
@@ -2710,9 +3003,12 @@
 
       const { error } = await sb.rpc('add_expense', {
         p_code: code, p_title: title, p_amount: Math.round(amount * 100) / 100,
-        p_date: date, p_payer: payer, p_split: split, p_photo_path: photoPath
+        p_date: date, p_payer: payer, p_split: split, p_photo_path: photoPath,
+        p_client_ref: pendingClientRef
       });
       if (error) throw error;
+      pendingClientRef = null;
+      try { localStorage.setItem(LAST_PAYER_KEY, payer); localStorage.setItem(LAST_SPLIT_KEY, split); } catch (e) {}
 
       document.getElementById('exp-title-input').value = '';
       document.getElementById('exp-amount-input').value = '';
@@ -2727,16 +3023,135 @@
     }
   }
 
-  // CHECKLIST (조회 전용)
+  /* =====================================================================
+   * [DATA] 사전 예약 목록 — 날짜·시각·비용은 일정표에서 자동으로 가져옴 (따로 적지 않음)
+   *   place: 장소 id · lead: 예약 시점 · costKeys: 일정 비용 줄에서 찾을 단어
+   * ===================================================================== */
+  const RESERVATIONS = [
+    { place: 'hanauma', lead: '30~60일 전', tone: 'amber', note: 'Roberts Hawaii 사전예약 또는 방문 2일 전 시영 PROS 예약',
+      costKeys: ['Hanauma'], links: [{ label: 'Roberts Hawaii 예약', url: 'https://hbay.robertshawaii.com/' }, { label: '시영 PROS 예약', url: 'https://web5.hnl.info/pros-ticketing/event/hbay-online-reservation' }] },
+    { place: 'diamond', lead: '30일 전', tone: 'sky', note: '입장권 및 차량 주차권 사전 예약 필수',
+      costKeys: ['Diamond Head'], links: [{ label: '주립공원 예약', url: 'https://gostateparks.hawaii.gov/diamondhead' }] },
+    { place: 'kualoa', lead: '1~2개월 전', tone: 'emerald', note: '무비 사이트 투어 또는 UTV 랩터 투어',
+      costKeys: ['Kualoa'], links: [{ label: '투어 예약', url: 'https://www.kualoa.com/tours-and-activities/movie-sites-ranch-tour' }] },
+    { place: 'pearl', lead: '8주 전', tone: 'purple', note: 'USS Arizona 보트 예약 · 가방 반입 금지',
+      costKeys: ['USS Arizona'], links: [{ label: '진주만 예약', url: 'https://www.recreation.gov/ticket/facility/233338' }] },
+    { place: 'wolfgang', lead: '2~4주 전', tone: 'amber', note: '실내 다이닝은 OpenTable 예약 · 야외 라나이 해피아워는 예약 없이 선착순',
+      costKeys: ["Wolfgang"], links: [{ label: 'OpenTable 예약', url: 'https://www.opentable.com/restaurant/profile/27859' }] },
+    { place: 'plumeria', lead: '2~4주 전', tone: 'rose', note: '8인 점심 예약 · 3부부 기념 스냅',
+      costKeys: ['Plumeria', '카할라 주차'], links: [{ label: '점심 예약', url: 'https://www.opentable.com/restaurant/profile/58801' }, { label: '주차 안내', url: 'https://www.kahalaresort.com/luxury-hotel/faqs/' }] }
+  ];
+  const TONE_CLS = { amber: 'bg-amber-100 text-amber-900', sky: 'bg-sky-100 text-sky-900', emerald: 'bg-emerald-100 text-emerald-900', purple: 'bg-purple-100 text-purple-900', rose: 'bg-rose-100 text-rose-900' };
+
+  function renderReservations() {
+    const wrap = document.getElementById('reservation-list');
+    if (!wrap) return;
+    const rows = RESERVATIONS.map(r => {
+      const sp = PLACES[r.place];
+      const where = placeSlot(r.place);
+      if (!sp) { reportDataIssue(`예약 목록: 장소 목록에 없는 id '${r.place}'`); return null; }
+      if (!where) reportDataIssue(`예약 목록: '${sp.name}'이(가) 지금 일정에 없습니다`);
+      return { r, sp, where, order: where ? where.day.day * 10000 + (where.slot.startMin != null ? where.slot.startMin : (SLOT_DEFAULT_MIN[where.slot.label] || 0)) : 1e9 };
+    }).filter(Boolean).sort((a, b) => a.order - b.order);
+
+    wrap.innerHTML = rows.map(({ r, sp, where }, i) => {
+      const when = where ? `${where.day.date}${where.slot.time ? ' · ' + where.slot.time : ' · ' + where.slot.label}` : '일정에 없음';
+      const costs = where ? where.day.costs.filter(c => r.costKeys.some(k => c.includes(k))) : [];
+      return `
+        <div class="p-3 rounded-2xl ${where ? 'bg-slate-50 border border-slate-200' : 'bg-rose-50 border border-rose-200'} space-y-1.5">
+          <div class="flex items-start justify-between gap-2">
+            <a href="${gMapSearchQuery(sp.query)}" target="_blank" rel="noopener noreferrer" class="text-[14px] font-extrabold text-sky-900 underline">${i + 1}. 📍 ${sp.name} (${when})</a>
+            <span class="px-2 py-0.5 rounded-full ${TONE_CLS[r.tone] || TONE_CLS.sky} text-[12px] font-extrabold nowrap-btn">${r.lead}</span>
+          </div>
+          <p class="text-[12.5px] text-slate-700">${r.note}</p>
+          ${costs.length ? `<div class="text-[12px] text-slate-600 font-semibold">${costs.map(c => '💰 ' + c).join('<br>')}</div>` : ''}
+          ${where ? '' : '<p class="text-[12.5px] font-bold text-rose-700">⚠️ 지금 일정표에 이 장소가 없어요. 예약을 유지할지 확인하세요.</p>'}
+          <div class="flex flex-wrap gap-1.5 pt-1">
+            <a href="${gMapDirQuery(sp.query)}" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 길안내 ↗</a>
+            ${r.links.map(l => `<a href="${l.url}" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 ${l.label} ↗</a>`).join('')}
+            ${where ? `<button type="button" onclick="goToDay(${where.day.day})" class="tip-chip">📅 D${where.day.day} 일정 보기</button>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  window.goToDay = function(dayNum) {
+    switchMainScreen('tab-schedule');
+    updateDayView(dayNum);
+  };
+
+  /* [DATA] 항공편 — 헤더 팝업과 '항공·렌트' 화면이 함께 씀 */
+  const FLIGHTS = [
+    { kind: '출국', no: 'KE051', aircraft: 'B787-9', route: '인천(ICN T2) 22:20 ➔ 호놀룰루(HNL T2) 11:10', note: '선발대 6인: 2/18(목) · 후발대 2인: 2/21(일) 동일 스케줄', tone: 'sky' },
+    { kind: '귀국', no: 'KE052', aircraft: 'B787-9', route: '호놀룰루(HNL T2) 14:25 ➔ 인천(ICN T2) 20:20 (+1일)', note: '8인 전원: 2/28(일) 출발 ➔ 3/1(월) 도착', tone: 'slate' }
+  ];
+  function renderFlights() {
+    const html = FLIGHTS.map(f => `
+      <div class="p-3 rounded-2xl ${f.tone === 'sky' ? 'bg-sky-50/70 border border-sky-200' : 'bg-slate-50 border border-slate-200'} space-y-1">
+        <div class="font-extrabold ${f.tone === 'sky' ? 'text-sky-900' : 'text-slate-800'}">${f.kind} · ${f.no} (${f.aircraft})</div>
+        <div class="text-[14px] font-extrabold text-slate-900">${f.route}</div>
+        <div class="text-[12.5px] text-slate-700">• ${f.note}</div>
+      </div>`).join('');
+    ['flight-list', 'flight-modal-list'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = html; });
+  }
+
+  // 준비물 체크리스트 — 체크 상태는 각자 휴대폰에 저장
+  const CHECK_KEY = 'hawaii_checklist_v1';
+  function readChecks() { try { return JSON.parse(localStorage.getItem(CHECK_KEY) || '{}') || {}; } catch (e) { return {}; } }
   function renderChecklist() {
     const wrap = document.getElementById('checklist-items');
-    if (wrap) {
-      wrap.innerHTML = checklistItems.map(item => `
-        <div class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-          <span class="w-5 text-center">${item.done ? '✅' : '⬜'}</span>
-          <span class="text-[13px] font-semibold ${item.done ? 'text-slate-500' : 'text-slate-900'}">${item.text}</span>
-        </div>
-      `).join('');
+    if (!wrap) return;
+    const saved = readChecks();
+    wrap.innerHTML = checklistItems.map((item, i) => {
+      const done = saved[item.text] != null ? saved[item.text] : item.done;
+      return `
+        <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+          <input type="checkbox" data-check="${i}" ${done ? 'checked' : ''} class="w-5 h-5 accent-sky-700 shrink-0">
+          <span class="text-[13.5px] font-semibold ${done ? 'text-slate-500 line-through' : 'text-slate-900'}">${item.text}</span>
+        </label>`;
+    }).join('');
+    wrap.querySelectorAll('[data-check]').forEach(cb => cb.addEventListener('change', () => {
+      const s = readChecks();
+      s[checklistItems[+cb.dataset.check].text] = cb.checked;
+      try { localStorage.setItem(CHECK_KEY, JSON.stringify(s)); } catch (e) {}
+      renderChecklist();
+    }));
+  }
+
+  // 데이터 점검 — 연결이 끊긴 곳을 찾아 콘솔에 남기고, 주소 끝에 ?check=1 을 붙이면 화면에도 보여 줌
+  function runDataChecks() {
+    for (let d = 1; d <= TOTAL_DAYS; d++) {
+      const day = getScheduleDay(d);
+      if (!day) continue;
+      const md = day.date.split(' ')[0];
+      if (!DAY_ENV[md]) reportDataIssue(`D${d} (${md}): 날씨·일출 정보가 없습니다`);
+      if (!VALID_DATES.includes(md)) reportDataIssue(`D${d} (${md}): 정산 날짜 목록에 없습니다`);
+      day.slots.forEach(sl => { if (!sl.placeIds.length && !sl.mapQuery) reportDataIssue(`D${d} ${sl.label}: 장소 연결이 없습니다`); });
+    }
+    Object.keys(SLOT_PLACES).concat(Object.keys(SLOT_TIME)).forEach(k => {
+      const [d, label] = k.split('-');
+      const base = scheduleData.find(x => x.day === +d);
+      if (!base || !base.slots.some(s => s.label === label)) reportDataIssue(`연결 계층 '${k}': 원본 일정에 해당 칸이 없습니다`);
+    });
+    Object.entries(MENU_SLOT_MAP).forEach(([k, id]) => { if (!MENUS[id]) reportDataIssue(`메뉴 연결 '${k}': 메뉴 '${id}'가 없습니다`); });
+    Object.values(PLACES).forEach(p => { if (p.menu && !MENUS[p.menu]) reportDataIssue(`장소 '${p.id}': 메뉴 '${p.menu}'가 없습니다`); });
+    Object.entries(TIP_PLACE).forEach(([name, id]) => {
+      if (!PLACES[id]) reportDataIssue(`꿀팁 '${name}': 장소 목록에 없는 id '${id}'`);
+      else if (!placeDays(id).length) reportDataIssue(`꿀팁 '${name}': 지금 일정에 없는 장소입니다`);
+    });
+    Object.entries(TIP_SLOT).forEach(([name, k]) => {
+      const [d, label] = k.split('-');
+      const day = getScheduleDay(+d);
+      if (!day || !day.slots.some(s => s.label === label)) reportDataIssue(`꿀팁 '${name}': 연결된 칸 '${k}'이 없습니다`);
+    });
+    RESERVATIONS.forEach(r => { if (PLACES[r.place] && !placeSlot(r.place)) reportDataIssue(`예약 '${PLACES[r.place].name}': 지금 일정에 없습니다`); });
+
+    if (URL_PARAMS.get('check')) {
+      const box = document.createElement('div');
+      box.className = 'm3-card p-3 border-2 border-amber-400 bg-amber-50 text-[12.5px] font-semibold text-amber-900 space-y-1';
+      box.innerHTML = `<div class="font-extrabold">🔎 데이터 점검 결과: ${DATA_ISSUES.length ? DATA_ISSUES.length + '건' : '문제 없음'}</div>` + DATA_ISSUES.map(m => `<div>• ${m}</div>`).join('');
+      const main = document.querySelector('main');
+      if (main) main.prepend(box);
     }
   }
 
@@ -2747,6 +3162,9 @@
     if (targetId === 'tab-resort') setTimeout(() => { if (resortMap) resortMap.invalidateSize(); else initResortMap(); }, 100);
     if (targetId === 'tab-expense') loadExpenses();
     if (targetId === 'tab-schedule') setTimeout(() => updateScheduleSideMap(currentDayIndex), 100);
+    // 일정표 외 화면에서는 헤더를 한 줄로 줄여 화면을 넓게 씀
+    const hero = document.getElementById('app-hero-banner');
+    if (hero) hero.classList.toggle('hero-compact', targetId !== 'tab-schedule');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -2754,14 +3172,24 @@
     applyHeroTheme(getAutoThemeIdxByHour(), false);
     document.getElementById('cycle-theme-btn').addEventListener('click', () => applyHeroTheme(currentHeroThemeIdx + 1, true));
 
+    // 여행 중이면 오늘 일정으로 바로 열림 (?day=5 로 특정 날짜 열기 가능)
+    const paramDay = parseInt(URL_PARAMS.get('day'), 10);
+    const startDay = (paramDay >= 1 && paramDay <= TOTAL_DAYS) ? paramDay : (tripTodayDay() || 1);
+    currentDayIndex = startDay;
     renderScheduleDayGrid();
-    updateDayView(1);
+    updateDayView(startDay);
     renderOahuFilterGrid();
+    initExpenseForm();
     renderExpenses();
     renderChecklist();
     renderPlaceTips();
+    renderReservations();
+    renderFlights();
+    document.querySelectorAll('[data-album-link]').forEach(a => { a.href = GOOGLE_PHOTOS_ALBUM_URL; });
     initSupabase();
     loadForecast();
+    runDataChecks();
+    document.getElementById('today-day-btn').addEventListener('click', () => { const t = tripTodayDay(); if (t) updateDayView(t); });
 
     document.getElementById('exp-code-input').value = readSavedCode();
     document.getElementById('receipt-file').addEventListener('change', (e) => handleReceiptFile(e.target.files && e.target.files[0]));
@@ -2773,7 +3201,7 @@
     });
 
     document.getElementById('prev-day-btn').addEventListener('click', () => { if (currentDayIndex > 1) updateDayView(currentDayIndex - 1); });
-    document.getElementById('next-day-btn').addEventListener('click', () => { if (currentDayIndex < 11) updateDayView(currentDayIndex + 1); });
+    document.getElementById('next-day-btn').addEventListener('click', () => { if (currentDayIndex < TOTAL_DAYS) updateDayView(currentDayIndex + 1); });
 
     document.getElementById('toggle-oahu-sat-btn').addEventListener('click', (e) => {
       if (!oahuMap) return;
