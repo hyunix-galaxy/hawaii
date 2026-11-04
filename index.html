@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611040753">
+  <link rel="stylesheet" href="/tailwind.css?v=202611040759">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -152,7 +152,7 @@
       backdrop-filter: blur(12px);
       border-top: 1px solid #E2E8F0;
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       z-index: 1000;
       padding: 6px 4px 8px 4px;
     }
@@ -365,6 +365,7 @@
       white-space: nowrap;
       cursor: pointer;
     }
+    .tip-chip.fx-on { background: #0369A1; color: #FFFFFF; border-color: #0369A1; }
     .menu-chip { background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; }
     .tip-chip  { background: #F8FAFC; color: #334155; border: 1px solid #CBD5E1; }
     .day-chip { min-height: 46px; font-size: 13px; }
@@ -462,7 +463,7 @@
       .m3-bottom-nav {
         top: 0; bottom: 0; left: 0; transform: none;
         width: 76px; max-width: 76px; height: auto;
-        grid-template-columns: 1fr; grid-template-rows: repeat(5, 1fr);
+        grid-template-columns: 1fr; grid-template-rows: repeat(6, 1fr);
         border-top: none; border-right: 1px solid #E2E8F0;
         padding: 8px 4px;
       }
@@ -827,6 +828,71 @@
     </section>
 
     <!-- ================= TAB 5: 📌 예약·꿀팁 ================= -->
+    <!-- ================= TAB: 💱 환율 계산기 ================= -->
+    <section id="tab-fx" class="main-screen hidden space-y-3">
+      <div class="m3-card p-4 space-y-2">
+        <div class="flex items-center justify-between gap-2">
+          <h2 class="text-[16px] font-extrabold text-slate-900">💱 환율 계산기 (USD ↔ 원)</h2>
+          <button id="fx-refresh-btn" type="button" class="px-3 py-1.5 rounded-full bg-sky-50 text-sky-800 border border-sky-200 text-[12.5px] font-bold nowrap-btn">↻ 새로고침</button>
+        </div>
+        <div class="flex items-baseline gap-2 flex-wrap">
+          <span class="text-[13px] font-bold text-slate-500">1 USD =</span>
+          <span id="fx-rate-text" class="text-[24px] font-extrabold text-slate-900">-</span>
+          <span class="text-[14px] font-bold text-slate-600">원</span>
+        </div>
+        <div id="fx-rate-meta" class="text-[12px] font-semibold text-slate-500"></div>
+        <label class="flex items-center gap-2 pt-1 text-[13px] font-bold text-slate-700">
+          <input id="fx-manual-toggle" type="checkbox" class="w-5 h-5 accent-sky-700">
+          직접 입력한 환율 쓰기 (트래블카드·환전소 환율)
+        </label>
+        <input id="fx-manual-rate" type="number" inputmode="decimal" step="0.01" placeholder="예: 1365.50" class="hidden w-full px-3 py-2 rounded-xl border border-slate-300 text-[14px] font-extrabold">
+      </div>
+
+      <div class="m3-card p-4 space-y-3">
+        <h3 class="text-[14.5px] font-extrabold text-slate-900">🔁 바로 바꾸기</h3>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[12px] font-bold text-slate-600 mb-1">달러 ($)</label>
+            <input id="fx-usd" type="number" inputmode="decimal" step="0.01" placeholder="0.00" class="w-full px-3 py-3 rounded-xl border border-slate-300 text-[18px] font-extrabold">
+          </div>
+          <div>
+            <label class="block text-[12px] font-bold text-slate-600 mb-1">원 (₩)</label>
+            <input id="fx-krw" type="number" inputmode="numeric" step="1" placeholder="0" class="w-full px-3 py-3 rounded-xl border border-slate-300 text-[18px] font-extrabold">
+          </div>
+        </div>
+        <div id="fx-quick" class="flex flex-wrap gap-1.5"></div>
+        <div id="fx-table" class="grid grid-cols-2 gap-x-3 gap-y-1 text-[13px] font-semibold text-slate-700 bg-slate-50 rounded-xl p-2.5 border border-slate-200"></div>
+      </div>
+
+      <div class="m3-card p-4 space-y-3">
+        <h3 class="text-[14.5px] font-extrabold text-slate-900">🧾 식당·쇼핑 실제 결제액 (세금·팁 포함)</h3>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[12px] font-bold text-slate-600 mb-1">표시 가격 ($)</label>
+            <input id="fx-bill" type="number" inputmode="decimal" step="0.01" placeholder="0.00" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-[16px] font-extrabold">
+          </div>
+          <div>
+            <label class="block text-[12px] font-bold text-slate-600 mb-1">나눌 인원</label>
+            <select id="fx-people" class="w-full px-2.5 py-2.5 rounded-xl border border-slate-300 text-[15px] font-bold bg-white">
+              <option value="1">1명</option><option value="2">2명</option><option value="3">3명</option><option value="4">4명</option>
+              <option value="5">5명</option><option value="6">6명</option><option value="7">7명</option><option value="8">8명</option>
+            </select>
+          </div>
+        </div>
+        <label class="flex items-center gap-2 text-[13px] font-bold text-slate-700">
+          <input id="fx-tax" type="checkbox" checked class="w-5 h-5 accent-sky-700">
+          하와이 소비세 4.712% 더하기 (오아후 · 가격표에 세금이 빠져 있을 때)
+        </label>
+        <div>
+          <div class="text-[12px] font-bold text-slate-600 mb-1">팁</div>
+          <div id="fx-tip" class="flex flex-wrap gap-1.5"></div>
+        </div>
+        <div id="fx-bill-result" class="bg-sky-50 rounded-xl p-3 border border-sky-200 space-y-1"></div>
+        <p class="text-[11.5px] font-semibold text-slate-500 leading-relaxed">식당 팁은 보통 세금 전 금액의 15~20%예요. 6인 이상은 영수증에 팁(서비스료)이 자동으로 붙는 곳이 있으니 이중으로 주지 않게 확인하세요. 카드 결제 시 해외결제 수수료는 카드마다 달라 포함하지 않았어요.</p>
+      </div>
+      <div class="text-[11px] font-semibold text-slate-500 px-1">환율 출처: <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener noreferrer" class="underline">Rates By Exchange Rate API</a> (하루 1회 갱신 · 기준 환율이라 실제 카드·환전 환율과 다를 수 있어요)</div>
+    </section>
+
     <section id="tab-guide" class="main-screen hidden space-y-3">
       <div class="m3-segmented">
         <button data-guide="dday" type="button" class="m3-seg-btn guide-seg-btn active">⏰ 예약</button>
@@ -917,6 +983,10 @@
     <button type="button" data-target="tab-expense" class="m3-nav-item">
       <span class="m3-nav-pill">💰</span>
       <span>정산</span>
+    </button>
+    <button type="button" data-target="tab-fx" class="m3-nav-item">
+      <span class="m3-nav-pill">💱</span>
+      <span>환율</span>
     </button>
     <button type="button" data-target="tab-guide" class="m3-nav-item">
       <span class="m3-nav-pill">📌</span>
@@ -2157,7 +2227,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611040753').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611040759').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -3436,11 +3506,117 @@
     if (targetId === 'tab-oahu') setTimeout(() => { if (oahuMap) oahuMap.invalidateSize(); else initOahuMap(); }, 100);
     if (targetId === 'tab-resort') setTimeout(() => { if (resortMap) resortMap.invalidateSize(); else initResortMap(); }, 100);
     if (targetId === 'tab-expense') loadExpenses();
+    if (targetId === 'tab-fx') loadFxRate(false);
     if (targetId === 'tab-schedule') setTimeout(() => updateScheduleSideMap(currentDayIndex), 100);
     // 일정표 외 화면에서는 헤더를 한 줄로 줄여 화면을 넓게 씀
     const hero = document.getElementById('app-hero-banner');
     if (hero) hero.classList.toggle('hero-compact', targetId !== 'tab-schedule');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* ---- 💱 환율 계산기 ----
+   *   기준 환율: open.er-api.com (하루 1회 갱신) → 실패하면 frankfurter.dev (유럽중앙은행) → 그래도 실패하면 이 휴대폰에 마지막으로 받은 환율
+   *   트래블카드·환전소 환율을 직접 입력해 쓸 수도 있음 */
+  const FX_CACHE_KEY = 'hawaii_fx_v1', FX_MANUAL_KEY = 'hawaii_fx_manual_v1';
+  const HI_TAX = 0.04712;
+  let fxAuto = null;          // { rate, date, source, fetchedAt }
+  let fxTip = 0.18;
+  function fxRate() {
+    try {
+      const m = JSON.parse(localStorage.getItem(FX_MANUAL_KEY) || 'null');
+      if (m && m.on && m.rate > 0) return m.rate;
+    } catch (e) {}
+    return fxAuto ? fxAuto.rate : null;
+  }
+  const fmtWon = n => Math.round(n).toLocaleString('ko-KR');
+  const fmtUsd = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  async function loadFxRate(force) {
+    try { const c = JSON.parse(localStorage.getItem(FX_CACHE_KEY) || 'null'); if (c && c.rate) fxAuto = c; } catch (e) {}
+    const fresh = fxAuto && (Date.now() - fxAuto.fetchedAt < 6 * 3600 * 1000);
+    if (fresh && !force) { renderFx(); return; }
+    renderFx();
+    const tries = [
+      async () => { const j = await fetch('https://open.er-api.com/v6/latest/USD').then(r => r.json()); if (j.result !== 'success' || !j.rates || !j.rates.KRW) throw 0; return { rate: j.rates.KRW, date: new Date(j.time_last_update_unix * 1000), source: 'Exchange Rate API' }; },
+      async () => { const j = await fetch('https://api.frankfurter.dev/v1/latest?base=USD&symbols=KRW').then(r => r.json()); if (!j.rates || !j.rates.KRW) throw 0; return { rate: j.rates.KRW, date: new Date(j.date + 'T16:00:00Z'), source: '유럽중앙은행(Frankfurter)' }; }
+    ];
+    for (const t of tries) {
+      try {
+        const r = await t();
+        fxAuto = { rate: r.rate, date: r.date.toISOString(), source: r.source, fetchedAt: Date.now() };
+        try { localStorage.setItem(FX_CACHE_KEY, JSON.stringify(fxAuto)); } catch (e) {}
+        renderFx();
+        if (force) showToast('환율을 새로 받았어요.');
+        return;
+      } catch (e) {}
+    }
+    if (force) showToast(fxAuto ? '지금은 새 환율을 받을 수 없어 마지막 환율을 써요.' : '환율을 받을 수 없어요. 직접 입력해 주세요.');
+  }
+  function renderFx() {
+    const rate = fxRate();
+    let manual = null; try { manual = JSON.parse(localStorage.getItem(FX_MANUAL_KEY) || 'null'); } catch (e) {}
+    const usingManual = manual && manual.on && manual.rate > 0;
+    const rt = document.getElementById('fx-rate-text');
+    if (!rt) return;
+    rt.textContent = rate ? rate.toLocaleString('ko-KR', { maximumFractionDigits: 2 }) : '-';
+    const meta = document.getElementById('fx-rate-meta');
+    if (usingManual) meta.textContent = '✍️ 직접 입력한 환율을 쓰는 중' + (fxAuto ? ` (기준 환율 ${fxAuto.rate.toLocaleString('ko-KR', { maximumFractionDigits: 2 })}원)` : '');
+    else if (fxAuto) {
+      const d = new Date(fxAuto.date);
+      meta.textContent = `${fxAuto.source} · ${d.toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })} 기준${Date.now() - fxAuto.fetchedAt > 24 * 3600 * 1000 ? ' · ⚠️ 하루 넘게 지난 환율 (인터넷 연결 시 새로고침)' : ''}`;
+    } else meta.textContent = '환율을 받는 중이에요… 인터넷이 안 되면 직접 입력해 주세요.';
+    document.getElementById('fx-manual-toggle').checked = !!(manual && manual.on);
+    const mi = document.getElementById('fx-manual-rate');
+    mi.classList.toggle('hidden', !(manual && manual.on));
+    if (manual && manual.rate && document.activeElement !== mi) mi.value = manual.rate;
+    // 바로 바꾸기 표
+    document.getElementById('fx-table').innerHTML = rate ? [1, 5, 10, 20, 50, 100, 200, 500].map(v => `<div>$${v}</div><div class="text-right font-extrabold text-slate-900">${fmtWon(v * rate)}원</div>`).join('') : '<div class="col-span-2 text-slate-500">환율이 필요해요</div>';
+    syncFxInputs('usd');
+    renderBill();
+  }
+  function syncFxInputs(from) {
+    const rate = fxRate();
+    const u = document.getElementById('fx-usd'), k = document.getElementById('fx-krw');
+    if (!rate || !u) return;
+    if (from === 'usd' && u.value !== '') k.value = Math.round(parseFloat(u.value) * rate);
+    if (from === 'krw' && k.value !== '') u.value = (parseFloat(k.value) / rate).toFixed(2);
+  }
+  function renderBill() {
+    const out = document.getElementById('fx-bill-result');
+    if (!out) return;
+    const rate = fxRate();
+    const bill = parseFloat(document.getElementById('fx-bill').value);
+    const people = parseInt(document.getElementById('fx-people').value, 10) || 1;
+    const withTax = document.getElementById('fx-tax').checked;
+    document.querySelectorAll('#fx-tip [data-tip]').forEach(b => b.classList.toggle('fx-on', parseFloat(b.dataset.tip) === fxTip));
+    if (!(bill > 0)) { out.innerHTML = '<div class="text-[13px] font-semibold text-slate-500">표시 가격을 넣으면 세금·팁을 더한 금액과 원화, 1인당 금액이 나와요.</div>'; return; }
+    const tax = withTax ? bill * HI_TAX : 0, tip = bill * fxTip, total = bill + tax + tip;
+    const line = (label, usd, strong) => `<div class="flex justify-between gap-2 text-[13px] ${strong ? 'font-extrabold text-slate-900 text-[15px]' : 'font-semibold text-slate-700'}"><span>${label}</span><span>$${fmtUsd(usd)}${rate ? ` · ${fmtWon(usd * rate)}원` : ''}</span></div>`;
+    out.innerHTML = line('표시 가격', bill) + (withTax ? line('소비세 4.712%', tax) : '') + (fxTip ? line(`팁 ${Math.round(fxTip * 100)}%`, tip) : '')
+      + '<div class="border-t border-sky-200 my-1"></div>' + line('합계', total, true)
+      + (people > 1 ? line(`1인당 (${people}명)`, total / people, true) : '');
+  }
+  function initFx() {
+    const quick = document.getElementById('fx-quick');
+    quick.innerHTML = [1, 5, 10, 20, 50, 100].map(v => `<button type="button" data-usd="${v}" class="tip-chip">$${v}</button>`).join('');
+    quick.querySelectorAll('[data-usd]').forEach(b => b.addEventListener('click', () => { document.getElementById('fx-usd').value = b.dataset.usd; syncFxInputs('usd'); }));
+    document.getElementById('fx-usd').addEventListener('input', () => syncFxInputs('usd'));
+    document.getElementById('fx-krw').addEventListener('input', () => syncFxInputs('krw'));
+    const tipEl = document.getElementById('fx-tip');
+    tipEl.innerHTML = [0, 0.15, 0.18, 0.20, 0.22].map(t => `<button type="button" data-tip="${t}" class="tip-chip">${t ? Math.round(t * 100) + '%' : '없음'}</button>`).join('');
+    tipEl.querySelectorAll('[data-tip]').forEach(b => b.addEventListener('click', () => { fxTip = parseFloat(b.dataset.tip); renderBill(); }));
+    ['fx-bill', 'fx-people', 'fx-tax'].forEach(id => document.getElementById(id).addEventListener('input', renderBill));
+    document.getElementById('fx-tax').addEventListener('change', renderBill);
+    document.getElementById('fx-people').addEventListener('change', renderBill);
+    const saveManual = () => {
+      const on = document.getElementById('fx-manual-toggle').checked;
+      const rate = parseFloat(document.getElementById('fx-manual-rate').value);
+      try { localStorage.setItem(FX_MANUAL_KEY, JSON.stringify({ on, rate: rate > 0 ? rate : null })); } catch (e) {}
+      renderFx();
+    };
+    document.getElementById('fx-manual-toggle').addEventListener('change', saveManual);
+    document.getElementById('fx-manual-rate').addEventListener('input', saveManual);
+    document.getElementById('fx-refresh-btn').addEventListener('click', () => loadFxRate(true));
+    loadFxRate(false);
   }
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -3467,6 +3643,7 @@
     initSupabase();
     loadForecast();
     loadRoadLegs();
+    initFx();
     runDataChecks();
     document.getElementById('today-day-btn').addEventListener('click', () => { const t = tripTodayDay(); if (t) updateDayView(t); });
 
