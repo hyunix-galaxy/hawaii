@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611041148">
+  <link rel="stylesheet" href="/tailwind.css?v=202611041152">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -772,9 +772,9 @@
               <div>
                 <label class="block text-[12px] font-bold text-slate-600 mb-1">결제 가족</label>
                 <select id="exp-payer-input" class="w-full px-2.5 py-2 rounded-xl border border-slate-300 text-[12.5px] font-bold bg-white">
-                  <option value="A">A가족</option>
-                  <option value="B">B가족</option>
-                  <option value="C">C가족</option>
+                  <option value="A">일산 가족</option>
+                  <option value="B">광명 가족</option>
+                  <option value="C">신림 가족</option>
                 </select>
               </div>
               <div>
@@ -810,17 +810,17 @@
 
           <div class="grid grid-cols-3 gap-2">
             <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
-              <div class="text-[12.5px] font-extrabold text-sky-800">A가족 (3명)</div>
+              <div class="text-[12.5px] font-extrabold text-sky-800">일산 (3명)</div>
               <div id="fam-a-share" class="text-[15px] font-extrabold text-slate-900 mt-1">$0.00</div>
               <div id="fam-a-diff" class="text-[12px] font-bold text-slate-500 mt-0.5">결제 $0</div>
             </div>
             <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
-              <div class="text-[12.5px] font-extrabold text-emerald-800">B가족 (3명)</div>
+              <div class="text-[12.5px] font-extrabold text-emerald-800">광명 (3명)</div>
               <div id="fam-b-share" class="text-[15px] font-extrabold text-slate-900 mt-1">$0.00</div>
               <div id="fam-b-diff" class="text-[12px] font-bold text-slate-500 mt-0.5">결제 $0</div>
             </div>
             <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
-              <div class="text-[12.5px] font-extrabold text-amber-800">C가족 (2명)</div>
+              <div class="text-[12.5px] font-extrabold text-amber-800">신림 (2명)</div>
               <div id="fam-c-share" class="text-[15px] font-extrabold text-slate-900 mt-1">$0.00</div>
               <div id="fam-c-diff" class="text-[12px] font-bold text-slate-500 mt-0.5">결제 $0</div>
             </div>
@@ -1663,6 +1663,9 @@
     { day: 5, costIndex: 0, cost: "Boots & Kimo's Banana Pancake w/ Macadamia Nut Sauce $16.99 · Macadamia Nut Sauce Pancakes $15.99 (2026.11 공식 메뉴)" },
     { day: 3, slot: '오전', set: { mapQuery: '66-190 Kamehameha Hwy Haleiwa HI' } },
     { day: 3, costIndex: 0, cost: "Ray's 통닭 1마리 약 $16 (토·일 10:00~16:00경 · 전화 예약 808-351-6258 · 현금 준비)" },
+    // 가족 이름: C가족 → 신림 가족 (2026.11.04)
+    { day: 4, daySet: { title: 'Day 4 · 후발대 신림 가족 픽업(8인 완전체) & 랍스터' } },
+    { day: 4, slot: '오전', set: { desc: '✈️ KE051 후발대(신림 가족 2인) HNL 11:10 도착 픽업 · 8인 완전체 합류!' } },
     { day: 4, slot: '점심', note: 'ℹ️ 영업 중 확인(2026.11) · 랍스터 특가 조건은 예약 전화(808-973-0168) 때 함께 확인' },
     { day: 4, costIndex: 1, cost: 'Tantalus Lookout 입장 무료 · 비거주자 주차 $7/대 (게이트 07:00 개방, 겨울 18:45경 폐쇄)' },
     { day: 7, costIndex: 0, cost: 'Kualoa Movie Sites 성인 $59.95 · 아동 $39.95 / UTV 랩터 $154.95 (+세금 4.712%)' },
@@ -2260,7 +2263,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611041148').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611041152').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -2996,6 +2999,9 @@
 
   // EXPENSES (공유 원장 · 자동 정산 계산)
   const FAMILIES = ['A', 'B', 'C'];
+  // 가족 이름 표시 — 저장된 정산 데이터는 A/B/C 그대로 두고 화면에만 이름으로 보여 줌
+  const FAMILY_NAME = { A: '일산', B: '광명', C: '신림' };
+  const famName = f => (FAMILY_NAME[f] || f) + ' 가족';
   const SPLIT_LABEL = { '8p': '8인 3:3:2', '6p': '선발6인 3:3:0', 'equal': '3가족 1:1:1' };
   const SPLIT_RATIO = { '8p': { A: 3/8, B: 3/8, C: 2/8 }, '6p': { A: 1/2, B: 1/2, C: 0 }, 'equal': { A: 1/3, B: 1/3, C: 1/3 } };
   const VALID_DATES = ['사전'].concat(scheduleData.map(d => d.date.split(' ')[0]));   // 일정표 날짜에서 자동 생성
@@ -3093,7 +3099,7 @@
       transEl.innerHTML = transfers.length
         ? transfers.map(t => `
             <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[13px] font-extrabold">
-              <span>${t.from}가족 ➔ ${t.to}가족</span>
+              <span>${famName(t.from)} ➔ ${famName(t.to)}</span>
               <span class="text-sky-800">$${t.amount.toFixed(2)}</span>
             </div>`).join('')
         : `<div class="text-[12.5px] text-slate-500 font-semibold">정산할 금액이 없습니다.</div>`;
@@ -3116,7 +3122,7 @@
                   <span class="text-[13.5px] font-extrabold text-slate-900 truncate ${voidCls}">${esc(item.title)}</span>
                   ${voidTag}
                 </div>
-                <div class="text-[12px] text-slate-500">${esc(item.exp_date)} · ${esc(item.payer)}가족 결제 (${SPLIT_LABEL[item.split] || SPLIT_LABEL['8p']})${item.is_void && item.void_note ? ' · ' + esc(item.void_note) : ''}</div>
+                <div class="text-[12px] text-slate-500">${esc(item.exp_date)} · ${esc(famName(item.payer))} 결제 (${SPLIT_LABEL[item.split] || SPLIT_LABEL['8p']})${item.is_void && item.void_note ? ' · ' + esc(item.void_note) : ''}</div>
                 ${photo ? `<div class="pt-1">${photo}</div>` : ''}
               </div>
               <span class="text-[14px] font-extrabold nowrap-btn ${voidCls}">$${Number(item.amount).toFixed(2)}</span>
@@ -3332,7 +3338,7 @@
     if (!/^\d{6}$/.test(code)) { showEntryGate('입장 코드를 다시 넣어 주세요.'); return; }
 
     const splitText = SPLIT_LABEL[split];
-    if (!confirm(`아래 내용으로 저장할까요? 저장 후에는 수정·삭제할 수 없습니다.\n\n${title}\n$${amount.toFixed(2)} · ${date} · ${payer}가족 결제 · ${splitText}`)) return;
+    if (!confirm(`아래 내용으로 저장할까요? 저장 후에는 수정·삭제할 수 없습니다.\n\n${title}\n$${amount.toFixed(2)} · ${date} · ${famName(payer)} 결제 · ${splitText}`)) return;
 
     if (!pendingClientRef) pendingClientRef = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
     btn.disabled = true;
