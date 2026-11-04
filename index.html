@@ -7,13 +7,15 @@
   <!-- 앱 설치 (PWA) -->
   <link rel="manifest" href="/manifest.webmanifest">
   <meta name="theme-color" content="#006493">
+  <!-- 다크 모드 끄기: 브라우저가 화면을 자동으로 어둡게 바꾸지 않도록 밝은 화면만 사용 -->
+  <meta name="color-scheme" content="only light">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="결혼기념">
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611041244">
+  <link rel="stylesheet" href="/tailwind.css?v=202611041248">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -23,6 +25,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css" />
   <style>
     :root {
+      color-scheme: only light;
       --m3-primary: #006493;
       --m3-primary-container: #CAE6FF;
       --m3-surface: #F8FAFC;
@@ -452,6 +455,7 @@
       .app-shell { max-width: 1200px; }
       .m3-bottom-nav { max-width: 1200px; }
 
+
       #tab-schedule:not(.hidden) { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 14px; align-items: start; }
       #tab-schedule > * { margin-top: 0 !important; }
       #tab-schedule .sched-daypicker { grid-column: 1 / -1; }
@@ -475,6 +479,12 @@
       #exp-subpage-list { position: sticky; top: 12px; max-height: 90vh; overflow-y: auto; }
 
       #oahu-leaflet-map { height: 600px; }
+    }
+
+    /* ===== 와이드 태블릿 가로 (16:9 · 16:10) : 양옆 여백 없이 화면 전체 폭 (아주 큰 모니터만 1600px로 제한) ===== */
+    @media (min-width: 1024px) and (orientation: landscape) {
+      .app-shell, .m3-bottom-nav { max-width: 1600px; }
+      .app-shell { box-shadow: none; }
     }
 
     /* ===== 휴대폰 가로 (높이 500px 이하) : 왼쪽 세로 메뉴 ===== */
@@ -2362,7 +2372,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611041244').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611041248').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
