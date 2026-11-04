@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611040737">
+  <link rel="stylesheet" href="/tailwind.css?v=202611040742">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -1243,6 +1243,8 @@
     { place: 'Kualoa Ranch', addTips: ['무비 사이트 투어 오전 마지막 회차가 11:20이에요 (11:30 회차 없음, 오후는 12:40부터). 10:45까지 도착해 브리핑·서명을 마치세요.', '예약자 이름과 같은 사진 신분증이 필요하고, 만 18세 미만은 보호자와 함께 체크인해요.'] },
     { day: 'D7', addItem: { place: "Kaya's Store", tips: ['주방 매일 07:30~17:00, 가게 07:00~19:00 (공식). 플레이트 런치·도시락·무스비·버터모찌를 팔아요.', '가게 앞 그늘 피크닉 벤치에서 먹어요. 메뉴 가격은 공식 사이트에 없어 현장에서 확인하세요.'] }, after: 'Kualoa Ranch' },
     { place: "Giovanni's Shrimp Truck", setTips: ['간식은 할레이바 지점(66-472 Kamehameha Hwy)에서 먹어요. 매일 10:30~17:00로 카후쿠 지점(18:30)보다 일찍 닫아요 (공식).', '마늘 양이 아주 많아요. 물티슈를 챙기고, 현금을 권장해요.'] },
+    // D11: 택시 + 미니밴 두 팀 이동
+    { day: 'D11', addItem: { place: "Charley's Taxi (공항)", tips: ["와이키키→공항 정액 $38 · 미니밴 한 대에 짐 있으면 5명까지 · 1인당 캐리어 1 + 기내 가방 1 무료, 추가 짐 개당 $0.75 · 팁 15~20% 별도 (Charley's 공식).", '하루 전에 웹사이트나 전화(808-233-3333)로 예약하세요. 힐튼 메인 로비에 Charley\'s Taxi 데스크도 있어요 (영문 지도 125번).', '택시팀이 먼저 대한항공 카운터에서 캐리어를 부쳐 두면, 미니밴팀은 렌터카 반납 후 바로 합류할 수 있어요.'] }, after: '체크아웃 · 짐 보관' },
     // D8: 파인애플 농장 워크업 투어 → Dole Plantation 기념품샵 → 와이켈레 점심·쇼핑
     { day: 'D8', title: 'Dole 파인애플 농장 투어 · 와이켈레' },
     { day: 'D8', addItem: { place: 'Dole Pineapple Farm Tour & Store', tips: ['목요일 워크업 투어는 10:00~12:00 사이, 약 40분이에요. 예약 없이 현장 참여하고, 당일 매장(808-219-9398)에 운영 여부를 확인하세요.', '만 12세 이상 $20 · 4~11세 $3 · 만 4세 미만은 참여할 수 없어요. 앞이 막힌 신발이 필수이고, 만 12세 이상은 파인애플 1개를 받아요 (공식).', '날씨가 나쁘면 투어가 줄거나 취소될 수 있어요.'] }, after: null },
@@ -1582,6 +1584,14 @@
       desc: '🛍️ 와이켈레 아울렛 집중 쇼핑 ➔ 숙소 복귀 (아울렛에서 약 30분)' } },
     { day: 8, costIndex: 0, cost: 'Dole 파인애플 농장 워크업 투어 만 12세 이상 $20 · 4~11세 $3 (공식) · Dole Plantation 기념품샵은 입장 무료' },
     { day: 8, costIndex: 1, cost: '(참고) 필드 투어는 목요일 12:00~14:00, 만 12세 이상 $50 · 4~11세 $25, 사전 예약 필수' },
+    // D11: 짐 대부분은 택시(Charley's Taxi)로 공항 직행, 미니밴은 코스트코 주유·점심 후 반납 (2026.11.04 결정)
+    { day: 11, slot: '오전', set: { desc: '🧳 10:00 체크아웃 ➔ 두 팀으로 나눠 이동: 택시팀(4~5명 + 캐리어 대부분)은 공항 직행 · 미니밴팀(나머지 + 남은 짐)은 코스트코 경유' } },
+    { day: 11, addSlot: { label: '택시', color: 'bg-yellow-100 text-yellow-900', placeName: "Charley's Taxi ➔ HNL 공항", placeId: 'charleys', time: '10:30', mapQuery: 'Daniel K. Inouye International Airport Terminal 2 Honolulu HI', siteUrl: 'https://www.charleystaxi.com/airport',
+      desc: "🚕 택시팀: 10:30 Charley's Taxi 미니밴(짐 있으면 5명까지)으로 공항 제2터미널 직행 ➔ 대한항공 카운터에서 캐리어 먼저 부치기",
+      note: 'ℹ️ 와이키키→공항 정액 $38 (팁 15~20% 별도) · 1인당 캐리어 1 + 기내 가방 1 무료, 추가 짐 개당 $0.75 · 하루 전 예약 (808-233-3333)' }, after: '오전' },
+    { day: 11, slot: '점심', set: { desc: '⛽ 미니밴팀: 코스트코 이윌레이 만충 주유 및 푸드코트 이른 점심 (택시팀은 공항에서 점심)' } },
+    { day: 11, slot: '오후', set: { desc: '✈️ 미니밴팀: 11:50 공항 렌터카 반납 ➔ 셔틀로 터미널 이동, 택시팀과 합류 ➔ 14:25 대한항공 KE052 호놀룰루 출발' } },
+    { day: 11, addCost: "Charley's Taxi 와이키키→공항 정액 $38 (팁 별도, 추가 짐 개당 $0.75)" },
     // 카할라 일정: D9(금) 애프터눈 티 → D10(토) Plumeria Beach House 점심으로 이동 (2026.11.04 결정)
     { day: 9, daySet: { title: 'Day 9 · 진주만 투어 · 휴식 & 2차 불꽃놀이', badge: '불꽃놀이 피날레' } },
     { day: 9, slot: '오후', set: { placeName: "Lappert's Hawaii", mapQuery: "Lappert's Hawaii Hilton Hawaiian Village Honolulu HI", siteUrl: 'https://www.lappertshawaii.com/', extraLinks: [], desc: '🍦 숙소 복귀 후 휴식 · 라퍼츠 하와이 수제 와플콘 아이스크림 & 지인 선물 정리' } },
@@ -1953,6 +1963,7 @@
     costco_food:   { name: 'Costco Food Court', icon: '🌭', node: 'costco', query: 'Costco Wholesale Iwilei Honolulu HI', menu: 'costco' },
     kualoa_cafe:   { name: "Aunty Pat's Cafe (Kualoa Ranch)", icon: '🍔', node: 'kualoa', query: 'Kualoa Ranch Kaneohe HI' },
     kayas:         { name: "Kaya's Store (Hau'ula)", icon: '🍱', lat: 21.5865, lng: -157.8935, query: "Kaya's Store 53-534 Kamehameha Hwy Hauula HI" },   // 위치는 주소 기준 대략값
+    charleys:      { name: "Charley's Taxi (메인 로비)", icon: '🚕', node: 'hgvc', query: "Charley's Taxi Hilton Hawaiian Village Honolulu HI" },
     enterprise_hhv: { name: 'Enterprise Rent-A-Car (힐튼 단지)', icon: '🚗', node: 'hgvc', query: 'Enterprise Rent-A-Car 2005 Kalia Rd Honolulu HI' },
     dole_farm:     { name: 'Dole Pineapple Farm Tour & Store', icon: '🍍', lat: 21.527181, lng: -158.0398184, query: 'Dole Pineapple Farm Tour and Store 64-1551 Kamehameha Hwy Wahiawa HI' },
     giovanni_haleiwa: { name: "Giovanni's Shrimp Truck (Haleiwa)", icon: '🦐', node: 'haleiwa', query: "Giovanni's Shrimp Truck 66-472 Kamehameha Hwy Haleiwa HI", menu: 'giovanni' },
@@ -2005,7 +2016,7 @@
     'Fook Yuen Seafood': 'fookyuen', "Tantalus Lookout (Pu'u Ualaka'a)": 'tantalus', 'Makapuu Point': 'halona',
     "Boots & Kimo's": 'boots', 'Lanikai Beach': 'lanikai', 'Diamond Head': 'diamond', "Wolfgang's Steakhouse": 'wolfgang',
     'Kualoa Ranch': 'kualoa', "Giovanni's Shrimp Truck": 'giovanni_haleiwa', "Ho'omaluhia Botanical Garden": 'hoomaluhia',
-    'Dole Plantation': 'dole', 'Dole Pineapple Farm Tour & Store': 'dole_farm', 'Enterprise 렌트카 (힐튼 단지)': 'enterprise_hhv', "Kaya's Store": 'kayas',   // Dole Plantation 꿀팁은 TIP_UPDATES로 기념품샵 내용으로 바꿈
+    'Dole Plantation': 'dole', 'Dole Pineapple Farm Tour & Store': 'dole_farm', 'Enterprise 렌트카 (힐튼 단지)': 'enterprise_hhv', "Charley's Taxi (공항)": 'charleys', "Kaya's Store": 'kayas',   // Dole Plantation 꿀팁은 TIP_UPDATES로 기념품샵 내용으로 바꿈
     'Waikele Premium Outlets': 'waikele', 'Pearl Harbor': 'pearl',
     'The Kahala — Plumeria Beach House': 'plumeria'
   };
@@ -2125,7 +2136,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611040737').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611040742').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -3223,6 +3234,8 @@
     { place: 'kualoa', set: { note: '무비 사이트 투어 11:20 회차(오전 마지막) 예약 · 10:45까지 도착 · UTV 랩터 투어로 하면 약 2시간' } },
     { add: { place: 'enterprise_hhv', time: '08:00', lead: '2~4주 전', tone: 'amber', note: 'D7 하루 렌트카 1대 (미니밴과 2대로 나눠 이동) · 08:00 픽업, 같은 날 반납 · 소형~중형 승용차/SUV면 충분',
       costKeys: ['렌트카'], links: [{ label: 'Enterprise 힐튼 지점', url: 'https://www.enterprise.co.uk/en/car-hire/locations/us/hi/hilton-hawaiian-village-36hv.html' }] } },
+    { add: { place: 'charleys', lead: '하루 전', tone: 'amber', note: 'D11 택시팀 공항 이동 (미니밴 1대, 짐 있으면 5명까지) · 와이키키→공항 정액 · 예약 시 인원·캐리어 수 알려 주기',
+      costKeys: ["Charley's"], links: [{ label: "Charley's Taxi 공항 예약", url: 'https://www.charleystaxi.com/airport' }] } },
     { add: { place: 'dole_farm', lead: '예약 없음', tone: 'sky', note: '워크업 투어는 예약 없이 현장 참여 · 당일 아침 매장(808-219-9398)에 운영 여부 전화 확인',
       costKeys: ['워크업'], links: [{ label: '농장 투어 안내', url: 'https://www.dolefruithawaii.com/pages/pineapple-farm-tours' }] } }
   ];
