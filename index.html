@@ -9,11 +9,11 @@
   <meta name="theme-color" content="#006493">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="하와이 트립">
+  <meta name="apple-mobile-web-app-title" content="결혼기념">
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611040827">
+  <link rel="stylesheet" href="/tailwind.css?v=202611041005">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -950,7 +950,7 @@
             <b>안드로이드 (크롬)</b><br>
             ① 크롬에서 이 주소를 엽니다<br>
             ② 오른쪽 위 <b>⋮</b> 메뉴 → <b>앱 설치</b> 또는 <b>홈 화면에 추가</b><br>
-            ③ <b>설치</b>를 누르면 홈 화면에 🌅 OAHU 아이콘이 생깁니다
+            ③ <b>설치</b>를 누르면 홈 화면에 🌅 HAWAII 아이콘(이름: 결혼기념)이 생깁니다
           </div>
           <div class="text-[12px] text-slate-700 leading-relaxed bg-slate-50 rounded-xl p-2.5 border border-slate-200">
             <b>아이폰 (사파리)</b><br>
@@ -2250,7 +2250,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611040827').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611041005').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
