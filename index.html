@@ -815,6 +815,15 @@
 
       <div id="guide-sub-tips" class="guide-subpage hidden space-y-3">
         <div class="m3-card p-4 space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <h3 class="text-[15.5px] font-extrabold text-slate-900">💡 장소별 꼭 알아둘 것</h3>
+            <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10.5px] font-bold nowrap-btn">2026.11 확인 기준</span>
+          </div>
+          <p class="text-[12px] text-slate-600">날짜를 누르면 펼쳐집니다. <span class="font-extrabold text-rose-700">⚠️</span> 표시는 현재 일정표 내용과 달라 확인이 필요한 항목입니다.</p>
+          <div id="place-tips-list" class="space-y-2"></div>
+          <div class="text-[10.5px] text-slate-400">영업시간·요금·예약 규칙은 바뀔 수 있으니 방문 전 공식 사이트에서 한 번 더 확인하세요.</div>
+        </div>
+        <div class="m3-card p-4 space-y-2.5">
           <h3 class="text-[15.5px] font-extrabold text-slate-900">📲 휴대폰에 앱으로 설치하기</h3>
           <p class="text-[12.5px] text-slate-600">설치하면 홈 화면 아이콘으로 바로 열리고, 주소창 없이 앱처럼 전체 화면으로 보입니다. 인터넷이 끊겨도 마지막으로 본 일정·단지 안내도는 열립니다.</p>
           <button id="install-app-btn2" type="button" class="hidden w-full py-2.5 rounded-xl bg-sky-700 text-white text-[13px] font-extrabold">📲 지금 설치하기</button>
@@ -1074,6 +1083,120 @@
         <span class="inline-flex items-center gap-1.5">${weatherHtml}</span>
         <span class="inline-flex items-center gap-2 nowrap-btn">🌅 ${env.sunrise} <span class="text-slate-400">·</span> 🌇 ${env.sunset}</span>
       </div>`;
+  }
+
+  /* [DATA] 장소별 꿀팁 (2026.11 공식 사이트·현지 가이드 확인 기준)
+   *   warn: true → 현재 일정표 내용과 달라 확인이 필요한 항목 (일정표 원본은 수정하지 않음) */
+  const PLACE_TIPS = [
+    { day: '공통', title: '여행 내내 해당', items: [
+      { place: '자외선 차단제', tips: ['하와이는 산호초를 해치는 성분(옥시벤존·옥티녹세이트)이 든 선크림 판매를 금지하고 있어요. 한국에서 "Reef-Safe" 표시 제품을 챙겨 가세요.'] },
+      { place: '아이 카시트 (렌터카)', tips: ['하와이 법상 만 4~9세는 카시트 또는 부스터 시트가 필수예요 (키 145cm(4ft 9in) 초과 아이는 예외). 만 4세 미만은 하네스 카시트.', '미니밴 예약 때 아이 수만큼 부스터를 함께 예약하세요.'] },
+      { place: '바다거북 · 야생동물', tips: ['바다거북은 만지거나 먹이를 주면 불법이에요. 최소 2~3m(6~10ft) 떨어져서 보세요.'] },
+      { place: '차량 도난 주의', tips: ['전망대·해변 주차장 차량털이가 잦아요. 가방·충전선은 들고 내리고, 차 안에 아무것도 보이지 않게 하세요.'] }
+    ]},
+    { day: 'D1 · 2/18', title: '도착 · 코스트코', items: [
+      { place: 'Costco Iwilei', tips: ['미국 코스트코는 신용카드 중 비자(Visa)만 받아요. 마스터카드 신용카드는 안 되니 비자 카드를 준비하세요 (직불카드·애플페이는 가능).', '평일 10:00~20:30, 주말 19:00 마감 (이그제큐티브 회원은 9:00부터). 한국 회원카드를 꼭 챙기세요.'] },
+      { place: "Nico's Pier 38", tips: ['카운터에서 주문하고 번호표를 받는 방식이에요. 점심 피크(12시 전후)는 줄이 길어요.'] }
+    ]},
+    { day: 'D2 · 2/19', title: '하나우마 베이 · 불꽃놀이', items: [
+      { place: 'Hanauma Bay', tips: [
+        '월·화 휴무, 수~일 6:45~16:00 운영 (마지막 입장 13:30). 2/19(금)은 운영일이에요.',
+        '온라인 예약은 방문 2일 전 오전 7시(하와이 시간 = 한국 시간 다음날 새벽 2시)에 열리고 몇 분 만에 마감돼요. 결제는 비자·마스터·JCB.',
+        '입장료 $25 (만 12세 이하 무료). 예약 시간에 늦으면 입장 불가예요.',
+        '입장 전 9분 교육 영상 시청 필수. 주차는 예약과 별도로 선착순, $3 현금만 받아요.',
+        '해변엔 매점이 없어요. 피크닉 도시락·물을 꼭 챙기고, 스노클 장비 대여는 해변에서 약 $25.'
+      ]},
+      { place: '힐튼 금요 불꽃놀이', tips: ['보통 저녁 7:45 또는 8:00 시작, 약 5분이에요. 날씨·행사로 시간이 바뀌거나 취소될 수 있어요.', '듀크 라군 앞 해변이나 Fort DeRussy 쪽 해변이 잘 보여요. 15분 전엔 자리 잡으세요.'] }
+    ]},
+    { day: 'D3 · 2/20', title: '노스쇼어', items: [
+      { place: "Ray's Kiawe Broiled Chicken", tips: [
+        '토·일요일만, 대략 10:00~16:00. 일찍 매진될 수 있어 전화 예약(808-351-6258)을 권해요. 현금을 챙기세요.',
+        '⚠️ 현지 가이드 기준 통닭 1마리 약 $16, 주소 66-190 Kamehameha Hwy예요. 일정표의 $11, 66-160과 달라요.'
+      ], warn: true },
+      { place: 'Matsumoto Shave Ice', tips: ['주말엔 줄이 길어요. 할레이바 도착하자마자 먼저 들르는 게 좋아요.'] },
+      { place: 'Laniakea Beach (거북이)', tips: ['거북이 근처에 줄을 쳐 두는 경우가 많아요. 2~3m 거리를 지키고 만지지 마세요.', '도로변 주차는 위험하고 단속이 있어요. 지정 주차장에 대고 걸어가세요.'] }
+    ]},
+    { day: 'D4 · 2/21', title: '후발대 픽업 · 탄탈루스', items: [
+      { place: 'HNL 공항 픽업', tips: ['국제선은 입국심사·짐 찾기에 1시간 이상 걸릴 수 있어요. 휴대폰 대기 주차장(Cell Phone Lot)에서 연락받고 출발하면 편해요.'] },
+      { place: 'Fook Yuen Seafood', tips: ['⚠️ 2026.11 현재 영업 여부·랍스터 특가 조건을 확인하지 못했어요. 출발 전 전화(808-973-0168)로 확인하세요.'], warn: true },
+      { place: "Tantalus Lookout (Pu'u Ualaka'a)", tips: [
+        '게이트 07:00 개방, 겨울철엔 18:45쯤 잠겨요. 해 지기 전에 나와야 해요.',
+        '⚠️ 2026년 2월부터 비거주자 차량 주차료 $7이 생겼어요. 일정표의 "입장·주차 무료"와 달라요.'
+      ], warn: true }
+    ]},
+    { day: 'D5 · 2/22', title: '동부 해안 · 카일루아', items: [
+      { place: 'Makapuu Point', tips: ['그늘이 없는 포장길이에요. 모자·물 필수.'] },
+      { place: "Boots & Kimo's", tips: ['예약을 받지 않아 대기가 길어요. 도착하면 바로 이름부터 올려 두세요.'] },
+      { place: 'Lanikai Beach', tips: [
+        '라니카이 주택가 도로는 "No Parking" 단속·견인이 엄격해요. 연휴가 낀 주말엔 낮 시간 전면 주차금지가 시행되기도 해요.',
+        '카일루아 비치 파크에 주차하고 걸어가는 게 안전해요. 해변에 화장실·샤워 시설이 없어요.'
+      ]}
+    ]},
+    { day: 'D6 · 2/23', title: '다이아몬드 헤드 일출', items: [
+      { place: 'Diamond Head', tips: [
+        '비거주자는 예약 필수. 30일 전 자정(하와이 시간)에 열리고 일출 시간대는 빨리 마감돼요.',
+        '입장료 $5/인 (만 3세 이하 무료) + 주차 $10/대. 첫 시간대는 06:00이고, 시작 30분 안에 도착해야 입장 가능해요.',
+        '그날 일출은 06:57. 정상까지 30~45분, 그늘이 없어요. 1인 1L 이상 물과 운동화를 챙기세요.'
+      ]},
+      { place: "Wolfgang's Steakhouse", tips: ['해피아워는 매일 15:00부터 야외 라나이석에서, 예약 없이 선착순이에요. 15:30 도착이면 적당해요.'] }
+    ]},
+    { day: 'D7 · 2/24', title: '쿠알로아 · 식물원', items: [
+      { place: 'Kualoa Ranch', tips: [
+        '앞이 막힌 신발 필수. UTV 투어는 먼지가 많아 갈아입을 옷을 챙기세요. 만 5세부터 탑승, 운전은 가이드가 해요.',
+        '⚠️ UTV 랩터 투어 현재 공식가 $154.95/인 (+세금 4.712%)로, 일정표의 $149.95와 달라요.'
+      ], warn: true },
+      { place: "Giovanni's Shrimp Truck", tips: ['마늘 양이 아주 많아요. 물티슈를 챙기고, 점심 피크엔 줄이 길어요.'] },
+      { place: "Ho'omaluhia Botanical Garden", tips: ['목요일 휴원, 09:00~16:00, 무료. 차량 마지막 입장 15:30이에요. 2/24(수)은 운영일이에요.'] }
+    ]},
+    { day: 'D8 · 2/25', title: '돌 플랜테이션 · 와이켈레', items: [
+      { place: 'Dole Plantation', tips: ['파인애플 기차는 오후에 대기가 길어질 수 있어요. 도착하면 기차표부터 사세요.'] },
+      { place: 'Waikele Premium Outlets', tips: ['야외형 아울렛이라 그늘·물을 챙기세요. 미리 VIP 쿠폰(무료 회원가입)을 받아 두면 할인돼요.'] }
+    ]},
+    { day: 'D9 · 2/26', title: '진주만 · 카할라', items: [
+      { place: 'Pearl Harbor', tips: [
+        '가방 반입 금지! 지갑 크기보다 큰 가방·백팩·기저귀가방·카메라가방 모두 안 돼요. 투명 비닐가방은 가능.',
+        '가방 보관소(유료)가 입구 근처에 있어요. 렌터카 안에 짐을 두면 차량털이 위험이 있으니 아예 숙소에 두고 오세요.'
+      ]},
+      { place: 'The Kahala — The Veranda', tips: [
+        '⚠️ 정규 애프터눈 티는 토요일 13:00~15:30에만 운영해요. 일정표의 2/26(금)에는 열리지 않아요.',
+        '⚠️ 현재 $80/인 + 세금 + 봉사료(5인 이상 20%)예요. 신용카드로 예약을 잡아야 하고, 72시간 안에 취소하면 $35/인, 노쇼는 $80/인이 부과돼요.'
+      ], warn: true }
+    ]},
+    { day: 'D10 · 2/27', title: '리조트 데이', items: [
+      { place: '힐튼 단지', tips: ['🇰🇷 메인 로비에 한국어 안내 데스크(영문 지도 124번)가 있어요.', '단지 지도·번호표는 숙소·단지 탭에서 볼 수 있어요.'] }
+    ]},
+    { day: 'D11 · 2/28', title: '귀국', items: [
+      { place: '체크아웃 · 짐 보관', tips: ['체크아웃 후 짐은 다이아몬드 헤드 타워 짐 보관소(영문 지도 61번)에 맡길 수 있어요.'] },
+      { place: 'Costco 주유', tips: ['일요일 주유소는 04:30~20:30. 비자 신용카드나 직불카드만 돼요.'] },
+      { place: '렌터카 반납 · 공항', tips: ['렌터카 반납 후 셔틀로 터미널까지 이동 시간이 걸려요. 출발 2시간 30분 전 공항 도착을 목표로 하세요.'] }
+    ]}
+  ];
+
+  function renderPlaceTips() {
+    const wrap = document.getElementById('place-tips-list');
+    if (!wrap) return;
+    wrap.innerHTML = PLACE_TIPS.map((g, gi) => {
+      const hasWarn = g.items.some(it => it.warn);
+      return `
+        <details class="rounded-2xl border border-slate-200 bg-slate-50 overflow-hidden" ${gi === 0 ? 'open' : ''}>
+          <summary class="cursor-pointer list-none px-3 py-2.5 flex items-center justify-between gap-2">
+            <span class="text-[13px] font-extrabold text-slate-900">${g.day} <span class="font-bold text-slate-500">· ${g.title}</span></span>
+            <span class="flex items-center gap-1 nowrap-btn">
+              ${hasWarn ? '<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[10.5px] font-extrabold">⚠️ 확인</span>' : ''}
+              <span class="text-slate-400 text-[12px]">▾</span>
+            </span>
+          </summary>
+          <div class="px-3 pb-3 space-y-2.5">
+            ${g.items.map(it => `
+              <div class="bg-white rounded-xl border ${it.warn ? 'border-rose-200' : 'border-slate-200'} p-2.5">
+                <div class="text-[12.5px] font-extrabold text-sky-900 mb-1">📍 ${it.place}</div>
+                <ul class="space-y-1">
+                  ${it.tips.map(t => `<li class="text-[12px] leading-relaxed ${t.startsWith('⚠️') ? 'text-rose-700 font-bold' : 'text-slate-700'}">${t.startsWith('⚠️') ? '' : '• '}${t}</li>`).join('')}
+                </ul>
+              </div>`).join('')}
+          </div>
+        </details>`;
+    }).join('');
   }
 
   /* [DATA] 일정표 */
@@ -2210,6 +2333,7 @@
     renderOahuFilterGrid();
     renderExpenses();
     renderChecklist();
+    renderPlaceTips();
     initSupabase();
     loadForecast();
 
