@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611041005">
+  <link rel="stylesheet" href="/tailwind.css?v=202611041012">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -486,6 +486,21 @@
   </style>
 </head>
 <body>
+<!-- 처음 접속할 때 한 번만 입장 코드 확인 (확인되면 이 휴대폰에 저장, 정산 저장에도 같은 코드 사용) -->
+<div id="entry-gate" class="fixed inset-0 z-[3000] flex items-center justify-center px-6" style="background:linear-gradient(180deg,#0E75AB 0%,#33B4EE 60%,#075985 100%)">
+  <div class="w-full max-w-[340px] bg-white rounded-3xl p-6 shadow-2xl space-y-4 text-center">
+    <div class="text-[40px] leading-none">🌺</div>
+    <div>
+      <div class="text-[19px] font-extrabold text-slate-900">결혼기념 하와이 여행</div>
+      <div class="text-[12.5px] font-bold text-slate-500 mt-1">2027.02.18 ~ 02.28 · 3가족 8인</div>
+    </div>
+    <input id="entry-code-input" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" placeholder="입장 코드 6자리" class="w-full px-3 py-3 rounded-xl border-2 border-slate-300 text-center text-[20px] font-extrabold tracking-[0.4em] focus:outline-none focus:border-sky-600">
+    <div id="entry-gate-msg" class="min-h-[18px] text-[12.5px] font-bold text-rose-600"></div>
+    <button id="entry-gate-btn" type="button" class="w-full py-3 rounded-xl bg-sky-700 text-white text-[15px] font-extrabold">입장하기</button>
+    <div class="text-[11.5px] font-semibold text-slate-500 leading-relaxed">처음 한 번만 넣으면 이 휴대폰에서는 다시 묻지 않아요.</div>
+  </div>
+</div>
+<script>try { if (/^\d{6}$/.test(localStorage.getItem('hawaii_trip_code') || '')) document.getElementById('entry-gate').remove(); } catch (e) {}</script>
 
 <div class="app-shell">
   <!-- TOP HERO HEADER (Time-Adaptive Hawaiian Panorama) -->
@@ -769,11 +784,6 @@
                   <option value="equal">3가족 (1:1:1)</option>
                 </select>
               </div>
-            </div>
-
-            <div>
-              <label class="block text-[12px] font-bold text-slate-600 mb-1">여행 코드 (6자리)</label>
-              <input id="exp-code-input" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••••" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-[13px] font-extrabold tracking-widest">
             </div>
 
             <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[12.5px] font-semibold text-amber-900">
@@ -2250,7 +2260,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611041005').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611041012').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -3267,6 +3277,44 @@
 
   function readSavedCode() { try { return localStorage.getItem('hawaii_trip_code') || ''; } catch (e) { return ''; } }
   function saveCode(code) { try { localStorage.setItem('hawaii_trip_code', code); } catch (e) {} }
+  function clearCode() { try { localStorage.removeItem('hawaii_trip_code'); } catch (e) {} }
+
+  // 입장 코드 화면 — 정산 코드와 같은 코드(서버 check_trip_code로 확인)
+  function showEntryGate(msg) {
+    let gate = document.getElementById('entry-gate');
+    if (!gate) { location.reload(); return; }
+    gate.classList.remove('hidden');
+    document.getElementById('entry-gate-msg').textContent = msg || '';
+    setTimeout(() => document.getElementById('entry-code-input').focus(), 50);
+  }
+  function initEntryGate() {
+    const gate = document.getElementById('entry-gate');
+    if (!gate) return;
+    const input = document.getElementById('entry-code-input'), btn = document.getElementById('entry-gate-btn'), msg = document.getElementById('entry-gate-msg');
+    document.body.style.overflow = 'hidden';
+    const tryEnter = async () => {
+      const code = input.value.replace(/\D/g, '');
+      if (code.length !== 6) { msg.textContent = '숫자 6자리를 넣어 주세요.'; return; }
+      if (!sb) { msg.textContent = '인터넷에 연결된 뒤 다시 눌러 주세요.'; if (!window.supabase) return; initSupabase(); if (!sb) return; }
+      btn.disabled = true; btn.textContent = '확인 중…'; msg.textContent = '';
+      try {
+        const { data: ok, error } = await sb.rpc('check_trip_code', { p_code: code });
+        if (error) throw error;
+        if (!ok) { msg.textContent = '코드가 맞지 않아요.'; input.select(); return; }
+        saveCode(code);
+        gate.remove();
+        document.body.style.overflow = '';
+      } catch (e) {
+        msg.textContent = '확인하지 못했어요. 인터넷 연결을 확인해 주세요.';
+      } finally {
+        if (btn.isConnected) { btn.disabled = false; btn.textContent = '입장하기'; }
+      }
+    };
+    btn.addEventListener('click', tryEnter);
+    input.addEventListener('input', () => { input.value = input.value.replace(/\D/g, '').slice(0, 6); msg.textContent = ''; if (input.value.length === 6) tryEnter(); });
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') tryEnter(); });
+    setTimeout(() => input.focus(), 100);
+  }
 
   async function submitExpense() {
     const btn = document.getElementById('add-expense-btn');
@@ -3275,13 +3323,13 @@
     const date = document.getElementById('exp-date-input').value;
     const payer = document.getElementById('exp-payer-input').value;
     const split = document.getElementById('exp-split-input').value;
-    const code = document.getElementById('exp-code-input').value.trim();
+    const code = readSavedCode();
 
     if (!sb) { showToast('저장소에 연결되지 않았습니다.'); return; }
     if (!title || isNaN(amount) || amount <= 0) { showToast('항목명과 금액을 입력해 주세요.'); return; }
     if (amount >= 100000) { showToast('금액을 다시 확인해 주세요.'); return; }
     if (!VALID_DATES.includes(date)) { showToast('날짜를 선택해 주세요.'); return; }
-    if (!/^\d{6}$/.test(code)) { showToast('여행 코드 6자리를 입력해 주세요.'); return; }
+    if (!/^\d{6}$/.test(code)) { showEntryGate('입장 코드를 다시 넣어 주세요.'); return; }
 
     const splitText = SPLIT_LABEL[split];
     if (!confirm(`아래 내용으로 저장할까요? 저장 후에는 수정·삭제할 수 없습니다.\n\n${title}\n$${amount.toFixed(2)} · ${date} · ${payer}가족 결제 · ${splitText}`)) return;
@@ -3292,8 +3340,7 @@
     try {
       const { data: ok, error: codeErr } = await sb.rpc('check_trip_code', { p_code: code });
       if (codeErr) throw codeErr;
-      if (!ok) { showToast('여행 코드가 맞지 않습니다.'); return; }
-      saveCode(code);
+      if (!ok) { clearCode(); showEntryGate('입장 코드가 바뀌었어요. 새 코드를 넣어 주세요.'); return; }
 
       let photoPath = null;
       if (pendingReceiptBlob) {
@@ -3872,7 +3919,7 @@
     runDataChecks();
     document.getElementById('today-day-btn').addEventListener('click', () => { const t = tripTodayDay(); if (t) updateDayView(t); });
 
-    document.getElementById('exp-code-input').value = readSavedCode();
+    initEntryGate();
     document.getElementById('receipt-file').addEventListener('change', (e) => handleReceiptFile(e.target.files && e.target.files[0]));
     document.getElementById('receipt-clear-btn').addEventListener('click', clearReceipt);
     document.getElementById('add-expense-btn').addEventListener('click', submitExpense);
