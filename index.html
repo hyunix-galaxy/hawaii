@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611041158">
+  <link rel="stylesheet" href="/tailwind.css?v=202611041201">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -1681,7 +1681,6 @@
     { day: 1, slot: '오전', set: { desc: '✈️ KE051 인천 22:20 출발 ➔ 호놀룰루 11:10 도착 ➔ 입국·짐 찾기 후 셔틀로 렌터카 센터 이동 ➔ 12:00 Dollar 렌터카 미니밴(기아 카니발급 8인승) 픽업' },
       note: 'ℹ️ 운전자 본인 명의 신용카드·면허증·국제면허증 지참 · 서명 전에 총액 $937.62와 추가 요금이 붙지 않았는지 확인' },
     { day: 1, addCost: 'Dollar 렌터카 미니밴 10일 $937.62 (1주 $660.30 + 추가 3일 $277.32 · 세금·수수료·기본 보험 포함, 기름 별도)' },
-    { day: 11, slot: '오후', set: { desc: '✈️ 미니밴팀: 11:50 공항 Dollar 렌터카 반납 (반납 예약 12:00) ➔ 셔틀로 터미널 이동, 택시팀과 합류 ➔ 14:25 대한항공 KE052 호놀룰루 출발' } },
     // 가족 이름: C가족 → 신림 가족 (2026.11.04)
     { day: 4, daySet: { title: 'Day 4 · 후발대 신림 가족 픽업(8인 완전체) & 랍스터' } },
     { day: 4, slot: '오전', set: { desc: '✈️ KE051 후발대(신림 가족 2인) HNL 11:10 도착 픽업 · 8인 완전체 합류!' } },
@@ -1733,7 +1732,7 @@
       desc: "🚕 택시팀: 10:30 Charley's Taxi 미니밴(짐 있으면 5명까지)으로 공항 제2터미널 직행 ➔ 대한항공 카운터에서 캐리어 먼저 부치기",
       note: "ℹ️ 와이키키→공항 정액 $38 (팁 15~20% 별도) · 1인당 캐리어 1 + 기내 가방 1 무료, 추가 짐 개당 $0.75 · 하루 전 예약 (808-233-3333) · 한국어가 편하면 한인택시(하나택시 등)도 가능 — 꿀팁 참고" }, after: '오전' },
     { day: 11, slot: '점심', set: { desc: '⛽ 미니밴팀: 코스트코 이윌레이 만충 주유 및 푸드코트 이른 점심 (택시팀은 공항에서 점심)' } },
-    { day: 11, slot: '오후', set: { desc: '✈️ 미니밴팀: 11:50 공항 렌터카 반납 ➔ 셔틀로 터미널 이동, 택시팀과 합류 ➔ 14:25 대한항공 KE052 호놀룰루 출발' } },
+    { day: 11, slot: '오후', set: { desc: '✈️ 미니밴팀: 11:50 공항 Dollar 렌터카 반납 (반납 예약 12:00) ➔ 셔틀로 터미널 이동, 택시팀과 합류 ➔ 14:25 대한항공 KE052 호놀룰루 출발' } },
     { day: 11, addCost: "Charley's Taxi 와이키키→공항 정액 $38 (팁 별도, 추가 짐 개당 $0.75) · 한인택시는 미터·정액 약 $40~50대 (업체별 확인)" },
     { day: 11, costIndex: 1, cost: 'Costco Gas 레귤러 약 $5.10/갤런 (2026.11 공식 페이지 $5.099, 수시 변동)' },
     // 카할라 일정: D9(금) 애프터눈 티 → D10(토) Plumeria Beach House 점심으로 이동 (2026.11.04 결정)
@@ -2282,7 +2281,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611041158').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611041201').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
