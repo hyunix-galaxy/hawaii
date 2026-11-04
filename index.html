@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611040539">
+  <link rel="stylesheet" href="/tailwind.css?v=202611040549">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -1866,7 +1866,7 @@
   };
   // 원본 거점의 구글맵 검색어·메뉴 (거점 이름 그대로 검색하면 엉뚱한 곳이 나오는 문제 보정)
   const PLACE_INFO = {
-    hnl: { query: 'Daniel K. Inouye International Airport Honolulu HI' },
+    hnl: { query: 'Daniel K. Inouye International Airport Honolulu HI', lat: 21.3328, lng: -157.9203 },   // 원본 좌표는 활주로 안쪽이라 터미널 앞 도로로 보정
     nicos: { query: "Nico's Pier 38 Honolulu HI", menu: 'nicos' },
     costco: { query: 'Costco Wholesale 525 Alakawa St Honolulu HI' },
     hgvc: { query: 'The Grand Islander Honolulu HI' },
@@ -1975,6 +1975,72 @@
     return legs;
   })();
 
+  /* ---- 도로를 따라 그린 경로 ----
+   *   road-legs.json: 일정에 있는 구간별 자동차 경로 (OpenStreetMap 도로 기준, OSRM으로 미리 계산해 사이트에 저장)
+   *   일정이 바뀌어 없는 구간이 생기면 같은 서비스에서 그 구간만 받아 이 휴대폰에 저장하고, 받기 전까지는 기존 선으로 표시 */
+  const ROUTING_URL = 'https://routing.openstreetmap.de/routed-car/route/v1/driving/';
+  const LIVE_LEGS_KEY = 'hawaii_road_legs_v1';
+  let ROAD_LEGS = {};
+  let roadLegsLoaded = false;   // 저장된 경로 파일을 읽기 전에는 따로 받지 않음
+  let LIVE_LEGS = (() => { try { return JSON.parse(localStorage.getItem(LIVE_LEGS_KEY) || '{}') || {}; } catch (e) { return {}; } })();
+  const decodedLegs = {};
+  function decodePolyline(str) {
+    const pts = []; let i = 0, lat = 0, lng = 0;
+    while (i < str.length) {
+      let b, shift = 0, result = 0;
+      do { b = str.charCodeAt(i++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+      lat += (result & 1) ? ~(result >> 1) : (result >> 1);
+      shift = 0; result = 0;
+      do { b = str.charCodeAt(i++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+      lng += (result & 1) ? ~(result >> 1) : (result >> 1);
+      pts.push([lat / 1e5, lng / 1e5]);
+    }
+    return pts;
+  }
+  function roadLeg(a, b) {
+    const k = `${a}>${b}`;
+    if (decodedLegs[k]) return decodedLegs[k];
+    const e = ROAD_LEGS[k] || LIVE_LEGS[k];
+    if (!e) return null;
+    return (decodedLegs[k] = { path: decodePolyline(e.g), km: e.km, min: e.min });
+  }
+  const legQueue = [];
+  let legBusy = false;
+  function requestRoadLeg(a, b) {
+    const k = `${a}>${b}`;
+    if (!roadLegsLoaded || ROAD_LEGS[k] || LIVE_LEGS[k] || legQueue.includes(k) || !navigator.onLine) return;
+    legQueue.push(k);
+    pumpLegQueue();
+  }
+  async function pumpLegQueue() {
+    if (legBusy || !legQueue.length) return;
+    legBusy = true;
+    const k = legQueue.shift();
+    const [a, b] = k.split('>'), A = PLACES[a], B = PLACES[b];
+    try {
+      const j = await fetch(`${ROUTING_URL}${A.lng},${A.lat};${B.lng},${B.lat}?overview=full&geometries=polyline`).then(r => r.json());
+      if (j.code === 'Ok') {
+        LIVE_LEGS[k] = { g: j.routes[0].geometry, km: +(j.routes[0].distance / 1000).toFixed(1), min: Math.round(j.routes[0].duration / 60) };
+        try { localStorage.setItem(LIVE_LEGS_KEY, JSON.stringify(LIVE_LEGS)); } catch (e) {}
+        refreshRouteMaps();
+      }
+    } catch (e) {}
+    legBusy = false;
+    if (legQueue.length) setTimeout(pumpLegQueue, 1200);
+  }
+  function loadRoadLegs() {
+    fetch('/road-legs.json?v=202611040549').then(r => r.ok ? r.json() : {}).then(j => {
+      ROAD_LEGS = j || {};
+      roadLegsLoaded = true;
+      Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
+      refreshRouteMaps();
+    }).catch(() => {});
+  }
+  function refreshRouteMaps() {
+    if (oahuMap && currentOahuFilter !== 'all') filterOahuRoute(currentOahuFilter, true);
+    if (sideMap) updateScheduleSideMap(currentDayIndex, true);
+  }
+
   function deriveRoute(dayNum) {
     if (ROUTE_FORCE[dayNum]) return Object.assign({ approx: false }, ROUTE_FORCE[dayNum]);
     const day = getScheduleDay(dayNum);
@@ -1989,15 +2055,24 @@
     day.slots.forEach(sl => sl.placeIds.forEach(push));
     if (dayNum < TOTAL_DAYS) push('hgvc');
     if (!spots.length) push('hgvc');
-    const roadPath = [];
+    const roadPath = [], legs = [];
     let approx = false;
     for (let i = 0; i < spots.length - 1; i++) {
-      let seg = ROUTE_LEGS[`${spots[i]}>${spots[i + 1]}`];
-      if (!seg) { const a = PLACES[spots[i]], b = PLACES[spots[i + 1]]; seg = [[a.lat, a.lng], [b.lat, b.lng]]; approx = true; }
+      const road = roadLeg(spots[i], spots[i + 1]);
+      let seg;
+      if (road) seg = road.path;
+      else {
+        requestRoadLeg(spots[i], spots[i + 1]);
+        approx = true;
+        seg = ROUTE_LEGS[`${spots[i]}>${spots[i + 1]}`];
+        if (!seg) { const a = PLACES[spots[i]], b = PLACES[spots[i + 1]]; seg = [[a.lat, a.lng], [b.lat, b.lng]]; }
+      }
+      legs.push(road ? { km: road.km, min: road.min } : null);
       roadPath.push(...(roadPath.length ? seg.slice(1) : seg));
     }
     if (spots.length === 1) roadPath.push([PLACES[spots[0]].lat, PLACES[spots[0]].lng]);
-    return { spots, roadPath, approx };
+    const known = legs.filter(Boolean);
+    return { spots, roadPath, approx, legs, totalKm: known.reduce((n, l) => n + l.km, 0), totalMin: known.reduce((n, l) => n + l.min, 0) };
   }
 
   // 출발지 = 도착지(숙소)이면 핀 하나로 합침
@@ -2051,7 +2126,7 @@
     });
   }
 
-  function filterOahuRoute(filterKey) {
+  function filterOahuRoute(filterKey, keepView) {
     currentOahuFilter = filterKey;
     document.querySelectorAll('#oahu-day-filter-grid .oahu-filter-chip').forEach(c => {
       c.classList.toggle('active', c.dataset.filter === String(filterKey));
@@ -2095,7 +2170,8 @@
     if (route.roadPath.length > 1) {
       L.polyline(route.roadPath, { color: '#006493', weight: 4.5, opacity: 0.9 }).addTo(oahuRouteGroup);
     }
-    if (route.spots.length === 1) {
+    if (keepView) { /* 도로 경로를 새로 받은 뒤 다시 그릴 때는 보던 화면 유지 */ }
+    else if (route.spots.length === 1) {
       const only = PLACES[route.spots[0]];
       oahuMap.setView([only.lat, only.lng], 15);
     } else {
@@ -2105,6 +2181,7 @@
     if (summaryEl) {
       const rows = route.spots.map((id, idx) => {
         const sp = PLACES[id];
+        const leg = route.legs[idx];
         return `
           <div class="flex items-center justify-between bg-white p-2 rounded-xl border border-slate-200 text-[13px] font-extrabold gap-2 flex-wrap">
             <span class="min-w-0">${idx + 1}. ${sp.icon} ${sp.name}</span>
@@ -2112,10 +2189,12 @@
               <a href="${gMapSearchQuery(sp.query)}" target="_blank" rel="noopener noreferrer" class="gmap-chip">📍 구글맵</a>
               <a href="${gMapDirQuery(sp.query)}" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 길안내</a>
             </div>
-          </div>`;
+          </div>
+          ${idx < route.spots.length - 1 ? `<div class="text-[12px] font-bold text-slate-500 pl-3">↓ ${leg ? `약 ${leg.km}km · 차로 ${leg.min}분` : '이동'}</div>` : ''}`;
       }).join('');
-      summaryEl.innerHTML = `<div class="text-[12.5px] font-extrabold text-slate-800 mb-1">🚗 Day ${dayNum} 방문 순서</div><div class="space-y-1.5">${rows}</div>
-        <div class="text-[12.5px] font-semibold text-slate-500 pt-1">지도의 선은 대략적인 이동 방향이에요${route.approx ? ' (일부 구간은 직선)' : ''}. 실제 길은 🚗 길안내로 확인하세요.</div>`;
+      const total = route.totalKm ? ` · 총 약 ${Math.round(route.totalKm)}km, 운전 ${Math.floor(route.totalMin / 60) ? Math.floor(route.totalMin / 60) + '시간 ' : ''}${route.totalMin % 60}분` : '';
+      summaryEl.innerHTML = `<div class="text-[12.5px] font-extrabold text-slate-800 mb-1">🚗 Day ${dayNum} 방문 순서${total}</div><div class="space-y-1">${rows}</div>
+        <div class="text-[11.5px] font-semibold text-slate-500 pt-1">${route.approx ? '일부 구간은 도로 경로를 받는 중이에요. ' : ''}선은 OpenStreetMap 도로 기준 자동차 경로이고, 거리·시간은 막히지 않을 때 기준이에요. 실제 길은 🚗 길안내로 확인하세요.</div>`;
     }
   }
 
@@ -2123,7 +2202,7 @@
   const WIDE_MQ = window.matchMedia('(min-width: 1024px)');
   let sideMap = null, sideLayer = null;
 
-  function updateScheduleSideMap(dayNum) {
+  function updateScheduleSideMap(dayNum, keepView) {
     if (!WIDE_MQ.matches || typeof L === 'undefined') return;
     const route = deriveRoute(dayNum);
     if (!route) return;
@@ -2140,7 +2219,8 @@
       L.marker([sp.lat, sp.lng], { icon: spotIcon(sp, badge) }).bindPopup(`<b>${badge}. ${sp.icon} ${sp.name}</b>${placePopupLinks(sp)}`).addTo(sideLayer);
     });
     if (route.roadPath.length > 1) L.polyline(route.roadPath, { color: '#006493', weight: 4.5, opacity: 0.9 }).addTo(sideLayer);
-    if (route.spots.length === 1) { const o = PLACES[route.spots[0]]; sideMap.setView([o.lat, o.lng], 15); }
+    if (keepView) { /* 보던 화면 유지 */ }
+    else if (route.spots.length === 1) { const o = PLACES[route.spots[0]]; sideMap.setView([o.lat, o.lng], 15); }
     else sideMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
     const day = getScheduleDay(dayNum);
     document.getElementById('schedule-side-title').textContent = `🗺️ Day ${dayNum} 동선 (${day.date})`;
@@ -3188,6 +3268,7 @@
     document.querySelectorAll('[data-album-link]').forEach(a => { a.href = GOOGLE_PHOTOS_ALBUM_URL; });
     initSupabase();
     loadForecast();
+    loadRoadLegs();
     runDataChecks();
     document.getElementById('today-day-btn').addEventListener('click', () => { const t = tripTodayDay(); if (t) updateDayView(t); });
 

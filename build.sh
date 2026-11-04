@@ -4,6 +4,6 @@ set -e
 cd "$(dirname "$0")"
 BUILD=$(date -u +%Y%m%d%H%M)
 npx --yes tailwindcss@3.4.17 -c tailwind.config.js -i tailwind.in.css -o tailwind.css --minify
-sed -i -E "s#/tailwind\.css\?v=[A-Za-z0-9_]+#/tailwind.css?v=${BUILD}#" index.html
+sed -i -E "s#/(tailwind\.css|road-legs\.json)\?v=[A-Za-z0-9_]+#/\1?v=${BUILD}#g" index.html
 sed -i -E "s#^const VERSION = '[^']*';#const VERSION = '${BUILD}';#" sw.js
 echo "build ${BUILD}"
