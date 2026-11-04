@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611040642">
+  <link rel="stylesheet" href="/tailwind.css?v=202611040647">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -482,12 +482,7 @@
 <div class="app-shell">
   <!-- TOP HERO HEADER (Time-Adaptive Hawaiian Panorama) -->
   <header id="app-hero-banner" class="hero-banner">
-    <div class="hero-top flex items-center justify-between gap-1.5 mb-2.5">
-      <button id="cycle-theme-btn" type="button" title="터치하여 시간대별 풍경 미리보기 전환"
-              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-amber-400 text-slate-950 nowrap-btn shadow-sm cursor-pointer">
-        <span id="theme-badge-label">☀️ 에메랄드 와이키키</span>
-        <span class="text-[9.5px] opacity-80">↻</span>
-      </button>
+    <div class="hero-top flex items-center justify-end gap-1.5 mb-2.5">
       <div class="flex items-center gap-1.5">
         <button id="open-flight-modal-btn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11.5px] font-bold bg-slate-900/65 text-white border border-white/25 nowrap-btn">
           ✈️ 대한항공 KE051/052
@@ -1405,13 +1400,19 @@
     document.getElementById('menu-sheet-body').innerHTML = `<div class="divide-y divide-slate-100">${items}</div>${tips}${link}<div class="h-2"></div>`;
     const sheet = document.getElementById('menu-sheet');
     sheet.classList.remove('hidden');
+    navPush({ overlay: 'menu' });
     document.body.style.overflow = 'hidden';
   }
   window.openMenuSheet = openMenuSheet;
 
-  function closeMenuSheet() {
+  function hideMenuSheet() {
     document.getElementById('menu-sheet').classList.add('hidden');
     document.body.style.overflow = '';
+  }
+  // 닫기 버튼·바깥 누르기: 뒤로가기 기록도 함께 되돌림
+  function closeMenuSheet() {
+    if (history.state && history.state.overlay === 'menu') history.back();
+    else hideMenuSheet();
   }
 
   /* [DATA] 일정표 */
@@ -1779,6 +1780,7 @@
     const data = getScheduleDay(dayNum);
     if (!data) return;
     currentDayIndex = dayNum;
+    navReplace();
 
     document.querySelectorAll('#schedule-day-grid .day-chip').forEach(chip => {
       chip.classList.toggle('active', parseInt(chip.dataset.day, 10) === dayNum);
@@ -2117,7 +2119,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611040642').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611040647').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -2216,6 +2218,7 @@
 
   function filterOahuRoute(filterKey, keepView) {
     currentOahuFilter = filterKey;
+    if (!keepView) navReplace();
     document.querySelectorAll('#oahu-day-filter-grid .oahu-filter-chip').forEach(c => {
       c.classList.toggle('active', c.dataset.filter === String(filterKey));
     });
@@ -3337,7 +3340,54 @@
     }
   }
 
-  function switchMainScreen(targetId) {
+  /* ---- 휴대폰 뒤로가기 ----
+   *   화면(탭)을 옮길 때마다 브라우저 기록에 남겨 뒤로 버튼으로 이전 화면으로 돌아감
+   *   메뉴 미리보기·항공 팝업이 열려 있으면 뒤로 버튼으로 먼저 닫힘
+   *   맨 처음 화면에서는 "한 번 더 누르면 닫혀요" 안내 후 한 번 더 누르면 종료 */
+  let currentTab = 'tab-schedule';
+  let navRestoring = false;
+  let exitArmed = false;
+  function navState() { return { tab: currentTab, day: currentDayIndex, oahu: currentOahuFilter }; }
+  function navPush(extra) {
+    if (navRestoring) return;
+    try { history.pushState(Object.assign(navState(), extra || {}), ''); } catch (e) {}
+  }
+  function navReplace() {
+    if (navRestoring) return;
+    try { const st = history.state || {}; history.replaceState(Object.assign({}, st, navState(), { overlay: st.overlay }), ''); } catch (e) {}
+  }
+  function hideFlightModal() {
+    const m = document.getElementById('flight-modal');
+    m.classList.add('hidden'); m.classList.remove('flex');
+  }
+  function initBackNavigation() {
+    try { history.replaceState(Object.assign(navState(), { base: true }), ''); } catch (e) { return; }
+    // 첫 터치 때 안내용 기록 하나를 더 쌓아 둠 (사용자 동작 없이 쌓은 기록은 브라우저가 건너뛰기 때문)
+    document.addEventListener('click', () => { if (history.state && history.state.base) navPush(); }, { once: true, capture: true });
+    window.addEventListener('popstate', e => {
+      const st = e.state || {};
+      navRestoring = true;
+      try {
+        if (st.overlay !== 'menu' && !document.getElementById('menu-sheet').classList.contains('hidden')) hideMenuSheet();
+        if (st.overlay !== 'flight') hideFlightModal();
+        if (st.oahu) currentOahuFilter = st.oahu;
+        if (st.tab && st.tab !== currentTab) switchMainScreen(st.tab, { fromHistory: true });
+        if (st.day && st.day !== currentDayIndex) updateDayView(st.day);
+        if (st.tab === 'tab-oahu' && oahuMap && st.oahu) filterOahuRoute(st.oahu);
+      } finally { navRestoring = false; }
+      if (st.base) {
+        if (exitArmed) return;
+        exitArmed = true;
+        showToast('뒤로 버튼을 한 번 더 누르면 앱이 닫혀요');
+        setTimeout(() => { exitArmed = false; if (history.state && history.state.base) navPush(); }, 2500);
+      }
+    });
+  }
+
+  function switchMainScreen(targetId, opts) {
+    const changed = targetId !== currentTab;
+    currentTab = targetId;
+    if (changed && !(opts && opts.fromHistory)) navPush();
     document.querySelectorAll('.main-screen').forEach(sec => sec.classList.toggle('hidden', sec.id !== targetId));
     document.querySelectorAll('.m3-nav-item').forEach(btn => btn.classList.toggle('active', btn.dataset.target === targetId));
     if (targetId === 'tab-oahu') setTimeout(() => { if (oahuMap) oahuMap.invalidateSize(); else initOahuMap(); }, 100);
@@ -3351,8 +3401,11 @@
   }
 
   window.addEventListener('DOMContentLoaded', () => {
+    // 상단 배경은 시간대에 따라 자동 전환 (5분마다, 앱으로 돌아올 때마다 확인)
     applyHeroTheme(getAutoThemeIdxByHour(), false);
-    document.getElementById('cycle-theme-btn').addEventListener('click', () => applyHeroTheme(currentHeroThemeIdx + 1, true));
+    const syncHeroTheme = () => { const i = getAutoThemeIdxByHour(); if (i !== currentHeroThemeIdx) applyHeroTheme(i, false); };
+    setInterval(syncHeroTheme, 5 * 60 * 1000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) syncHeroTheme(); });
 
     // 여행 중이면 오늘 일정으로 바로 열림 (?day=5 로 특정 날짜 열기 가능)
     const paramDay = parseInt(URL_PARAMS.get('day'), 10);
@@ -3441,8 +3494,12 @@
     });
 
     const flightModal = document.getElementById('flight-modal');
-    document.getElementById('open-flight-modal-btn').addEventListener('click', () => { flightModal.classList.remove('hidden'); flightModal.classList.add('flex'); });
-    document.getElementById('close-flight-modal-btn').addEventListener('click', () => { flightModal.classList.add('hidden'); flightModal.classList.remove('flex'); });
+    document.getElementById('open-flight-modal-btn').addEventListener('click', () => { flightModal.classList.remove('hidden'); flightModal.classList.add('flex'); navPush({ overlay: 'flight' }); });
+    document.getElementById('close-flight-modal-btn').addEventListener('click', () => {
+      if (history.state && history.state.overlay === 'flight') history.back(); else hideFlightModal();
+    });
+    flightModal.addEventListener('click', e => { if (e.target === flightModal) document.getElementById('close-flight-modal-btn').click(); });
+    initBackNavigation();
 
     // 앱 설치 (PWA)
     const installBtns = [document.getElementById('install-app-btn'), document.getElementById('install-app-btn2')];
