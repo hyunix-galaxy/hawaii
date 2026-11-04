@@ -779,7 +779,8 @@
               <a href="https://www.google.com/maps/dir/?api=1&destination=Pearl+Harbor+National+Memorial+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="text-[13.5px] font-extrabold text-sky-900 underline">4. 📍 Pearl Harbor & The Kahala (2/26 금)</a>
               <span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-900 text-[11px] font-extrabold nowrap-btn">8주 전</span>
             </div>
-            <p class="text-[12px] text-slate-600">USS Arizona 보트 예약($1/인) 및 카할라 더 베란다 애프터눈 티($65~80/인)</p>
+            <p class="text-[12px] text-slate-600">USS Arizona 보트 예약($1/인) 및 카할라 더 베란다 애프터눈 티($80/인 + 세금·봉사료)</p>
+            <p class="text-[12px] font-bold text-rose-700">⚠️ 애프터눈 티는 토요일 13:00~15:30에만 운영 — 2/26(금) 일정 조정 필요</p>
             <div class="flex flex-wrap gap-1.5 pt-1">
               <a href="https://www.google.com/maps/dir/?api=1&destination=Pearl+Harbor+National+Memorial+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 진주만 길안내 ↗</a>
               <a href="https://www.google.com/maps/dir/?api=1&destination=The+Kahala+Hotel+and+Resort+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 카할라 길안내 ↗</a>
@@ -1111,8 +1112,8 @@
     { day: 'D3 · 2/20', title: '노스쇼어', items: [
       { place: "Ray's Kiawe Broiled Chicken", tips: [
         '토·일요일만, 대략 10:00~16:00. 일찍 매진될 수 있어 전화 예약(808-351-6258)을 권해요. 현금을 챙기세요.',
-        '⚠️ 현지 가이드 기준 통닭 1마리 약 $16, 주소 66-190 Kamehameha Hwy예요. 일정표의 $11, 66-160과 달라요.'
-      ], warn: true },
+        '통닭 1마리 약 $16, 주소 66-190 Kamehameha Hwy (일정표에 최신 반영 완료).'
+      ]},
       { place: 'Matsumoto Shave Ice', tips: ['주말엔 줄이 길어요. 할레이바 도착하자마자 먼저 들르는 게 좋아요.'] },
       { place: 'Laniakea Beach (거북이)', tips: ['거북이 근처에 줄을 쳐 두는 경우가 많아요. 2~3m 거리를 지키고 만지지 마세요.', '도로변 주차는 위험하고 단속이 있어요. 지정 주차장에 대고 걸어가세요.'] }
     ]},
@@ -1121,8 +1122,8 @@
       { place: 'Fook Yuen Seafood', tips: ['⚠️ 2026.11 현재 영업 여부·랍스터 특가 조건을 확인하지 못했어요. 출발 전 전화(808-973-0168)로 확인하세요.'], warn: true },
       { place: "Tantalus Lookout (Pu'u Ualaka'a)", tips: [
         '게이트 07:00 개방, 겨울철엔 18:45쯤 잠겨요. 해 지기 전에 나와야 해요.',
-        '⚠️ 2026년 2월부터 비거주자 차량 주차료 $7이 생겼어요. 일정표의 "입장·주차 무료"와 달라요.'
-      ], warn: true }
+        '2026년 2월부터 비거주자 차량 주차료 $7이 생겼어요 (일정표에 최신 반영 완료).'
+      ]}
     ]},
     { day: 'D5 · 2/22', title: '동부 해안 · 카일루아', items: [
       { place: 'Makapuu Point', tips: ['그늘이 없는 포장길이에요. 모자·물 필수.'] },
@@ -1143,8 +1144,8 @@
     { day: 'D7 · 2/24', title: '쿠알로아 · 식물원', items: [
       { place: 'Kualoa Ranch', tips: [
         '앞이 막힌 신발 필수. UTV 투어는 먼지가 많아 갈아입을 옷을 챙기세요. 만 5세부터 탑승, 운전은 가이드가 해요.',
-        '⚠️ UTV 랩터 투어 현재 공식가 $154.95/인 (+세금 4.712%)로, 일정표의 $149.95와 달라요.'
-      ], warn: true },
+        'UTV 랩터 투어 공식가 $154.95/인 (+세금 4.712%) (일정표에 최신 반영 완료).'
+      ]},
       { place: "Giovanni's Shrimp Truck", tips: ['마늘 양이 아주 많아요. 물티슈를 챙기고, 점심 피크엔 줄이 길어요.'] },
       { place: "Ho'omaluhia Botanical Garden", tips: ['목요일 휴원, 09:00~16:00, 무료. 차량 마지막 입장 15:30이에요. 2/24(수)은 운영일이에요.'] }
     ]},
@@ -1313,6 +1314,39 @@
     }
   ];
 
+  /* [보정 계층] 2026.11 최신 정보 반영 — 위 scheduleData 원본은 수정하지 않고, 아래 값으로 덮어써서 표시
+   *   slot: 덮어쓸 슬롯(label) · set: 바꿀 필드 · note: 슬롯 아래 경고 문구 · costIndex/cost: 비용 줄 교체 */
+  const SCHEDULE_UPDATED_AT = '2026.11.04';
+  const SCHEDULE_UPDATES = [
+    { day: 2, costIndex: 0, cost: 'Hanauma Bay 입장료 $25.00/인 (만 12세 이하 무료) · 주차 $3.00/대 (현금만) · 마지막 입장 13:30' },
+    { day: 3, slot: '오전', set: { mapQuery: '66-190 Kamehameha Hwy Haleiwa HI' } },
+    { day: 3, costIndex: 0, cost: "Ray's 통닭 1마리 약 $16 (토·일 10:00~16:00경 · 전화 예약 808-351-6258 · 현금 준비)" },
+    { day: 4, slot: '점심', note: 'ℹ️ 영업 여부·랍스터 특가 조건 미확인 — 출발 전 전화(808-973-0168)로 확인' },
+    { day: 4, costIndex: 1, cost: 'Tantalus Lookout 입장 무료 · 비거주자 주차 $7/대 (게이트 07:00 개방, 겨울 18:45경 폐쇄)' },
+    { day: 7, costIndex: 0, cost: 'Kualoa Movie Sites 성인 $59.95 · 아동 $39.95 / UTV 랩터 $154.95 (+세금 4.712%)' },
+    { day: 9, slot: '오후', note: '⚠️ 더 베란다 애프터눈 티는 토요일 13:00~15:30에만 운영 — 2/26(금)에는 이용 불가, 일정 조정 필요' },
+    { day: 9, costIndex: 1, cost: 'The Veranda 애프터눈 티 $80/인 + 세금·봉사료(5인 이상 20%) · 토요일만 운영 · 72시간 내 취소 $35/인' }
+  ];
+
+  function getScheduleDay(dayNum) {
+    const base = scheduleData.find(d => d.day === dayNum) || scheduleData[0];
+    const day = Object.assign({}, base, { slots: base.slots.map(sl => Object.assign({}, sl)), costs: (base.costs || []).slice() });
+    let updated = false;
+    SCHEDULE_UPDATES.filter(u => u.day === day.day).forEach(u => {
+      if (u.slot) {
+        const sl = day.slots.find(x => x.label === u.slot);
+        if (sl) {
+          if (u.set) Object.assign(sl, u.set);
+          if (u.note) sl.note = u.note;
+          updated = true;
+        }
+      }
+      if (u.costIndex != null && u.cost) { day.costs[u.costIndex] = u.cost; updated = true; }
+    });
+    day.updated = updated;
+    return day;
+  }
+
   let currentDayIndex = 1;
 
   function renderScheduleDayGrid() {
@@ -1332,7 +1366,7 @@
 
   function updateDayView(dayNum) {
     currentDayIndex = dayNum;
-    const data = scheduleData.find(d => d.day === dayNum) || scheduleData[0];
+    const data = getScheduleDay(dayNum);
 
     document.querySelectorAll('#schedule-day-grid .day-chip').forEach(chip => {
       chip.classList.toggle('active', parseInt(chip.dataset.day, 10) === dayNum);
@@ -1361,6 +1395,7 @@
               </div>
             </div>
             <p class="text-[13px] font-semibold text-slate-900 leading-relaxed">${slot.desc}</p>
+            ${slot.note ? `<p class="text-[12px] font-bold leading-relaxed ${slot.note.startsWith('⚠️') ? 'text-rose-700' : 'text-amber-700'}">${slot.note}</p>` : ''}
             <div class="flex flex-wrap items-center gap-1.5 pt-0.5">
               <a href="${searchUrl}" target="_blank" rel="noopener noreferrer" class="gmap-chip">📍 구글맵 ↗</a>
               <a href="${dirUrl}" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 길안내 ↗</a>
@@ -1390,7 +1425,7 @@
 
           <div class="pt-2 border-t border-slate-200 flex flex-col gap-2.5">
             <div class="bg-slate-50 rounded-xl p-2.5 border border-slate-200 space-y-1">
-              <div class="text-[11px] font-extrabold text-slate-500">💰 주요 비용 (현재 기준 단가)</div>
+              <div class="text-[11px] font-extrabold text-slate-500">💰 주요 비용 (현재 기준 단가)${data.updated ? ` <span class="ml-1 px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px]">🔄 ${SCHEDULE_UPDATED_AT} 최신 반영</span>` : ''}</div>
               ${costsHtml}
             </div>
 
