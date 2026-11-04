@@ -813,6 +813,27 @@
   const RECEIPT_BUCKET = 'receipts';
   const TESSERACT_CDN = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
 
+  /* [DATA] 날짜별 일출·일몰 · 평년 날씨 (와이키키 기준, 하와이 시간)
+   *   일출·일몰: 천문 계산값 (NOAA 방식)
+   *   평년: Open-Meteo 실측 기록 2021~2026년 같은 날짜 평균 · rainYears = 6년 중 비(1mm 이상) 온 해 수
+   *   실제 예보: 날짜가 16일 이내로 들어오면 Open-Meteo 예보로 자동 전환 */
+  const DAY_ENV = {
+    '2/18': { sunrise: '07:00', sunset: '18:31', normHi: 25.4, normLo: 20.6, rainYears: 2 },
+    '2/19': { sunrise: '06:59', sunset: '18:31', normHi: 25.7, normLo: 20.5, rainYears: 5 },
+    '2/20': { sunrise: '06:59', sunset: '18:32', normHi: 25.8, normLo: 20.9, rainYears: 2 },
+    '2/21': { sunrise: '06:58', sunset: '18:32', normHi: 25.6, normLo: 20.6, rainYears: 4 },
+    '2/22': { sunrise: '06:57', sunset: '18:33', normHi: 26.2, normLo: 20.2, rainYears: 2 },
+    '2/23': { sunrise: '06:57', sunset: '18:33', normHi: 25.8, normLo: 21.3, rainYears: 3 },
+    '2/24': { sunrise: '06:56', sunset: '18:34', normHi: 25.1, normLo: 20.9, rainYears: 3 },
+    '2/25': { sunrise: '06:55', sunset: '18:34', normHi: 25.3, normLo: 20.6, rainYears: 0 },
+    '2/26': { sunrise: '06:54', sunset: '18:35', normHi: 25.8, normLo: 21.1, rainYears: 2 },
+    '2/27': { sunrise: '06:54', sunset: '18:35', normHi: 26.0, normLo: 20.3, rainYears: 5 },
+    '2/28': { sunrise: '06:53', sunset: '18:35', normHi: 25.8, normLo: 20.4, rainYears: 4 }
+  };
+  const ENV_YEARS = 6;
+  const WEATHER_LAT = 21.2835, WEATHER_LON = -157.8378;
+  const FORECAST_FROM = Date.parse('2027-02-02T00:00:00-10:00'); // 이 시점부터 예보 조회
+
   /* [DATA] 준비물 (조회 전용 — 변경은 총무가 이 블록을 수정) */
   const checklistItems = [
     { text: '여권 (만료일 6개월 이상) 및 ESTA 승인서', done: true },
@@ -909,6 +930,59 @@
 
   function gMapSearchQuery(q) { return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`; }
   function gMapDirQuery(q) { return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}&travelmode=driving`; }
+
+  // WEATHER · SUN (날짜별 날씨 · 일출일몰)
+  const WMO = {
+    0: ['☀️', '맑음'], 1: ['🌤️', '대체로 맑음'], 2: ['⛅', '구름 조금'], 3: ['☁️', '흐림'],
+    45: ['🌫️', '안개'], 48: ['🌫️', '안개'],
+    51: ['🌦️', '약한 이슬비'], 53: ['🌦️', '이슬비'], 55: ['🌧️', '강한 이슬비'],
+    61: ['🌦️', '약한 비'], 63: ['🌧️', '비'], 65: ['🌧️', '강한 비'],
+    80: ['🌦️', '소나기'], 81: ['🌧️', '소나기'], 82: ['⛈️', '강한 소나기'],
+    95: ['⛈️', '뇌우'], 96: ['⛈️', '뇌우'], 99: ['⛈️', '뇌우']
+  };
+  let forecastByDate = {};   // '2/18' → { code, hi, lo, pop }
+  let forecastLoaded = false;
+
+  async function loadForecast() {
+    if (forecastLoaded || Date.now() < FORECAST_FROM) return;
+    forecastLoaded = true;
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${WEATHER_LAT}&longitude=${WEATHER_LON}`
+        + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
+        + '&timezone=Pacific%2FHonolulu&forecast_days=16';
+      const j = await (await fetch(url)).json();
+      const d = j && j.daily;
+      if (!d || !d.time) return;
+      d.time.forEach((t, i) => {
+        if (!t.startsWith('2027-02-')) return;
+        const key = `2/${parseInt(t.slice(8), 10)}`;
+        if (!DAY_ENV[key]) return;
+        forecastByDate[key] = { code: d.weather_code[i], hi: d.temperature_2m_max[i], lo: d.temperature_2m_min[i], pop: d.precipitation_probability_max[i] };
+      });
+      updateDayView(currentDayIndex);
+    } catch (e) { forecastLoaded = false; }
+  }
+
+  function renderDayEnv(dateKey) {
+    const env = DAY_ENV[dateKey];
+    if (!env) return '';
+    const fc = forecastByDate[dateKey];
+    let weatherHtml;
+    if (fc && fc.hi != null) {
+      const [icon, label] = WMO[fc.code] || ['🌡️', '예보'];
+      const pop = fc.pop != null ? ` · 강수 ${fc.pop}%` : '';
+      weatherHtml = `<span class="px-1.5 py-0.5 rounded bg-sky-600 text-white text-[10px] font-extrabold">예보</span>
+        <span>${icon} ${label} ${Math.round(fc.hi)}° / ${Math.round(fc.lo)}°${pop}</span>`;
+    } else {
+      weatherHtml = `<span class="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 text-[10px] font-extrabold">평년</span>
+        <span>🌡️ ${Math.round(env.normHi)}° / ${Math.round(env.normLo)}° · 비 온 해 ${env.rainYears}/${ENV_YEARS}</span>`;
+    }
+    return `
+      <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] font-bold text-slate-700">
+        <span class="inline-flex items-center gap-1.5">${weatherHtml}</span>
+        <span class="inline-flex items-center gap-2 nowrap-btn">🌅 ${env.sunrise} <span class="text-slate-400">·</span> 🌇 ${env.sunset}</span>
+      </div>`;
+  }
 
   /* [DATA] 일정표 */
   const scheduleData = [
@@ -1093,6 +1167,7 @@
                 <span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 text-[11px] font-extrabold nowrap-btn">${data.badge}</span>
               </div>
               <h2 class="text-[16px] font-extrabold text-slate-900 mt-1.5 leading-snug">${data.title}</h2>
+              ${renderDayEnv(data.date.split(' ')[0])}
             </div>
           </div>
 
@@ -1755,6 +1830,7 @@
     renderExpenses();
     renderChecklist();
     initSupabase();
+    loadForecast();
 
     document.getElementById('exp-code-input').value = readSavedCode();
     document.getElementById('receipt-file').addEventListener('change', (e) => handleReceiptFile(e.target.files && e.target.files[0]));
