@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611041211">
+  <link rel="stylesheet" href="/tailwind.css?v=202611041239">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -1111,6 +1111,15 @@
     { text: '트래블월렛/트래블로그 카드 및 팁·새우트럭용 달러 현금', done: false },
     { text: '스노클링 마스크 · 아쿠아슈즈 · 산호초 안전(Reef-Safe) 선크림', done: false }
   ];
+  /* [보정 계층] 준비물 추가 — 원본 목록 뒤에 붙음 (note: 작은 설명 · links: 바로가기) (2026.11.04) */
+  const CHECKLIST_ADD = [
+    { text: '코스트코용 비자(VISA) 신용카드 + 코스트코 회원카드', done: false,
+      note: '미국 코스트코 매장·주유소는 카드 중 비자만 받아요 (마스터·아멕스 안 됨). 한국 회원카드로 입장·주유 가능 · D1 장보기, D4·D11 주유' },
+    { text: '와이키키 트롤리 핑크라인 탑승용 JCB 카드 (가족별 1장씩)', done: false,
+      note: 'JCB 카드를 보여 주면 핑크라인(와이키키↔알라모아나)이 무료예요. 카드 1장에 본인 + 같이 탄 어른 1명 (11세 이하 아이 2명까지). 중2·고1은 어른으로 쳐서 1일권 $6씩 또는 JCB 카드 1장 더 · 탈 때 "Family"라고 말하기 · 큰 짐·유모차는 제한 · 2028.3.31까지 (JCB 공식, 2026.11 확인)',
+      links: [{ label: '핑크라인 노선·시간', url: 'https://waikikitrolley.com/routes/' }, { label: 'JCB 무료 탑승 안내', url: 'https://www.jcb.co.jp/campaign/c07_060trolley.html' }] }
+  ];
+  const allChecklistItems = () => checklistItems.concat(CHECKLIST_ADD);
   /* ===================== [DATA] 끝 ===================== */
 
   const GOOGLE_PHOTOS_ALBUM_URL = 'https://photos.app.goo.gl/T7oLKmuA24sTGZky6';
@@ -2345,7 +2354,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611041211').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611041239').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -3749,17 +3758,25 @@
     const wrap = document.getElementById('checklist-items');
     if (!wrap) return;
     const saved = readChecks();
-    wrap.innerHTML = checklistItems.map((item, i) => {
+    const items = allChecklistItems();
+    wrap.innerHTML = items.map((item, i) => {
       const done = saved[item.text] != null ? saved[item.text] : item.done;
+      const extra = (item.note || item.links) ? `
+          <div class="pl-8 pr-1 pb-2.5 -mt-1 space-y-1.5">
+            ${item.note ? `<p class="text-[12px] font-semibold text-slate-600 leading-relaxed">${item.note}</p>` : ''}
+            ${item.links ? `<div class="flex flex-wrap gap-1.5">${item.links.map(l => `<a href="${l.url}" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 ${l.label} ↗</a>`).join('')}</div>` : ''}
+          </div>` : '';
       return `
-        <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
-          <input type="checkbox" data-check="${i}" ${done ? 'checked' : ''} class="w-5 h-5 accent-sky-700 shrink-0">
-          <span class="text-[13.5px] font-semibold ${done ? 'text-slate-500 line-through' : 'text-slate-900'}">${item.text}</span>
-        </label>`;
+        <div class="rounded-xl bg-slate-50 border border-slate-200">
+          <label class="flex items-center gap-3 p-3 cursor-pointer">
+            <input type="checkbox" data-check="${i}" ${done ? 'checked' : ''} class="w-5 h-5 accent-sky-700 shrink-0">
+            <span class="text-[13.5px] font-semibold ${done ? 'text-slate-500 line-through' : 'text-slate-900'}">${item.text}</span>
+          </label>${extra}
+        </div>`;
     }).join('');
     wrap.querySelectorAll('[data-check]').forEach(cb => cb.addEventListener('change', () => {
       const s = readChecks();
-      s[checklistItems[+cb.dataset.check].text] = cb.checked;
+      s[items[+cb.dataset.check].text] = cb.checked;
       try { localStorage.setItem(CHECK_KEY, JSON.stringify(s)); } catch (e) {}
       renderChecklist();
     }));
