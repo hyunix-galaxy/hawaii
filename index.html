@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611041239">
+  <link rel="stylesheet" href="/tailwind.css?v=202611041244">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -1361,8 +1361,11 @@
    *   { day, title }                       날짜 묶음 제목 바꾸기
    *   { place, setTips:[...] }             해당 장소 꿀팁 전체 교체
    *   { place, addTips:[...] }             해당 장소 꿀팁 덧붙이기
-   *   { day, addItem:{place,tips}, after } 새 장소 꿀팁 추가 */
+   *   { day, addItem:{place,tips}, after } 새 장소 꿀팁 추가
+   *   { place, remove:true }              해당 장소 꿀팁 숨기기 (원본은 그대로) */
   const TIP_UPDATES = [
+    // 아이 카시트: 대상 아이 없음 (중2·고1) → 숨김 (2026.11.04)
+    { place: '아이 카시트 (렌터카)', remove: true },
     // D7: 식물원 → 11:20 쿠알로아 → Kaya's 점심 → 노스쇼어 → 할레이바 지오반니
     { day: 'D7', title: '식물원 · 쿠알로아 · 노스쇼어 일주' },
     { day: 'D7', addItem: { place: 'Enterprise 렌트카 (힐튼 단지)', tips: ['힐튼 단지 안(2005 Kalia Rd, 영문 지도 30번) 지점은 매일 08:00~12:00만 열어요. 08:00에 바로 빌리고, 저녁 반납은 힐튼 주차장 5층 반납함을 이용하세요 (Enterprise 공식).', '두 번째 운전자도 한국 면허증과 국제운전면허증이 모두 필요해요. 만 21~24세 운전자는 하루 $25 추가 요금이 붙어요.', '두 차가 같은 순서로 다니니 출발 전에 다음 장소를 정하고 휴대폰 위치 공유를 켜 두세요. 라니아케아처럼 주차 자리가 적은 곳은 한 대씩 따로 세울 각오를 하세요.'] }, after: null },
@@ -1414,6 +1417,11 @@
         if (!g) { reportDataIssue(`꿀팁 보정: '${u.day}' 묶음이 없습니다`); return; }
         const idx = u.after ? g.items.findIndex(x => x.place === u.after) : -1;
         g.items.splice(idx < 0 ? g.items.length : idx + 1, 0, Object.assign({}, u.addItem, { tips: u.addItem.tips.slice() }));
+      }
+      if (u.place && u.remove) {
+        const g = groups.find(x => x.items.some(it => it.place === u.place));
+        if (!g) { reportDataIssue(`꿀팁 보정: '${u.place}' 항목이 없습니다`); return; }
+        g.items = g.items.filter(it => it.place !== u.place);
       }
       if (u.place && (u.setTips || u.addTips)) {
         const it = findItem(u.place);
@@ -2354,7 +2362,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611041239').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611041244').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
