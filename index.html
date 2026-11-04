@@ -215,6 +215,21 @@
       z-index: 999 !important;
     }
 
+    .resort-focus-ring {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 3px solid #EA580C;
+      background: rgba(234, 88, 12, 0.18);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9);
+      animation: resortPulse 1.2s ease-out infinite;
+    }
+
+    @keyframes resortPulse {
+      0% { transform: scale(0.85); opacity: 1; }
+      100% { transform: scale(1.45); opacity: 0.25; }
+    }
+
     .oahu-spot-pin {
       position: relative;
       width: 30px;
@@ -455,18 +470,24 @@
         </div>
 
         <div class="space-y-2.5 pt-1">
+          <div class="text-[11.5px] font-semibold text-slate-500 px-1">아래 이름을 누르면 안내도에서 위치를 표시합니다.</div>
           <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
             <div class="text-[11.5px] font-extrabold text-slate-700 mb-1.5">🏨 숙소 타워</div>
             <div id="legend-cat-tower" class="flex flex-wrap gap-1.5"></div>
           </div>
           <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
-            <div class="text-[11.5px] font-extrabold text-slate-700 mb-1.5">🍕 3대 맛집 · 식당 · 카페</div>
+            <div class="text-[11.5px] font-extrabold text-slate-700 mb-1.5">🍕 식당 · 바 · 카페 · 마켓</div>
             <div id="legend-cat-food" class="flex flex-wrap gap-1.5"></div>
           </div>
           <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
-            <div class="text-[11.5px] font-extrabold text-slate-700 mb-1.5">🏊 수영장 · 석호 · 편의시설</div>
+            <div class="text-[11.5px] font-extrabold text-slate-700 mb-1.5">🏊 수영장 · 석호</div>
             <div id="legend-cat-pool" class="flex flex-wrap gap-1.5"></div>
           </div>
+          <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
+            <div class="text-[11.5px] font-extrabold text-slate-700 mb-1.5">🛎️ 서비스 · 상점 · 주차</div>
+            <div id="legend-cat-service" class="flex flex-wrap gap-1.5"></div>
+          </div>
+          <div class="text-[10.5px] text-slate-400 px-1">안내도 출처: Hilton Hawaiian Village 단지 안내도 (한글판: 세상의 모든 정보 Busy bee)</div>
         </div>
       </div>
 
@@ -1378,10 +1399,13 @@
     setTimeout(() => filterOahuRoute(String(dayNum)), 150);
   };
 
-  // RESORT MAP (Detailed Embedded Vector Map of Hilton Hawaiian Village)
+  // RESORT MAP (원본 단지 안내도 이미지 + 위치 보정 계층)
   let resortMap = null;
   let resortMarkers = {};
-  const resortBounds = [[0, 0], [520, 820]];
+  let resortFocusMarker = null;
+  const RESORT_MAP_IMG = 'resort-map.jpg';
+  const RESORT_IMG_W = 789, RESORT_IMG_H = 512;
+  const resortBounds = [[0, 0], [RESORT_IMG_H, RESORT_IMG_W]];
 
   /* [DATA] 단지 내 시설 */
   const resortSpots = [
@@ -1401,69 +1425,81 @@
     { id: 'super_pool', cat: 'pool', icon: '🏊', name: 'Super Pool & Main Lobby', desc: '와이키키 해변 앞 대형 메인 수영장 및 메인 프론트 로비', x: 525, y: 205, query: 'Hilton Hawaiian Village Main Lobby Honolulu HI', url: 'https://www.hilton.com/en/hotels/hnlhvhh-hilton-hawaiian-village-waikiki-beach-resort/' }
   ];
 
-  function createResortSvg() {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 520">
-      <rect width="820" height="520" fill="#f5f3ef"/>
-      <path d="M460 0 L820 0 L820 430 Q740 390 670 300 Q590 190 460 120 Z" fill="#bae6fd"/>
-      <path d="M430 0 L485 0 Q595 190 820 410 L820 445 Q575 220 430 0 Z" fill="#fef3c7"/>
-      <ellipse cx="645" cy="365" rx="95" ry="62" fill="#38bdf8" stroke="#fef3c7" stroke-width="10"/>
-      <text x="645" y="362" font-size="13" font-weight="800" text-anchor="middle" fill="#0c4a6e">듀크 카하나모쿠 석호</text>
-      <path d="M40 90 L430 90 M110 90 L110 490 M110 465 L490 465" stroke="#cbd5e1" stroke-width="22" fill="none"/>
-      <text x="235" y="82" font-size="12" font-weight="700" fill="#475569">칼리아 로드 (Kalia Rd) · 승차 공유 픽업</text>
-      <rect x="155" y="280" width="125" height="56" rx="10" fill="#fef08a" stroke="#d97706" stroke-width="3"/>
-      <text x="217" y="312" font-size="13" font-weight="900" text-anchor="middle" fill="#78350f">그랜드 아일랜더</text>
-      <rect x="185" y="215" width="120" height="50" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/>
-      <text x="245" y="245" font-size="13" font-weight="800" text-anchor="middle" fill="#1e293b">타파 타워</text>
-      <rect x="315" y="185" width="125" height="50" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/>
-      <text x="377" y="215" font-size="12" font-weight="800" text-anchor="middle" fill="#1e293b">다이아몬드 헤드 타워</text>
-      <rect x="475" y="238" width="125" height="52" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/>
-      <text x="537" y="268" font-size="13" font-weight="800" text-anchor="middle" fill="#1e293b">레인보우 타워</text>
-      <rect x="455" y="358" width="120" height="52" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/>
-      <text x="515" y="388" font-size="13" font-weight="800" text-anchor="middle" fill="#1e293b">라군 타워</text>
-      <rect x="285" y="388" width="135" height="52" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/>
-      <text x="352" y="418" font-size="13" font-weight="800" text-anchor="middle" fill="#1e293b">그랜드 와이키키안</text>
-      <rect x="105" y="340" width="105" height="48" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/>
-      <text x="157" y="368" font-size="12" font-weight="800" text-anchor="middle" fill="#1e293b">칼리아 타워</text>
-      <rect x="295" y="282" width="160" height="62" rx="12" fill="#ffedd5" stroke="#f97316" stroke-width="2" stroke-dasharray="5 3"/>
-      <text x="375" y="305" font-size="12" font-weight="800" text-anchor="middle" fill="#9a3412">레인보우 바자 (맛집 광장)</text>
-      <ellipse cx="480" cy="435" rx="48" ry="26" fill="#7dd3fc" stroke="#0284c7" stroke-width="2"/>
-      <text x="480" y="439" font-size="11" font-weight="800" text-anchor="middle" fill="#0369a1">파라다이스 풀</text>
-      <ellipse cx="525" cy="205" rx="45" ry="24" fill="#7dd3fc" stroke="#0284c7" stroke-width="2"/>
-      <text x="525" y="209" font-size="11" font-weight="800" text-anchor="middle" fill="#0369a1">슈퍼 풀 · 로비</text>
-      <rect x="655" y="25" width="145" height="105" rx="8" fill="#ffffff" stroke="#e11d48" stroke-width="3"/>
-      <text x="670" y="50" font-size="12" font-weight="900" fill="#1e293b">타워 &amp; 리조트</text>
-      <text x="670" y="70" font-size="11" font-weight="700" fill="#0284c7">수영장 및 석호</text>
-      <text x="670" y="90" font-size="11" font-weight="700" fill="#d97706">서비스 · 상점</text>
-      <text x="670" y="110" font-size="11" font-weight="700" fill="#16a34a">바 &amp; 레스토랑</text>
-    </svg>`;
-    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  /* [보정 계층] 원본 안내도(789×512px) 기준 위치 — 위 resortSpots 원본 데이터의 x·y 대신 사용 */
+  const RESORT_MAP_POS = {
+    grand_islander: [118, 72], tapa_tower: [133, 125], diamond_tower: [258, 62],
+    rainbow_tower: [540, 212], lagoon_tower: [442, 395], waikikian: [250, 425], kalia_tower: [80, 300],
+    lapperts: [366, 267], bluewater: [280, 321], roundtable: [321, 321], starbucks: [81, 257],
+    duke_lagoon: [640, 345], paradise_pool: [480, 447], super_pool: [480, 146]
+  };
+
+  /* [DATA] 원본 안내도에 표시된 추가 시설 (설명은 안내도 표기 기준) */
+  const HHV_URL = 'https://www.hilton.com/en/hotels/hnlhvhh-hilton-hawaiian-village-waikiki-beach-resort/';
+  const hhvQuery = name => `${name} Hilton Hawaiian Village Honolulu HI`;
+  const RESORT_EXTRA_SPOTS = [
+    { id: 'alii_tower', cat: 'tower', icon: '🏢', name: "Ali'i Tower", desc: '알리 타워 · 전용 알리 수영장 인접', x: 405, y: 35, query: hhvQuery("Ali'i Tower"), url: HHV_URL },
+
+    { id: 'tropics', cat: 'food', icon: '🍹', name: 'Tropics Bar & Grill', desc: '알리 타워 앞 비치프론트 바 & 그릴 (D10 점심)', x: 462, y: 54, query: hhvQuery('Tropics Bar & Grill'), url: HHV_URL },
+    { id: 'hau_tree', cat: 'food', icon: '🍹', name: 'Hau Tree Bar', desc: '슈퍼 풀 옆 해변 쪽 바', x: 501, y: 125, query: hhvQuery('Hau Tree Bar'), url: HHV_URL },
+    { id: 'bali', cat: 'food', icon: '🍽️', name: 'Bali Oceanfront', desc: '레인보우 타워 해변 쪽 레스토랑', x: 547, y: 179, query: hhvQuery('Bali Oceanfront'), url: HHV_URL },
+    { id: 'tapa_bar', cat: 'food', icon: '🍹', name: 'Tapa Bar', desc: '타파 타워 · 타파 풀 쪽 바', x: 175, y: 153, query: hhvQuery('Tapa Bar'), url: HHV_URL },
+    { id: 'aloha_bowls', cat: 'food', icon: '🥣', name: 'Aloha Bowls & Tea', desc: '타파 풀 옆 볼·음료 매장', x: 282, y: 98, query: hhvQuery('Aloha Bowls & Tea'), url: HHV_URL },
+    { id: 'starbucks_alii', cat: 'food', icon: '☕', name: '스타벅스 (알리 타워 쪽)', desc: '단지 상단 알리 타워 인근 스타벅스', x: 352, y: 25, query: hhvQuery('Starbucks Rainbow Bazaar'), url: HHV_URL },
+    { id: 'wikiwiki', cat: 'food', icon: '🛒', name: 'Wiki Wiki Market', desc: '알리 타워 1층 마켓', x: 425, y: 80, query: hhvQuery('Wiki Wiki Market'), url: HHV_URL },
+    { id: 'aoki', cat: 'food', icon: '🍳', name: 'Aoki Teppanyaki', desc: '레인보우 바자 철판구이 레스토랑', x: 152, y: 267, query: hhvQuery('Aoki Teppanyaki'), url: HHV_URL },
+    { id: 'hatsuhana', cat: 'food', icon: '🍣', name: 'Hatsuhana', desc: '레인보우 바자 일식 레스토랑', x: 206, y: 311, query: hhvQuery('Hatsuhana'), url: HHV_URL },
+    { id: 'fresco', cat: 'food', icon: '🍝', name: 'Fresco Italian Restaurant', desc: '레인보우 바자 이탈리안 레스토랑', x: 327, y: 338, query: hhvQuery('Fresco Italian Restaurant'), url: HHV_URL },
+    { id: 'cjs_deli', cat: 'food', icon: '🥪', name: "CJ's Deli", desc: '레인보우 바자 델리', x: 275, y: 352, query: hhvQuery("CJ's Deli"), url: HHV_URL },
+    { id: 'starlight_luau', cat: 'food', icon: '🌺', name: 'Waikiki Starlight Luau', desc: '단지 내 루아우 디너쇼', x: 328, y: 356, query: hhvQuery('Waikiki Starlight Luau'), url: HHV_URL },
+
+    { id: 'tapa_pool', cat: 'pool', icon: '🏊', name: 'Tapa Pool', desc: '타파 타워 · 다이아몬드 헤드 타워 사이 수영장', x: 240, y: 132, query: hhvQuery('Tapa Pool'), url: HHV_URL },
+    { id: 'alii_pool', cat: 'pool', icon: '🏊', name: "Ali'i Pool", desc: '알리 타워 수영장', x: 410, y: 62, query: hhvQuery("Ali'i Pool"), url: HHV_URL },
+    { id: 'kalia_pool', cat: 'pool', icon: '🏊', name: '칼리아 성인용 수영장', desc: '칼리아 타워 성인 전용 수영장', x: 80, y: 325, query: hhvQuery('Kalia Tower Pool'), url: HHV_URL },
+
+    { id: 'front_desk', cat: 'service', icon: '🛎️', name: '메인 로비 · 프런트 데스크', desc: '메인 로비 프런트 데스크 · 발레파킹 & 콜택시 · 투어&활동 데스크', x: 385, y: 178, query: hhvQuery('Main Lobby'), url: HHV_URL },
+    { id: 'self_parking', cat: 'service', icon: '🅿️', name: '셀프 주차 차고 (단지 내)', desc: '레인보우 바자 아래 단지 내 셀프 주차장', x: 237, y: 386, query: hhvQuery('Self Parking Garage'), url: HHV_URL },
+    { id: 'rideshare', cat: 'service', icon: '🚕', name: '승차 공유 픽업', desc: '우버·리프트 승차 위치', x: 249, y: 42, query: hhvQuery('Rideshare Pickup'), url: HHV_URL },
+    { id: 'baggage', cat: 'service', icon: '🧳', name: '수하물 센터', desc: '짐 보관 · 수하물 센터', x: 207, y: 42, query: hhvQuery('Bell Desk'), url: HHV_URL },
+    { id: 'abc_bazaar', cat: 'service', icon: '🏪', name: 'ABC 스토어 (레인보우 바자)', desc: '레인보우 바자 ABC 스토어', x: 263, y: 292, query: hhvQuery('ABC Store Rainbow Bazaar'), url: HHV_URL },
+    { id: 'abc_tapa', cat: 'service', icon: '🏪', name: 'ABC 스토어 · 투어 데스크 (타파)', desc: '타파 타워 ABC 스토어 · 투어&활동 데스크', x: 110, y: 145, query: hhvQuery('ABC Store Tapa Tower'), url: HHV_URL },
+    { id: 'tour_rainbow', cat: 'service', icon: '🎟️', name: '투어 데스크 (레인보우 타워)', desc: '레인보우 타워 투어&활동 데스크', x: 491, y: 202, query: hhvQuery('Rainbow Tower Activities Desk'), url: HHV_URL },
+    { id: 'atlantis', cat: 'service', icon: '🚤', name: '아틀란티스 잠수함 데스크', desc: '아틀란티스 잠수함 투어 데스크', x: 476, y: 106, query: hhvQuery('Atlantis Submarines'), url: HHV_URL },
+    { id: 'cruise_desk', cat: 'service', icon: '⛵', name: '와이키키 크루즈 데스크', desc: '안내도 표기: 포스트 와이키키 크루즈 데스크', x: 490, y: 72, query: hhvQuery('Waikiki Cruise Desk'), url: HHV_URL },
+    { id: 'mandara', cat: 'service', icon: '💆', name: '만다라 스파 & 피트니스 센터', desc: '칼리아 타워 스파 · 피트니스 센터', x: 80, y: 342, query: hhvQuery('Mandara Spa'), url: HHV_URL }
+  ];
+
+  function getResortSpots() {
+    const base = resortSpots.map(sp => {
+      const pos = RESORT_MAP_POS[sp.id];
+      return pos ? Object.assign({}, sp, { x: pos[0], y: pos[1] }) : sp;
+    });
+    return base.concat(RESORT_EXTRA_SPOTS);
   }
 
   function initResortMap() {
     if (resortMap) return;
-    resortMap = L.map('resort-leaflet-map', { crs: L.CRS.Simple, minZoom: -1, maxZoom: 2, zoomSnap: 0.25, attributionControl: false });
-    L.imageOverlay(createResortSvg(), resortBounds).addTo(resortMap);
+    resortMap = L.map('resort-leaflet-map', { crs: L.CRS.Simple, minZoom: -1, maxZoom: 2, zoomSnap: 0.25, attributionControl: false, maxBounds: [[-60, -60], [RESORT_IMG_H + 60, RESORT_IMG_W + 60]] });
+    L.imageOverlay(RESORT_MAP_IMG, resortBounds).addTo(resortMap);
     resortMap.fitBounds(resortBounds);
 
-    resortSpots.forEach(sp => {
-      const lat = 520 - sp.y;
+    getResortSpots().forEach(sp => {
+      const lat = RESORT_IMG_H - sp.y;
       const lng = sp.x;
-      const icon = L.divIcon({
-        className: '',
-        html: `<div class="resort-icon-pin ${sp.isHome ? 'our-home' : ''}">${sp.icon}</div>`,
-        iconSize: sp.isHome ? [32, 32] : [26, 26],
-        iconAnchor: sp.isHome ? [16, 16] : [13, 13]
-      });
-      const marker = L.marker([lat, lng], { icon }).addTo(resortMap);
-      marker.bindPopup(`<b>${sp.icon} ${sp.name}</b><br>${sp.desc}`);
-      marker.on('click', () => updateResortDetailCard(sp));
-      resortMarkers[sp.id] = { marker, lat, lng, spot: sp };
+      if (sp.isHome) {
+        const icon = L.divIcon({ className: '', html: `<div class="resort-icon-pin our-home">${sp.icon}</div>`, iconSize: [32, 32], iconAnchor: [16, 16] });
+        const marker = L.marker([lat, lng], { icon, zIndexOffset: 1000 }).addTo(resortMap);
+        marker.bindPopup(`<b>${sp.icon} ${sp.name}</b><br>${sp.desc}`);
+        marker.on('click', () => updateResortDetailCard(sp));
+      }
+      resortMarkers[sp.id] = { lat, lng, spot: sp };
     });
 
-    const makeChip = (sp) => `<button type="button" onclick="selectResortSpot('${sp.id}')" class="px-2.5 py-1 rounded-full text-[11.5px] font-bold bg-white border border-slate-300 hover:border-sky-500">${sp.icon} ${sp.name.split(' (')[0]}</button>`;
-    document.getElementById('legend-cat-tower').innerHTML = resortSpots.filter(s => s.cat === 'tower').map(makeChip).join('');
-    document.getElementById('legend-cat-food').innerHTML = resortSpots.filter(s => s.cat === 'food').map(makeChip).join('');
-    document.getElementById('legend-cat-pool').innerHTML = resortSpots.filter(s => s.cat === 'pool').map(makeChip).join('');
+    const makeChip = (sp) => `<button type="button" onclick="selectResortSpot('${sp.id}')" class="px-2.5 py-1 rounded-full text-[11.5px] font-bold bg-white border border-slate-300 hover:border-sky-500">${sp.icon} ${sp.name.split(' (#')[0]}</button>`;
+    const all = getResortSpots();
+    ['tower', 'food', 'pool', 'service'].forEach(cat => {
+      const el = document.getElementById(`legend-cat-${cat}`);
+      if (el) el.innerHTML = all.filter(s => s.cat === cat).map(makeChip).join('');
+    });
   }
 
   function updateResortDetailCard(sp) {
@@ -1481,11 +1517,18 @@
 
   window.selectResortSpot = function(id) {
     const entry = resortMarkers[id];
-    if (entry && resortMap) {
-      resortMap.setView([entry.lat, entry.lng], 0.5, { animate: true });
-      entry.marker.openPopup();
-      updateResortDetailCard(entry.spot);
+    if (!entry || !resortMap) return;
+    const sp = entry.spot;
+    if (resortFocusMarker) resortMap.removeLayer(resortFocusMarker);
+    if (!sp.isHome) {
+      const icon = L.divIcon({ className: '', html: '<div class="resort-focus-ring"></div>', iconSize: [34, 34], iconAnchor: [17, 17] });
+      resortFocusMarker = L.marker([entry.lat, entry.lng], { icon }).addTo(resortMap);
+      resortFocusMarker.bindPopup(`<b>${sp.icon} ${sp.name}</b><br>${sp.desc}`, { offset: [0, -10] });
+      resortFocusMarker.openPopup();
     }
+    resortMap.setView([entry.lat, entry.lng], 0.75, { animate: true });
+    updateResortDetailCard(sp);
+    document.getElementById('resort-leaflet-map').scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
   // EXPENSES (공유 원장 · 자동 정산 계산)
