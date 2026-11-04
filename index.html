@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611041201">
+  <link rel="stylesheet" href="/tailwind.css?v=202611041211">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -378,6 +378,17 @@
     .tip-chip  { background: #F8FAFC; color: #334155; border: 1px solid #CBD5E1; }
     .day-chip { min-height: 46px; font-size: 13px; }
     .oahu-filter-chip { min-height: 40px; font-size: 13px; }
+    .day-chip.all-chip { background: #F1F5F9; }
+    .day-chip.all-chip.active { background: var(--m3-primary); }
+    .sched-all-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .sched-all-table th { background: #F1F5F9; font-size: 12px; font-weight: 800; color: #475569; text-align: left; padding: 7px 8px; border-bottom: 1px solid #CBD5E1; }
+    .sched-all-table td { vertical-align: top; padding: 8px; border-bottom: 1px solid #E2E8F0; }
+    .sched-all-table tr.all-row { cursor: pointer; }
+    .sched-all-table tr.all-row:active td { background: #F0F9FF; }
+    .sched-all-table tr.is-today td { background: #F0F9FF; }
+    .sched-all-table tr.is-today td:first-child { box-shadow: inset 3px 0 0 #0284C7; }
+    #tab-schedule.sched-all .sched-nav { display: none !important; }
+    @media (min-width: 768px) { .all-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); column-gap: 12px; } }
     .day-chip.is-today:not(.active) { border: 2px solid #0284C7; color: #075985; background: #F0F9FF; }
     .m3-nav-item { font-size: 12px; }
 
@@ -427,8 +438,7 @@
     @media (min-width: 768px) {
       .app-shell { max-width: 860px; }
       .m3-bottom-nav { max-width: 860px; }
-      .day-grid { grid-template-columns: repeat(11, minmax(0, 1fr)); }
-      #oahu-day-filter-grid.day-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+      .day-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); }
       .slots-wrap { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
       .slots-wrap > * { margin-top: 0 !important; }
       #oahu-leaflet-map { height: 460px; }
@@ -448,6 +458,8 @@
       #tab-schedule .sched-main { grid-column: 1; }
       #tab-schedule .sched-nav { grid-column: 1; }
       #tab-schedule .sched-side { display: block !important; grid-column: 2; grid-row: 2 / span 2; position: sticky; top: 12px; }
+      #tab-schedule.sched-all .sched-main { grid-column: 1 / -1; }
+      #tab-schedule.sched-all .sched-side { display: none !important; }
       #schedule-side-map { height: 520px; }
 
       .resort-split { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); column-gap: 16px; row-gap: 12px; align-items: start; }
@@ -1216,7 +1228,7 @@
         if (!DAY_ENV[key]) return;
         forecastByDate[key] = { code: d.weather_code[i], hi: d.temperature_2m_max[i], lo: d.temperature_2m_min[i], pop: d.precipitation_probability_max[i] };
       });
-      updateDayView(currentDayIndex);
+      if (scheduleAll) showScheduleAll(); else updateDayView(currentDayIndex);
     } catch (e) { forecastLoaded = false; }
   }
 
@@ -1902,6 +1914,52 @@
 
   let currentDayIndex = 1;
 
+  // 전체 일정 한 표 — 날짜 줄을 누르면 그날 상세 일정으로
+  let scheduleAll = false;
+  function showScheduleAll() {
+    scheduleAll = true;
+    document.getElementById('tab-schedule').classList.add('sched-all');
+    document.querySelectorAll('#schedule-day-grid .day-chip').forEach(chip => chip.classList.toggle('active', chip.dataset.day === 'all'));
+    const indicator = document.getElementById('current-day-indicator');
+    if (indicator) indicator.textContent = `전체 일정 (D1 ~ D${TOTAL_DAYS})`;
+    const today = tripTodayDay();
+    const rows = [];
+    for (let d = 1; d <= TOTAL_DAYS; d++) {
+      const day = getScheduleDay(d);
+      if (!day) continue;
+      const slots = day.slots.map(sl => `
+        <div class="flex items-start gap-1.5 py-0.5">
+          <span class="px-1.5 py-0.5 rounded-md ${sl.color} text-[11px] font-extrabold nowrap-btn shrink-0">${sl.label}${sl.time ? ' ' + sl.time : ''}</span>
+          <span class="text-[12.5px] font-bold text-slate-800 leading-snug min-w-0">${sl.placeName}</span>
+        </div>`).join('');
+      rows.push(`
+        <tr class="all-row ${d === today ? 'is-today' : ''}" data-goday="${d}">
+          <td class="w-[76px]">
+            <div class="text-[14px] font-extrabold text-sky-800">D${d}${d === today ? ' <span class="text-[11px] text-white bg-sky-600 rounded px-1">오늘</span>' : ''}</div>
+            <div class="text-[12px] font-bold text-slate-600 nowrap-btn">${day.date}</div>
+            ${day.badge ? `<div class="text-[11px] font-bold text-slate-500 leading-snug mt-1">${day.badge}</div>` : ''}
+          </td>
+          <td>
+            <div class="text-[13px] font-extrabold text-slate-900 leading-snug mb-1">${day.title.replace(/^Day \d+ · /, '')}</div>
+            <div class="all-slots">${slots}</div>
+          </td>
+        </tr>`);
+    }
+    const container = document.getElementById('day-card-container');
+    container.innerHTML = `
+      <article class="m3-card p-0 overflow-hidden">
+        <div class="px-4 pt-3.5 pb-2 flex items-center justify-between gap-2">
+          <h2 class="text-[15.5px] font-extrabold text-slate-900">🗓️ 전체 일정 한눈에</h2>
+          <span class="text-[11.5px] font-bold text-slate-500 nowrap-btn">날짜를 누르면 상세 일정</span>
+        </div>
+        <table class="sched-all-table">
+          <thead><tr><th>날짜</th><th>일정</th></tr></thead>
+          <tbody>${rows.join('')}</tbody>
+        </table>
+      </article>`;
+    container.querySelectorAll('[data-goday]').forEach(tr => tr.addEventListener('click', () => { updateDayView(+tr.dataset.goday); window.scrollTo(0, 0); }));
+  }
+
   function renderScheduleDayGrid() {
     const grid = document.getElementById('schedule-day-grid');
     if (!grid) return;
@@ -1911,10 +1969,14 @@
         <span>D${item.day}</span>
         <span class="text-[12px] font-medium opacity-85">${item.day === today ? '오늘' : item.date.split(' ')[0]}</span>
       </button>
-    `).join('');
+    `).join('') + `
+      <button type="button" data-day="all" class="day-chip all-chip ${scheduleAll ? 'active' : ''}">
+        <span>전체</span>
+        <span class="text-[12px] font-medium opacity-85">한눈에</span>
+      </button>`;
 
     grid.querySelectorAll('.day-chip').forEach(btn => {
-      btn.addEventListener('click', () => updateDayView(parseInt(btn.dataset.day, 10)));
+      btn.addEventListener('click', () => btn.dataset.day === 'all' ? showScheduleAll() : updateDayView(parseInt(btn.dataset.day, 10)));
     });
     const label = document.getElementById('day-picker-label');
     if (label) label.textContent = `📅 일자별 일정 (D1 ~ D${TOTAL_DAYS})`;
@@ -1938,6 +2000,8 @@
     const data = getScheduleDay(dayNum);
     if (!data) return;
     currentDayIndex = dayNum;
+    scheduleAll = false;
+    document.getElementById('tab-schedule').classList.remove('sched-all');
     navReplace();
 
     document.querySelectorAll('#schedule-day-grid .day-chip').forEach(chip => {
@@ -2281,7 +2345,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611041201').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611041211').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
