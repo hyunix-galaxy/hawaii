@@ -225,6 +225,20 @@
       z-index: 999 !important;
     }
 
+    .hhv-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 24px;
+      height: 24px;
+      padding: 0 5px;
+      border-radius: 9999px;
+      color: #FFFFFF;
+      font-size: 11px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
     .resort-focus-ring {
       width: 34px;
       height: 34px;
@@ -471,7 +485,7 @@
         </div>
 
         <div id="resort-en-note" class="hidden p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11.5px] font-semibold text-slate-600">
-          영문·일본어 표기 지도입니다. 손가락으로 확대하면 작은 글씨까지 선명하게 보입니다. 아래 시설 이름을 누르면 한글 안내도로 돌아가 위치를 표시합니다.
+          영문·일본어 표기 지도입니다. 손가락으로 확대하면 작은 글씨까지 선명하게 보입니다. 지도 위 색깔 번호는 아래 번호 안내표에서 찾을 수 있습니다.
         </div>
 
         <div id="resort-leaflet-map"></div>
@@ -488,7 +502,7 @@
           </div>
         </div>
 
-        <div class="space-y-2.5 pt-1">
+        <div id="resort-legend-wrap" class="space-y-2.5 pt-1">
           <div class="text-[11.5px] font-semibold text-slate-500 px-1">아래 이름을 누르면 안내도에서 위치를 표시합니다.</div>
           <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
             <div class="text-[11.5px] font-extrabold text-slate-700 mb-1.5">🏨 숙소 타워</div>
@@ -507,6 +521,17 @@
             <div id="legend-cat-service" class="flex flex-wrap gap-1.5"></div>
           </div>
           <div class="text-[10.5px] text-slate-400 px-1">안내도 출처: Hilton Hawaiian Village 공식 한글 단지 안내도 · 영문 지도: Hilton Hawaiian Village 공식 리조트 맵 (일본 공식 사이트 PDF)</div>
+        </div>
+
+        <div id="resort-en-index" class="hidden space-y-2.5 pt-1">
+          <div class="px-1">
+            <div class="text-[13px] font-extrabold text-slate-900">🔢 번호 안내표</div>
+            <div class="text-[11.5px] font-semibold text-slate-500 mt-0.5">지도의 <b>원 색깔 + 번호</b>로 찾으세요. 같은 번호라도 색이 다르면 다른 시설입니다.</div>
+          </div>
+          <input id="hhv-index-search" type="search" placeholder="검색: 한국어, Starbucks, 짐, ABC …" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-[13px] font-semibold">
+          <div id="hhv-index-chips" class="flex flex-wrap gap-1.5"></div>
+          <div id="hhv-index-list" class="space-y-2.5"></div>
+          <div class="text-[10.5px] text-slate-400 px-1">출처: Hilton Hawaiian Village 공식 리조트 맵 2쪽 안내표 (일본 공식 사이트 PDF) · ATM은 번호 없이 아이콘으로만 표시됨</div>
         </div>
       </div>
 
@@ -1508,6 +1533,202 @@
     { id: 'white_chapel', cat: 'service', icon: '💒', name: '화이트 비치 채플', desc: '파라다이스 풀 · 라군 옆 웨딩 채플', x: 60, y: 1165, query: hhvQuery('White Beach Chapel'), url: HHV_URL }
   ];
 
+  /* [DATA] 고해상도 영문 지도 번호 안내표 (힐튼 공식 리조트 맵 PDF 2쪽 그대로)
+   *   cat: 원 색깔 분류 · n: 지도 번호 · name: 안내표 표기 · loc: 위치 · ko: 한글 설명(보조) */
+  const HHV_INDEX_CATS = [
+    { key: 'food',    label: '식당 · 바',            color: 'rgb(178,44,28)' },
+    { key: 'gift',    label: '기념품 · 편의점',       color: 'rgb(34,53,109)' },
+    { key: 'fashion', label: '패션 · 주얼리',         color: 'rgb(105,44,106)' },
+    { key: 'ent',     label: '즐길거리 · 액티비티',   color: 'rgb(143,112,0)' },
+    { key: 'svc',     label: '서비스 · 편의시설',     color: 'rgb(0,85,67)' },
+    { key: 'banquet', label: '연회 · 행사장',         color: 'rgb(205,130,21)' },
+    { key: 'office',  label: '사무실',               color: 'rgb(10,177,177)' }
+  ];
+  const HHV_INDEX = [
+    // 식당 · 바 (빨강)
+    { cat: 'food', n: 122, name: 'Starbucks Coffee', loc: "The Ali'i", ko: '스타벅스' },
+    { cat: 'food', n: 3, name: 'Tropics Bar & Grill', loc: "The Ali'i", ko: '비치프론트 바&그릴' },
+    { cat: 'food', n: 77, name: 'Wiki Wiki Market', loc: "The Ali'i", ko: '마켓' },
+    { cat: 'food', n: 120, name: 'Starbucks Coffee', loc: 'Kālia Tower', ko: '스타벅스' },
+    { cat: 'food', n: 26, name: 'Chee Hoo Patisserie', loc: 'Main Lobby', ko: '베이커리' },
+    { cat: 'food', n: 82, name: 'Hau Tree Bar (Super Pool)', loc: 'Pools', ko: '풀사이드 바' },
+    { cat: 'food', n: 65, name: 'Lagoon Grill (Paradise Pool)', loc: 'Pools', ko: '풀사이드 그릴' },
+    { cat: 'food', n: 140, name: 'Aloha Bowls and Tea (Tapa Pool)', loc: 'Pools', ko: '볼 · 음료' },
+    { cat: 'food', n: 1, name: 'Aoki Teppanyaki', loc: 'Rainbow Bazaar', ko: '철판구이' },
+    { cat: 'food', n: 6, name: 'Blue Water Shrimp & Seafood', loc: 'Rainbow Bazaar', ko: '갈릭새우' },
+    { cat: 'food', n: 8, name: "CJ's New York Style Delicatessen", loc: 'Rainbow Bazaar', ko: '델리' },
+    { cat: 'food', n: 9, name: 'Fresco Restaurant (2nd Floor)', loc: 'Rainbow Bazaar', ko: '이탈리안 · 계단으로만 이동 가능' },
+    { cat: 'food', n: 12, name: "Lappert's Ice Cream & Coffee", loc: 'Rainbow Bazaar', ko: '아이스크림' },
+    { cat: 'food', n: 11, name: 'Round Table Pizza', loc: 'Rainbow Bazaar', ko: '피자' },
+    { cat: 'food', n: 86, name: 'Bali Oceanfront (Mezzanine Level)', loc: 'Rainbow Tower', ko: '오션프런트 레스토랑' },
+    { cat: 'food', n: 87, name: 'Dairy Queen/Orange Julius', loc: 'Rainbow Tower', ko: '아이스크림 · 음료' },
+    { cat: 'food', n: 85, name: 'Paradise Lounge (Mezzanine Level)', loc: 'Rainbow Tower', ko: '라운지 바' },
+    { cat: 'food', n: 104, name: 'Tapa Bar', loc: 'Tapa Tower', ko: '바' },
+
+    // 기념품 · 편의점 (남색)
+    { cat: 'gift', n: 144, name: 'Aloha Imagination', loc: "The Ali'i", ko: '기념품' },
+    { cat: 'gift', n: 70, name: 'Moana Quilts', loc: "The Ali'i", ko: '하와이안 퀼트' },
+    { cat: 'gift', n: 27, name: 'Anuenue Store', loc: 'Main Lobby', ko: '기념품' },
+    { cat: 'gift', n: 10, name: 'Aikahi Aloha Coin & Collectibles', loc: 'Diamond Head Tower', ko: '주화 · 수집품' },
+    { cat: 'gift', n: 4, name: 'ABC Store', loc: 'Rainbow Bazaar', ko: 'ABC 스토어' },
+    { cat: 'gift', n: 29, name: 'Aloha Tattoo', loc: 'Rainbow Bazaar', ko: '타투' },
+    { cat: 'gift', n: 42, name: 'Crystal/Candle Carts', loc: 'Rainbow Bazaar', ko: '크리스털 · 캔들' },
+    { cat: 'gift', n: 126, name: 'Honolulu Cookie Company', loc: 'Rainbow Bazaar', ko: '쿠키' },
+    { cat: 'gift', n: 16, name: 'Kona Mountain Coffee', loc: 'Rainbow Bazaar', ko: '코나 커피' },
+    { cat: 'gift', n: 48, name: 'Moana Woods', loc: 'Rainbow Bazaar', ko: '목공예' },
+    { cat: 'gift', n: 13, name: 'SoHa Living', loc: 'Rainbow Bazaar', ko: '리빙 소품' },
+    { cat: 'gift', n: 32, name: 'Waikiki Christmas Store', loc: 'Rainbow Bazaar', ko: '크리스마스 소품' },
+    { cat: 'gift', n: 64, name: 'Windspinners Cart', loc: 'Rainbow Bazaar', ko: '바람개비 소품' },
+    { cat: 'gift', n: 137, name: 'ABC Store', loc: 'Tapa Tower/Concourse', ko: 'ABC 스토어' },
+    { cat: 'gift', n: 136, name: 'Hi Trend Sunglasses', loc: 'Tapa Tower/Concourse', ko: '선글라스' },
+    { cat: 'gift', n: 111, name: 'Kamehameha Ukulele', loc: 'Tapa Tower/Concourse', ko: '우쿨렐레' },
+    { cat: 'gift', n: 37, name: 'Kailua Crystals', loc: 'Tapa Tower/Concourse', ko: '크리스털' },
+    { cat: 'gift', n: 112, name: 'Storibox Photo Studio', loc: 'Tapa Tower/Concourse', ko: '사진관' },
+    { cat: 'gift', n: 35, name: 'Martin & MacArthur', loc: 'Tapa Tower/Concourse', ko: '하와이 목공예' },
+    { cat: 'gift', n: 138, name: 'Truffoire Skincare', loc: 'Tapa Tower/Concourse', ko: '스킨케어' },
+    { cat: 'gift', n: 7, name: 'Accents (2nd Floor)', loc: 'Grand Waikikian', ko: '편의점' },
+    { cat: 'gift', n: 10, name: 'Diamond General Store', loc: 'Diamond Head Tower', ko: '편의점' },
+
+    // 패션 · 주얼리 (보라)
+    { cat: 'fashion', n: 72, name: 'Aloha Bella', loc: "The Ali'i", ko: '의류' },
+    { cat: 'fashion', n: 110, name: 'Lilikoi Wear', loc: "The Ali'i", ko: '의류' },
+    { cat: 'fashion', n: 79, name: 'RipCurl', loc: "The Ali'i", ko: '서프웨어' },
+    { cat: 'fashion', n: 50, name: 'OluKai', loc: "The Ali'i", ko: '샌들 · 신발' },
+    { cat: 'fashion', n: 71, name: 'Royal Fish', loc: "The Ali'i", ko: '의류' },
+    { cat: 'fashion', n: 121, name: 'Boutique Sharon Fashion', loc: 'Kālia Tower', ko: '의류' },
+    { cat: 'fashion', n: 122, name: 'Honolulu Trading', loc: 'Kālia Tower', ko: '의류 · 잡화' },
+    { cat: 'fashion', n: 27, name: 'Anuenue', loc: 'Main Lobby', ko: '의류' },
+    { cat: 'fashion', n: 96, name: 'Inglot', loc: 'Main Lobby', ko: '화장품' },
+    { cat: 'fashion', n: 20, name: 'Crazy Shirts', loc: 'Rainbow Bazaar', ko: '티셔츠' },
+    { cat: 'fashion', n: 33, name: 'Happy Wahine', loc: 'Rainbow Bazaar', ko: '의류' },
+    { cat: 'fashion', n: 19, name: 'Harley-Davidson Honolulu', loc: 'Rainbow Bazaar', ko: '할리데이비슨' },
+    { cat: 'fashion', n: 36, name: 'KaiAloha Supply', loc: 'Rainbow Bazaar', ko: '의류' },
+    { cat: 'fashion', n: 17, name: 'Tori Richard', loc: 'Rainbow Bazaar', ko: '알로하 셔츠' },
+    { cat: 'fashion', n: 18, name: 'Tropical Wear', loc: 'Rainbow Bazaar', ko: '의류' },
+    { cat: 'fashion', n: 108, name: 'Cookies Clothing Co', loc: 'Tapa Tower/Concourse', ko: '의류' },
+    { cat: 'fashion', n: 44, name: 'Crazy Fish', loc: 'Tapa Tower/Concourse', ko: '의류' },
+    { cat: 'fashion', n: 136, name: 'Hi-Trend Sunglasses', loc: 'Tapa Tower/Concourse', ko: '선글라스' },
+    { cat: 'fashion', n: 37, name: 'Havaianas', loc: 'Tapa Tower/Concourse', ko: '샌들' },
+    { cat: 'fashion', n: 51, name: 'Louis Vuitton', loc: 'Tapa Tower/Concourse', ko: '루이비통' },
+    { cat: 'fashion', n: 93, name: 'Kaikoa Art Gallery', loc: 'Tapa Tower/Concourse', ko: '갤러리' },
+    { cat: 'fashion', n: 134, name: 'Palau Swimwear', loc: 'Tapa Tower/Concourse', ko: '수영복' },
+    { cat: 'fashion', n: 100, name: 'Reyn Spooner', loc: 'Tapa Tower/Concourse', ko: '알로하 셔츠' },
+    { cat: 'fashion', n: 25, name: 'Shoe Emporium', loc: 'Tapa Tower/Concourse', ko: '신발' },
+    { cat: 'fashion', n: 47, name: "Wini's Jewelry", loc: 'Diamond Head Tower', ko: '주얼리' },
+    { cat: 'fashion', n: 23, name: 'Boutique Sharon & Pandora Jewelry', loc: 'Kālia Tower', ko: '주얼리' },
+    { cat: 'fashion', n: 22, name: 'Elena Hawaii', loc: 'Rainbow Bazaar', ko: '주얼리' },
+    { cat: 'fashion', n: 21, name: 'Maxim Jewelry', loc: 'Rainbow Bazaar', ko: '주얼리' },
+    { cat: 'fashion', n: 31, name: 'Na Hoku', loc: 'Rainbow Bazaar', ko: '하와이안 주얼리' },
+    { cat: 'fashion', n: 28, name: 'The Pearl Factory', loc: 'Rainbow Bazaar', ko: '진주' },
+    { cat: 'fashion', n: 14, name: 'Poseidon Jewelry', loc: 'Rainbow Bazaar', ko: '주얼리' },
+    { cat: 'fashion', n: 105, name: 'Pick A Pearl', loc: 'Tapa Tower/Concourse', ko: '진주 고르기' },
+
+    // 즐길거리 · 액티비티 (황토)
+    { cat: 'ent', n: 74, name: 'Atlantis Submarines', loc: "The Ali'i", ko: '아틀란티스 잠수함' },
+    { cat: 'ent', n: 76, name: 'Tours & Activities Desk', loc: 'The Grand Islander', ko: '투어 데스크' },
+    { cat: 'ent', n: 58, name: 'Paradise Pool Stand', loc: 'Lagoon Tower', ko: '수영장 대여 스탠드' },
+    { cat: 'ent', n: 94, name: 'Tours & Activities Desk', loc: 'Main Lobby', ko: '투어 데스크' },
+    { cat: 'ent', n: 88, name: 'Lagoon Beach Stand', loc: 'On the Beach', ko: '라군 해변 대여' },
+    { cat: 'ent', n: 83, name: 'Pool/Beach Activities Stand', loc: 'On the Beach', ko: '해변 액티비티' },
+    { cat: 'ent', n: 129, name: 'Port Waikiki Cruises (Spirit of Aloha check-in)', loc: 'On the Beach', ko: '크루즈 체크인' },
+    { cat: 'ent', n: 81, name: 'Super Pool Stand', loc: 'On the Beach', ko: '수영장 대여 스탠드' },
+    { cat: 'ent', n: 83, name: 'Surf & Snorkel', loc: 'On the Beach', ko: '서핑 · 스노클 대여' },
+    { cat: 'ent', n: 57, name: 'Waikiki Starlight Luau (Great Lawn)', loc: 'On the Beach', ko: '루아우 디너쇼' },
+    { cat: 'ent', n: 109, name: 'Tapa Pool Stand', loc: 'Tapa Tower/Concourse', ko: '수영장 대여 스탠드' },
+
+    // 서비스 · 편의시설 (짙은 초록)
+    { cat: 'svc', n: 118, name: 'Tours & Activities Desk', loc: "The Ali'i", ko: '투어 데스크' },
+    { cat: 'svc', n: 141, name: 'Japanese Service Desk', loc: "The Ali'i", ko: '일본어 안내 데스크' },
+    { cat: 'svc', n: 133, name: 'Lani Lounge International', loc: "The Ali'i", ko: '라운지' },
+    { cat: 'svc', n: 129, name: 'Port Waikiki Cruises (Spirit of Aloha check-in)', loc: "The Ali'i", ko: '크루즈 체크인' },
+    { cat: 'svc', n: 100, name: "Spa & Fitness Center (2nd Floor · Ali'i guests only)", loc: "The Ali'i", ko: '알리이 투숙객 전용 스파' },
+    { cat: 'svc', n: 73, name: 'The AKALA Chapel', loc: 'Diamond Head Tower', ko: '웨딩 채플' },
+    { cat: 'svc', n: 55, name: 'Aloha Tattoo Diamond', loc: 'Diamond Head Tower', ko: '타투' },
+    { cat: 'svc', n: 67, name: 'LeaLea/H.I.S. Lounge', loc: 'Diamond Head Tower', ko: '일본 여행사 라운지' },
+    { cat: 'svc', n: 61, name: 'Luggage Center', loc: 'Diamond Head Tower', ko: '짐 보관소' },
+    { cat: 'svc', n: 54, name: 'Tour Desks', loc: 'Diamond Head Tower', ko: '투어 데스크' },
+    { cat: 'svc', n: 62, name: 'Mail & Packages', loc: 'Diamond Head Tower', ko: '우편 · 택배' },
+    { cat: 'svc', n: 49, name: 'Uber/Lyft Pick-Up (150 Paoa Rd.)', loc: 'Diamond Head Tower', ko: '우버 · 리프트 승차장' },
+    { cat: 'svc', n: 62, name: 'Aloha Business Center', loc: 'Diamond Head Tower', ko: '비즈니스 센터' },
+    { cat: 'svc', n: 111, name: 'Bus Terminal', loc: 'The Grand Islander', ko: '버스 터미널' },
+    { cat: 'svc', n: 78, name: 'Concierge Desk', loc: 'The Grand Islander', ko: '컨시어지' },
+    { cat: 'svc', n: 46, name: 'Hilton Grand Vacations Club Sales Preview Center (4th Floor)', loc: 'The Grand Islander', ko: 'HGV 세일즈 센터' },
+    { cat: 'svc', n: 76, name: 'Tours & Activities Desk', loc: 'The Grand Islander', ko: '투어 데스크' },
+    { cat: 'svc', n: 131, name: 'Concierge Desk', loc: 'Grand Waikikian', ko: '컨시어지' },
+    { cat: 'svc', n: 123, name: 'Concierge Desk', loc: 'Grand Waikikian', ko: '컨시어지' },
+    { cat: 'svc', n: 106, name: 'Hilton Grand Vacations Club Sales Preview Center (33rd-34th Floor)', loc: 'Grand Waikikian', ko: 'HGV 세일즈 센터' },
+    { cat: 'svc', n: 121, name: "Ho'okipa (Hospitality) Lounge (8th Floor)", loc: 'Grand Waikikian', ko: '호스피탈리티 라운지' },
+    { cat: 'svc', n: 116, name: 'Fitness Center (4th Floor · open to all resort guests)', loc: 'Kālia Tower', ko: '피트니스 (전 투숙객 이용)' },
+    { cat: 'svc', n: 114, name: 'Mandara Spa & Salon (4th Floor)', loc: 'Kālia Tower', ko: '스파 · 살롱' },
+    { cat: 'svc', n: 109, name: 'Concierge Desk', loc: 'Lagoon Tower', ko: '컨시어지' },
+    { cat: 'svc', n: 132, name: 'Hilton Grand Vacations Club Sales Gallery', loc: 'Lagoon Tower', ko: 'HGV 세일즈 갤러리' },
+    { cat: 'svc', n: 63, name: 'White Beach Chapel', loc: 'Lagoon Tower', ko: '웨딩 채플' },
+    { cat: 'svc', n: 125, name: "Charley's Taxi", loc: 'Main Lobby', ko: '택시' },
+    { cat: 'svc', n: 119, name: 'Concierge Desk', loc: 'Main Lobby', ko: '컨시어지' },
+    { cat: 'svc', n: 95, name: 'Guest Welcome Center', loc: 'Main Lobby', ko: '게스트 웰컴 센터' },
+    { cat: 'svc', n: 143, name: 'Japanese Service Desk', loc: 'Main Lobby', ko: '일본어 안내 데스크' },
+    { cat: 'svc', n: 124, name: 'Korean Service Desk', loc: 'Main Lobby', ko: '🇰🇷 한국어 안내 데스크', star: true },
+    { cat: 'svc', n: 94, name: 'Tours & Activities Desk', loc: 'Main Lobby', ko: '투어 데스크' },
+    { cat: 'svc', n: 2, name: 'Waikiki Starlight Luau Information Desk', loc: 'Main Lobby', ko: '루아우 안내 데스크' },
+    { cat: 'svc', n: 29, name: 'Aloha Tattoo Company', loc: 'Rainbow Bazaar/Lagoon Drive', ko: '타투' },
+    { cat: 'svc', n: 30, name: 'Enterprise Rent-A-Car', loc: 'Rainbow Bazaar/Lagoon Drive', ko: '렌터카' },
+    { cat: 'svc', n: 34, name: 'Hilton Grand Vacations Information Desk', loc: 'Rainbow Bazaar/Lagoon Drive', ko: 'HGV 안내 데스크' },
+    { cat: 'svc', n: 91, name: 'Tours & Activities/Information Desk', loc: 'Rainbow Tower', ko: '투어 · 안내 데스크' },
+    { cat: 'svc', n: 73, name: 'The Akalā Chapel', loc: 'Tapa Tower/Concourse', ko: '웨딩 채플' },
+
+    // 연회 · 행사장 (주황)
+    { cat: 'banquet', n: 99, name: 'Great Lawn', loc: '단지 내', ko: '그레이트 론 (잔디 광장)' },
+    { cat: 'banquet', n: 117, name: 'Kalia Executive Conference Center (2nd Floor)', loc: 'Kalia Tower', ko: '컨퍼런스 센터' },
+    { cat: 'banquet', n: 41, name: 'Mid-Pacific Conference Center (6th Floor)', loc: '단지 내', ko: '컨퍼런스 센터 (주차장 건물)' },
+    { cat: 'banquet', n: 24, name: 'Rainbow Suites & Patio', loc: 'Rainbow Tower', ko: '연회장' },
+    { cat: 'banquet', n: 56, name: 'Honolulu Suites (2nd Floor)', loc: 'Tapa Tower', ko: '연회장' },
+    { cat: 'banquet', n: 102, name: 'Iolani Suites', loc: 'Tapa Tower', ko: '연회장' },
+    { cat: 'banquet', n: 55, name: 'Tapa Ballroom – Palace Lounge', loc: 'Tapa Tower', ko: '연회장' },
+    { cat: 'banquet', n: 98, name: 'Village Green', loc: '단지 내', ko: '빌리지 그린 (잔디 광장)' },
+
+    // 사무실 (청록)
+    { cat: 'office', n: 130, name: 'Executive Office, Sales/Event Services (2nd Floor)', loc: 'Diamond Head Tower', ko: '호텔 사무실' }
+  ];
+
+  let hhvIndexCat = 'all';
+
+  function renderHhvIndex() {
+    const listEl = document.getElementById('hhv-index-list');
+    const chipsEl = document.getElementById('hhv-index-chips');
+    if (!listEl || !chipsEl) return;
+    const q = (document.getElementById('hhv-index-search').value || '').trim().toLowerCase();
+
+    chipsEl.innerHTML = [{ key: 'all', label: '전체', color: '#475569' }].concat(HHV_INDEX_CATS).map(c => `
+      <button type="button" data-hhvcat="${c.key}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11.5px] font-bold border ${hhvIndexCat === c.key ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700 border-slate-300'}">
+        <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${c.color}"></span>${c.label}
+      </button>`).join('');
+    chipsEl.querySelectorAll('[data-hhvcat]').forEach(b => b.addEventListener('click', () => { hhvIndexCat = b.dataset.hhvcat; renderHhvIndex(); }));
+
+    const match = it => !q || [it.name, it.ko || '', it.loc, String(it.n)].join(' ').toLowerCase().includes(q);
+    const html = HHV_INDEX_CATS.filter(c => hhvIndexCat === 'all' || hhvIndexCat === c.key).map(c => {
+      const rows = HHV_INDEX.filter(it => it.cat === c.key && match(it)).sort((a, b) => a.n - b.n);
+      if (!rows.length) return '';
+      return `
+        <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
+          <div class="flex items-center gap-1.5 text-[12px] font-extrabold text-slate-800 mb-1.5">
+            <span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${c.color}"></span>${c.label}
+            <span class="text-[11px] font-bold text-slate-400">${rows.length}</span>
+          </div>
+          <div class="divide-y divide-slate-200">
+            ${rows.map(it => `
+              <div class="flex items-start gap-2 py-1.5 ${it.star ? 'bg-amber-50 -mx-1 px-1 rounded-lg' : ''}">
+                <span class="hhv-num" style="background:${c.color}">${it.n}</span>
+                <div class="min-w-0">
+                  <div class="text-[12.5px] font-bold text-slate-900 leading-snug">${it.name}</div>
+                  <div class="text-[11px] text-slate-500">${it.ko ? it.ko + ' · ' : ''}${it.loc}</div>
+                </div>
+              </div>`).join('')}
+          </div>
+        </div>`;
+    }).join('');
+    listEl.innerHTML = html || '<div class="py-4 text-center text-[12.5px] text-slate-500 font-semibold">검색 결과가 없습니다.</div>';
+  }
+
   function getResortSpots() {
     const base = resortSpots.map(sp => {
       const pos = RESORT_MAP_POS[sp.id];
@@ -1569,6 +1790,10 @@
     document.getElementById('resort-mode-en-btn').classList.toggle('active', mode === 'en');
     document.getElementById('resort-en-note').classList.toggle('hidden', mode !== 'en');
     document.getElementById('resort-leaflet-map').classList.toggle('en-mode', mode === 'en');
+    document.getElementById('resort-legend-wrap').classList.toggle('hidden', mode === 'en');
+    document.getElementById('resort-spot-detail').classList.toggle('hidden', mode === 'en');
+    document.getElementById('resort-en-index').classList.toggle('hidden', mode !== 'en');
+    if (mode === 'en') renderHhvIndex();
     resortMap.invalidateSize();
     clearResortLayers();
     if (mode === 'en') buildEnLayers(); else buildKoLayers();
@@ -1984,6 +2209,7 @@
     document.getElementById('reset-resort-map-btn').addEventListener('click', () => { if (resortMap) resortMap.fitBounds(resortMode === 'en' ? resortEnBounds : resortBounds); });
     document.getElementById('resort-mode-ko-btn').addEventListener('click', () => setResortMode('ko'));
     document.getElementById('resort-mode-en-btn').addEventListener('click', () => setResortMode('en'));
+    document.getElementById('hhv-index-search').addEventListener('input', renderHhvIndex);
 
     document.getElementById('seg-resort-map-btn').addEventListener('click', () => {
       document.getElementById('seg-resort-map-btn').classList.add('active');
