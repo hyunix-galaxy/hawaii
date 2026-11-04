@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611040742">
+  <link rel="stylesheet" href="/tailwind.css?v=202611040747">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -1243,6 +1243,13 @@
     { place: 'Kualoa Ranch', addTips: ['무비 사이트 투어 오전 마지막 회차가 11:20이에요 (11:30 회차 없음, 오후는 12:40부터). 10:45까지 도착해 브리핑·서명을 마치세요.', '예약자 이름과 같은 사진 신분증이 필요하고, 만 18세 미만은 보호자와 함께 체크인해요.'] },
     { day: 'D7', addItem: { place: "Kaya's Store", tips: ['주방 매일 07:30~17:00, 가게 07:00~19:00 (공식). 플레이트 런치·도시락·무스비·버터모찌를 팔아요.', '가게 앞 그늘 피크닉 벤치에서 먹어요. 메뉴 가격은 공식 사이트에 없어 현장에서 확인하세요.'] }, after: 'Kualoa Ranch' },
     { place: "Giovanni's Shrimp Truck", setTips: ['간식은 할레이바 지점(66-472 Kamehameha Hwy)에서 먹어요. 매일 10:30~17:00로 카후쿠 지점(18:30)보다 일찍 닫아요 (공식).', '마늘 양이 아주 많아요. 물티슈를 챙기고, 현금을 권장해요.'] },
+    // D4: 코스트코 이윌레이 주유
+    { day: 'D4', addItem: { place: 'Costco 주유 (이윌레이)', tips: [
+      '주유소 운영: 평일 04:30~22:30, 토·일 04:30~20:30. D4(일)는 20:30까지예요. 레귤러 $5.099/갤런 (2026.11 공식 페이지 기준, 수시 변동).',
+      '주유기에서 코스트코 회원카드를 먼저 대고, 결제는 비자 카드로 해요. 한국 코스트코 회원카드로도 미국 매장을 이용할 수 있어요 (일반적으로 알려진 내용).',
+      '해외 발급 카드는 주유기가 미국 우편번호(ZIP)를 물으며 결제가 막힐 수 있어요. 막히면 매장 안에서 Costco Shop Card(충전식 선불카드)를 사서 그 카드로 주유하는 방법이 있어요 (일반적으로 알려진 방법이니 현장에서 확인).',
+      '셀프 주유예요. 렌터카 연료 종류(레귤러)를 주유구 덮개나 계약서에서 확인하고, 점심 전후에는 줄이 길 수 있어요.'
+    ] }, after: 'HNL 공항 픽업' },
     // D11: 택시 + 미니밴 두 팀 이동
     { day: 'D11', addItem: { place: "Charley's Taxi (공항)", tips: ["와이키키→공항 정액 $38 · 미니밴 한 대에 짐 있으면 5명까지 · 1인당 캐리어 1 + 기내 가방 1 무료, 추가 짐 개당 $0.75 · 팁 15~20% 별도 (Charley's 공식).", '하루 전에 웹사이트나 전화(808-233-3333)로 예약하세요. 힐튼 메인 로비에 Charley\'s Taxi 데스크도 있어요 (영문 지도 125번).', '택시팀이 먼저 대한항공 카운터에서 캐리어를 부쳐 두면, 미니밴팀은 렌터카 반납 후 바로 합류할 수 있어요.'] }, after: '체크아웃 · 짐 보관' },
     // D8: 파인애플 농장 워크업 투어 → Dole Plantation 기념품샵 → 와이켈레 점심·쇼핑
@@ -1584,6 +1591,11 @@
       desc: '🛍️ 와이켈레 아울렛 집중 쇼핑 ➔ 숙소 복귀 (아울렛에서 약 30분)' } },
     { day: 8, costIndex: 0, cost: 'Dole 파인애플 농장 워크업 투어 만 12세 이상 $20 · 4~11세 $3 (공식) · Dole Plantation 기념품샵은 입장 무료' },
     { day: 8, costIndex: 1, cost: '(참고) 필드 투어는 목요일 12:00~14:00, 만 12세 이상 $50 · 4~11세 $25, 사전 예약 필수' },
+    // D4: 공항 픽업 후 푹윤 가는 길에 코스트코 이윌레이 주유 (D7 섬 일주 전 연료 확보, 2026.11.04 결정)
+    { day: 4, addSlot: { label: '주유', color: 'bg-lime-100 text-lime-900', placeName: 'Costco Gas (Iwilei)', placeId: 'costco_gas', time: '12:15', mapQuery: 'Costco Gas 525 Alakawa St Honolulu HI', siteUrl: 'https://www.costco.com/warehouse-locations/iwilei-honoluluhi-687.html',
+      desc: '⛽ 공항에서 푹윤 가는 길에 코스트코 이윌레이 주유소에서 가득 주유 (돌아가는 거리 약 1km · 5분) ➔ D7 섬 일주까지 연료 걱정 없이',
+      note: 'ℹ️ 일요일 주유소 04:30~20:30 · 코스트코 회원카드 + 비자 카드 필요 · 레귤러 $5.099/갤런 (2026.11 공식 페이지, 수시 변동)' }, after: '오전' },
+    { day: 4, addCost: '미니밴 주유 (Costco Iwilei 레귤러) 약 $5.10/갤런 · 가득 채우면 약 10~11갤런, $50~60 (2026.11 기준)' },
     // D11: 짐 대부분은 택시(Charley's Taxi)로 공항 직행, 미니밴은 코스트코 주유·점심 후 반납 (2026.11.04 결정)
     { day: 11, slot: '오전', set: { desc: '🧳 10:00 체크아웃 ➔ 두 팀으로 나눠 이동: 택시팀(4~5명 + 캐리어 대부분)은 공항 직행 · 미니밴팀(나머지 + 남은 짐)은 코스트코 경유' } },
     { day: 11, addSlot: { label: '택시', color: 'bg-yellow-100 text-yellow-900', placeName: "Charley's Taxi ➔ HNL 공항", placeId: 'charleys', time: '10:30', mapQuery: 'Daniel K. Inouye International Airport Terminal 2 Honolulu HI', siteUrl: 'https://www.charleystaxi.com/airport',
@@ -1963,6 +1975,7 @@
     costco_food:   { name: 'Costco Food Court', icon: '🌭', node: 'costco', query: 'Costco Wholesale Iwilei Honolulu HI', menu: 'costco' },
     kualoa_cafe:   { name: "Aunty Pat's Cafe (Kualoa Ranch)", icon: '🍔', node: 'kualoa', query: 'Kualoa Ranch Kaneohe HI' },
     kayas:         { name: "Kaya's Store (Hau'ula)", icon: '🍱', lat: 21.5865, lng: -157.8935, query: "Kaya's Store 53-534 Kamehameha Hwy Hauula HI" },   // 위치는 주소 기준 대략값
+    costco_gas:    { name: 'Costco Gas (Iwilei)', icon: '⛽', node: 'costco', query: 'Costco Gas 525 Alakawa St Honolulu HI' },
     charleys:      { name: "Charley's Taxi (메인 로비)", icon: '🚕', node: 'hgvc', query: "Charley's Taxi Hilton Hawaiian Village Honolulu HI" },
     enterprise_hhv: { name: 'Enterprise Rent-A-Car (힐튼 단지)', icon: '🚗', node: 'hgvc', query: 'Enterprise Rent-A-Car 2005 Kalia Rd Honolulu HI' },
     dole_farm:     { name: 'Dole Pineapple Farm Tour & Store', icon: '🍍', lat: 21.527181, lng: -158.0398184, query: 'Dole Pineapple Farm Tour and Store 64-1551 Kamehameha Hwy Wahiawa HI' },
@@ -2016,7 +2029,7 @@
     'Fook Yuen Seafood': 'fookyuen', "Tantalus Lookout (Pu'u Ualaka'a)": 'tantalus', 'Makapuu Point': 'halona',
     "Boots & Kimo's": 'boots', 'Lanikai Beach': 'lanikai', 'Diamond Head': 'diamond', "Wolfgang's Steakhouse": 'wolfgang',
     'Kualoa Ranch': 'kualoa', "Giovanni's Shrimp Truck": 'giovanni_haleiwa', "Ho'omaluhia Botanical Garden": 'hoomaluhia',
-    'Dole Plantation': 'dole', 'Dole Pineapple Farm Tour & Store': 'dole_farm', 'Enterprise 렌트카 (힐튼 단지)': 'enterprise_hhv', "Charley's Taxi (공항)": 'charleys', "Kaya's Store": 'kayas',   // Dole Plantation 꿀팁은 TIP_UPDATES로 기념품샵 내용으로 바꿈
+    'Dole Plantation': 'dole', 'Dole Pineapple Farm Tour & Store': 'dole_farm', 'Enterprise 렌트카 (힐튼 단지)': 'enterprise_hhv', 'Costco 주유 (이윌레이)': 'costco_gas', "Charley's Taxi (공항)": 'charleys', "Kaya's Store": 'kayas',   // Dole Plantation 꿀팁은 TIP_UPDATES로 기념품샵 내용으로 바꿈
     'Waikele Premium Outlets': 'waikele', 'Pearl Harbor': 'pearl',
     'The Kahala — Plumeria Beach House': 'plumeria'
   };
@@ -2136,7 +2149,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611040742').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611040747').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
