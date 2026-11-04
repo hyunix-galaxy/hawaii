@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611041013">
+  <link rel="stylesheet" href="/tailwind.css?v=202611041148">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -1529,7 +1529,6 @@
     document.body.style.overflow = '';
   }
   // 닫기 버튼·바깥 누르기: 뒤로가기 기록도 함께 되돌림
-  window.closeMenuSheet = (...a) => closeMenuSheet(...a);
   function closeMenuSheet() {
     if (history.state && history.state.overlay === 'menu') history.back();
     else hideMenuSheet();
@@ -2261,7 +2260,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611041013').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611041148').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
