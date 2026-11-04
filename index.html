@@ -197,6 +197,11 @@
       background: #EEF3EA;
     }
 
+    #resort-leaflet-map.en-mode {
+      height: 380px;
+      background: #FFFFFF;
+    }
+
     .resort-icon-pin {
       width: 26px;
       height: 26px;
@@ -450,6 +455,11 @@
           <h2 class="text-[16px] font-extrabold text-slate-900">🏨 Hilton Hawaiian Village Map</h2>
         </div>
 
+        <div class="m3-segmented">
+          <button id="resort-mode-ko-btn" type="button" class="m3-seg-btn active">🇰🇷 한글 안내도</button>
+          <button id="resort-mode-en-btn" type="button" class="m3-seg-btn">🔍 고해상도 영문 지도</button>
+        </div>
+
         <div class="grid grid-cols-2 gap-2">
           <button id="reset-resort-map-btn" type="button" class="py-2 px-3 rounded-xl bg-sky-50 text-sky-800 border border-sky-200 text-[12.5px] font-bold nowrap-btn text-center">
             🎯 단지 전체보기
@@ -458,6 +468,10 @@
              class="py-2 px-3 rounded-xl bg-slate-100 text-slate-800 text-[12.5px] font-bold nowrap-btn text-center">
             🌐 Hilton 공식홈 ↗
           </a>
+        </div>
+
+        <div id="resort-en-note" class="hidden p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11.5px] font-semibold text-slate-600">
+          영문·일본어 표기 지도입니다. 손가락으로 확대하면 작은 글씨까지 선명하게 보입니다. 아래 시설 이름을 누르면 한글 안내도로 돌아가 위치를 표시합니다.
         </div>
 
         <div id="resort-leaflet-map"></div>
@@ -492,7 +506,7 @@
             <div class="text-[11.5px] font-extrabold text-slate-700 mb-1.5">🛎️ 서비스 · 상점 · 주차</div>
             <div id="legend-cat-service" class="flex flex-wrap gap-1.5"></div>
           </div>
-          <div class="text-[10.5px] text-slate-400 px-1">안내도 출처: Hilton Hawaiian Village 공식 한글 단지 안내도</div>
+          <div class="text-[10.5px] text-slate-400 px-1">안내도 출처: Hilton Hawaiian Village 공식 한글 단지 안내도 · 영문 지도: Hilton Hawaiian Village 공식 리조트 맵 (일본 공식 사이트 PDF)</div>
         </div>
       </div>
 
@@ -1408,9 +1422,16 @@
   let resortMap = null;
   let resortMarkers = {};
   let resortFocusMarker = null;
-  const RESORT_MAP_IMG = 'resort-map-v.jpg';
+  const RESORT_MAP_IMG = 'resort-map-v.webp';            // 한글 세로형 (무손실)
   const RESORT_IMG_W = 1078, RESORT_IMG_H = 1537;
   const resortBounds = [[0, 0], [RESORT_IMG_H, RESORT_IMG_W]];
+  // 고해상도 영문 지도 (힐튼 공식 PDF 원본 이미지 3233×2481px)
+  const RESORT_EN_IMG = 'https://zbmgocqznrmcotlhocfe.supabase.co/storage/v1/object/public/site-assets/maps/hhv-resort-map-en.webp';
+  const RESORT_EN_W = 3233, RESORT_EN_H = 2481;
+  const RESORT_EN_HOME = [566, 384];                       // 그랜드 아일랜더 위치 (영문 지도 기준)
+  const resortEnBounds = [[0, 0], [RESORT_EN_H, RESORT_EN_W]];
+  let resortMode = 'ko';
+  let resortLayers = [];
 
   /* [DATA] 단지 내 시설 */
   const resortSpots = [
@@ -1495,23 +1516,68 @@
     return base.concat(RESORT_EXTRA_SPOTS);
   }
 
-  function initResortMap() {
-    if (resortMap) return;
-    resortMap = L.map('resort-leaflet-map', { crs: L.CRS.Simple, minZoom: -2.5, maxZoom: 1, zoomSnap: 0.25, attributionControl: false, maxBounds: [[-120, -120], [RESORT_IMG_H + 120, RESORT_IMG_W + 120]] });
-    L.imageOverlay(RESORT_MAP_IMG, resortBounds).addTo(resortMap);
-    resortMap.fitBounds(resortBounds);
+  function clearResortLayers() {
+    resortLayers.forEach(l => resortMap.removeLayer(l));
+    resortLayers = [];
+    if (resortFocusMarker) { resortMap.removeLayer(resortFocusMarker); resortFocusMarker = null; }
+  }
 
+  function homeIcon(sp) {
+    return L.divIcon({ className: '', html: `<div class="resort-icon-pin our-home">${sp.icon}</div>`, iconSize: [32, 32], iconAnchor: [16, 16] });
+  }
+
+  function buildKoLayers() {
+    resortMap.setMaxBounds(null);
+    resortMap.setMinZoom(-2.5);
+    resortMap.setMaxZoom(0);                                 // 원본 크기까지만 확대 (흐림 방지)
+    resortLayers.push(L.imageOverlay(RESORT_MAP_IMG, resortBounds).addTo(resortMap));
+    resortMap.setMaxBounds([[-120, -120], [RESORT_IMG_H + 120, RESORT_IMG_W + 120]]);
+    resortMap.fitBounds(resortBounds);
+    resortMarkers = {};
     getResortSpots().forEach(sp => {
       const lat = RESORT_IMG_H - sp.y;
       const lng = sp.x;
       if (sp.isHome) {
-        const icon = L.divIcon({ className: '', html: `<div class="resort-icon-pin our-home">${sp.icon}</div>`, iconSize: [32, 32], iconAnchor: [16, 16] });
-        const marker = L.marker([lat, lng], { icon, zIndexOffset: 1000 }).addTo(resortMap);
+        const marker = L.marker([lat, lng], { icon: homeIcon(sp), zIndexOffset: 1000 }).addTo(resortMap);
         marker.bindPopup(`<b>${sp.icon} ${sp.name}</b><br>${sp.desc}`);
         marker.on('click', () => updateResortDetailCard(sp));
+        resortLayers.push(marker);
       }
       resortMarkers[sp.id] = { lat, lng, spot: sp };
     });
+  }
+
+  function buildEnLayers() {
+    resortMap.setMaxBounds(null);
+    resortMap.setMinZoom(-3.75);
+    resortMap.setMaxZoom(0);
+    resortLayers.push(L.imageOverlay(RESORT_EN_IMG, resortEnBounds).addTo(resortMap));
+    resortMap.setMaxBounds([[-200, -200], [RESORT_EN_H + 200, RESORT_EN_W + 200]]);
+    resortMap.fitBounds(resortEnBounds);
+    const home = getResortSpots().find(sp => sp.isHome);
+    if (home) {
+      const marker = L.marker([RESORT_EN_H - RESORT_EN_HOME[1], RESORT_EN_HOME[0]], { icon: homeIcon(home), zIndexOffset: 1000 }).addTo(resortMap);
+      marker.bindPopup(`<b>${home.icon} ${home.name}</b><br>${home.desc}`);
+      resortLayers.push(marker);
+    }
+  }
+
+  function setResortMode(mode) {
+    if (!resortMap) return;
+    resortMode = mode;
+    document.getElementById('resort-mode-ko-btn').classList.toggle('active', mode === 'ko');
+    document.getElementById('resort-mode-en-btn').classList.toggle('active', mode === 'en');
+    document.getElementById('resort-en-note').classList.toggle('hidden', mode !== 'en');
+    document.getElementById('resort-leaflet-map').classList.toggle('en-mode', mode === 'en');
+    resortMap.invalidateSize();
+    clearResortLayers();
+    if (mode === 'en') buildEnLayers(); else buildKoLayers();
+  }
+
+  function initResortMap() {
+    if (resortMap) return;
+    resortMap = L.map('resort-leaflet-map', { crs: L.CRS.Simple, minZoom: -2.5, maxZoom: 0, zoomSnap: 0.25, attributionControl: false });
+    buildKoLayers();
 
     const makeChip = (sp) => `<button type="button" onclick="selectResortSpot('${sp.id}')" class="px-2.5 py-1 rounded-full text-[11.5px] font-bold bg-white border border-slate-300 hover:border-sky-500">${sp.icon} ${sp.name.split(' (#')[0]}</button>`;
     const all = getResortSpots();
@@ -1535,6 +1601,7 @@
   }
 
   window.selectResortSpot = function(id) {
+    if (resortMode !== 'ko') setResortMode('ko');
     const entry = resortMarkers[id];
     if (!entry || !resortMap) return;
     const sp = entry.spot;
@@ -1545,7 +1612,7 @@
       resortFocusMarker.bindPopup(`<b>${sp.icon} ${sp.name}</b><br>${sp.desc}`, { offset: [0, -10] });
       resortFocusMarker.openPopup();
     }
-    resortMap.setView([entry.lat, entry.lng], -0.5, { animate: true });
+    resortMap.setView([entry.lat, entry.lng], -0.75, { animate: true });
     updateResortDetailCard(sp);
     document.getElementById('resort-leaflet-map').scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
@@ -1914,7 +1981,9 @@
     });
 
     document.getElementById('reset-oahu-bounds-btn').addEventListener('click', () => filterOahuRoute('all'));
-    document.getElementById('reset-resort-map-btn').addEventListener('click', () => { if (resortMap) resortMap.fitBounds(resortBounds); });
+    document.getElementById('reset-resort-map-btn').addEventListener('click', () => { if (resortMap) resortMap.fitBounds(resortMode === 'en' ? resortEnBounds : resortBounds); });
+    document.getElementById('resort-mode-ko-btn').addEventListener('click', () => setResortMode('ko'));
+    document.getElementById('resort-mode-en-btn').addEventListener('click', () => setResortMode('en'));
 
     document.getElementById('seg-resort-map-btn').addEventListener('click', () => {
       document.getElementById('seg-resort-map-btn').classList.add('active');
