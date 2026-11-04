@@ -15,7 +15,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611041352">
+  <link rel="stylesheet" href="/tailwind.css?v=202611041357">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -2390,7 +2390,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611041352').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611041357').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -3739,8 +3739,8 @@
       items: [['돼지곰탕', '$18'], ['돈카츠 (하루 40인분 한정)', '$21'], ['아이용 곰탕', '$10'], ['김치 냉국수', '$16']], note: '바 카운터 좌석만 있어 8명은 나눠 앉을 수 있어요 · Resy 예약 (10분 넘게 늦으면 노쇼) · 점심 화~일 11:30~14:30, 저녁 화~목·일 17~21시, 금·토 17~22시 · 주차권 확인 가능 · 가격은 2025.7 개점 기사 기준', checked: '2025.07', src: 'https://www.honolulumagazine.com/?p=807462' },
     { cat: 'local', dish: '포케볼 · 숯불 고기 플레이트 · 셰이브 아이스', name: 'Aloha food truck', area: '알라와이 항구 끝 · 카하나모쿠 비치 앞', query: 'Aloha food truck Ala Wai Boat Harbor Honolulu HI', near: '힐튼 단지 바로 옆 · 해변 놀다가 걸어가기 · 듀크 라군 날 (D1·D9·D10)',
       items: [['아히 포케볼 · 그릴 고기+밥+옥수수 · 피시앤칩스', '가격 미확인 · 현장 확인'], ['패션프루트 셰이브 아이스(연유) · 아사이볼 · 버거', '가격 미확인 · 현장 확인']], note: '구글 지도 메뉴 사진 기준 메뉴예요 · 온라인에 공개 가격이 없어요 · 지도·후기 버튼에서 메뉴판 사진 확인', checked: '2026.11', src: '' },
-    { cat: 'local', dish: '한식 고기구이', name: 'MOOJIGAE Korean Grill (무지개식당)', area: '카파훌루 쇼핑센터 (830 Kapahulu Ave)', query: 'MOOJIGAE Korean Grill 830 Kapahulu Ave Honolulu HI', near: '와이키키에서 차로 약 10분 · Leonard\'s·Rainbow Drive-In과 같은 동네',
-      items: [['고기구이·한식 메뉴', '가격 미확인 · 현장 확인']], note: '온라인에 메뉴·가격·영업시간이 공개돼 있지 않아요 · 📍 지도·후기에서 메뉴판 사진 확인', checked: '2026.11', src: 'https://mallgang.com/hawaii/kapahulu-shopping-center/stores/moojigae-korean-grill' },
+    { placeId: 'waikele', cat: 'local', dish: '한식 (갈비·불고기·제육·전·떡볶이)', name: 'MOOJIGAE Korean Grill (무지개식당 · Rainbow Stream)', area: '와이켈레 프리미엄 아울렛 바로 옆', query: 'MOOJIGAE Korean grill Rainbow Stream Waikele HI', photoQ: 'Korean food',
+      items: [['갈비', '$26.50'], ['불고기 · 오삼불고기', '$20.50 · $21.50'], ['비빔밥 · 제육볶음 · 닭갈비', '각 $18.50'], ['해물전 · 김치전', '$20.50 · $19.50'], ['김치찌개 · 김치볶음밥 · 떡볶이', '각 $16.50'], ['라볶이 · 군만두', '$18.50 · $14.50']], note: 'D8 와이켈레 아울렛 점심 후보 · 도시락 용기에 샐러드·밥과 함께 나와요 · 구글 지도 가게 메뉴 기준', checked: '2026.11 (구글 지도 메뉴)', src: '' },
     // ---- 유명 레스토랑 ----
     { cat: 'famous', dish: '훌라 파이 · 해변 레스토랑', name: "Duke's Waikiki", area: '와이키키 해변', query: "Duke's Waikiki Honolulu HI", near: '와이키키 해변 저녁',
       items: [['키모의 오리지널 훌라 파이', '$14.00'], ['마카다미아 크러스트 생선 (저녁)', '$39'], ['프라임 립 12oz / 24oz', '$44 / $83']], note: '저녁은 예약 추천 · 훌라 파이는 여럿이 나눠 먹는 크기 · 메인 요리 가격은 2024년 공식 메뉴라 조금 올랐을 수 있음', checked: '2026.11', src: 'https://www.dukeswaikiki.com/wp-content/uploads/2024/02/24_TS_DW_Vinyl-Dinner_web_FEB07.pdf' },
