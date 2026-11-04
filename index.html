@@ -15,7 +15,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611041248">
+  <link rel="stylesheet" href="/tailwind.css?v=202611041317">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -371,8 +371,13 @@
     .tip-chip.fx-on { background: #0369A1; color: #FFFFFF; border-color: #0369A1; }
     #entry-code-input::placeholder { letter-spacing: 0; font-size: 15px; font-weight: 700; }
     .phrase-chip { background: #F0FDF4; color: #166534; border: 1px solid #86EFAC; }
-    .m3-segmented.seg-5 { gap: 2px; }
-    .m3-segmented.seg-5 .m3-seg-btn { padding: 9px 2px; font-size: 12.5px; letter-spacing: -0.2px; }
+    .m3-segmented.seg-6 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; border-radius: 18px; }
+    .m3-segmented.seg-6 .m3-seg-btn { padding: 8px 2px; font-size: 12.5px; letter-spacing: -0.2px; }
+    @media (min-width: 768px) { .m3-segmented.seg-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); border-radius: 9999px; } }
+    .food-card { display: flex; gap: 10px; padding: 10px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E8F0; }
+    .food-img { width: 92px; height: 92px; flex-shrink: 0; border-radius: 12px; object-fit: cover; background: #F1F5F9; }
+    @media (min-width: 768px) { .food-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .food-grid > * { margin-top: 0 !important; } }
+    @media (min-width: 1280px) { .food-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
     .phrase-row { display: flex; align-items: flex-start; gap: 10px; width: 100%; text-align: left; padding: 9px 10px; border-radius: 12px; background: #FFFFFF; border: 1px solid #E2E8F0; }
     .phrase-row:active { background: #F0F9FF; border-color: #7DD3FC; }
     .phrase-row.speaking { background: #E0F2FE; border-color: #0284C7; }
@@ -934,11 +939,12 @@
     </section>
 
     <section id="tab-guide" class="main-screen hidden space-y-3">
-      <div class="m3-segmented seg-5">
+      <div class="m3-segmented seg-6">
         <button data-guide="dday" type="button" class="m3-seg-btn guide-seg-btn active">⏰ 예약</button>
         <button data-guide="flight" type="button" class="m3-seg-btn guide-seg-btn">✈️ 항공·렌트</button>
         <button data-guide="check" type="button" class="m3-seg-btn guide-seg-btn">✅ 준비물</button>
         <button data-guide="tips" type="button" class="m3-seg-btn guide-seg-btn">📸 꿀팁</button>
+        <button data-guide="food" type="button" class="m3-seg-btn guide-seg-btn">🍴 음식</button>
         <button data-guide="phrase" type="button" class="m3-seg-btn guide-seg-btn">🗣️ 영어</button>
       </div>
 
@@ -1006,6 +1012,19 @@
               🔗 앨범 링크 복사
             </button>
           </div>
+        </div>
+      </div>
+
+      <div id="guide-sub-food" class="guide-subpage hidden space-y-3">
+        <div class="m3-card p-4 space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <h3 class="text-[15.5px] font-extrabold text-slate-900">🍴 추천 음식</h3>
+            <span id="food-count" class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11.5px] font-bold nowrap-btn"></span>
+          </div>
+          <p class="text-[12px] text-slate-600 leading-relaxed">일정에 있는 곳은 <b>📅 D일차</b>를 누르면 그날 일정으로 가요. 가격은 세금·팁 별도이고 바뀔 수 있어요 (<b>비공식</b> 표시는 공식 메뉴가 아닌 최근 후기·메뉴 사이트 기준).</p>
+          <div id="food-filter" class="flex flex-wrap gap-1.5"></div>
+          <div id="food-list" class="food-grid space-y-2"></div>
+          <div class="text-[11px] font-semibold text-slate-500 leading-relaxed">사진은 음식 종류를 보여 주는 대표 사진이에요 (해당 가게 사진 아님) · 출처 Wikimedia Commons, 사진마다 작성자·라이선스 표시</div>
         </div>
       </div>
 
@@ -2372,7 +2391,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611041248').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611041317').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -3653,6 +3672,142 @@
   document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-say]'); if (b) sayPhrase(b); });
 
   /* =====================================================================
+   * [DATA] 추천 음식 — placeId가 있으면 일정과 자동 연결 (일정이 바뀌면 D일차도 따라감)
+   *   items: [메뉴, 가격]  · 가격 뒤 '(비공식)' = 공식 메뉴가 아닌 최근 후기·메뉴 사이트 기준
+   *   img: 아래 FOOD_IMG 키 (음식 종류 대표 사진, Wikimedia Commons)
+   * ===================================================================== */
+  const FOOD_IMG = (() => {
+    const c = (path, file) => ({ url: `https://upload.wikimedia.org/wikipedia/commons/thumb/${path}/${file}/320px-${file}`, page: `https://commons.wikimedia.org/wiki/File:${file}` });
+    return {
+      poke: c('f/f8', 'Ahi_limu_poke.jpg'), shrimp: c('5/58', 'Famous_Kahuku_Shrimp.jpg'), shave: c('d/db', 'Hilo_Ice_Shave.JPG'),
+      chicken: c('d/d8', 'Huli_huli_(8084262832).jpg'), musubi: c('2/25', 'Spam_musubi_dllu.jpg'), loco: c('1/11', 'Loco_Moco.jpg'),
+      malasada: c('6/64', 'Leonard%27s_malasadas.jpg'), acai: c('e/e1', 'Acai_bowl_-_A%C3%A7a%C3%AD_na_tigela.jpg'), pancake: c('8/87', 'Pancakes_with_fruit.jpg'),
+      haupia: c('9/95', 'Haupia.jpg'), dolewhip: c('7/70', 'Dole_Whip_frozen_dessert_and_float.jpg'),
+      kalua: c('7/7c', 'Hawaiian_plate_lunch_lau-lau,_Kalua_pork,_lomi-lomi_salmon,_rice,_noodles._(9667786041).jpg'),
+      piechoc: c('1/14', 'Chocolate_cream_pie.jpg'), udon: c('f/fc', 'Kake_udon_by_udono.jpg'), steak: c('7/70', 'Australian_beef_porterhouse_steak.jpg'),
+      lobster: c('7/7a', 'Grilled_Lobster_(8558909573).jpg'), icecream: c('a/ae', 'Vanilla_ice_cream_cone.JPG'),
+      plate: c('9/98', 'Lukoki_Hawaiian_BBQ,_Mt._View_seafood_%26_kalua_pork_combo.JPG'), hotdog: c('3/3a', 'NCI_Visuals_Food_Hot_Dog.jpg'),
+      fish: c('b/b9', 'Miso_Salmon.jpg'), puff: c('0/0b', 'Cream_puff.jpg'), maitai: c('1/17', 'Mai_Tai_2.JPG')
+    };
+  })();
+  const FOOD_PICKS = [
+    // ---- 일정에 있는 곳 (placeId로 날짜 자동 연결) ----
+    { placeId: 'nicos', cat: 'local', img: 'poke', dish: '아히 포케', name: "Nico's Pier 38", area: '호놀룰루 항구', query: "Nico's Pier 38 Honolulu HI",
+      items: [['오늘의 포케 6oz (해피아워)', '$12.00'], ['포케 샘플러', '$25.50'], ['수산시장 카운터 포케 1lb', '약 $16~22 (비공식)']], note: '수산시장 카운터에서 무게로 사서 앞 야외 테이블에서 먹으면 저렴해요', checked: '2026.08', src: 'https://places.singleplatform.com/nicos-at-pier-38/menu' },
+    { placeId: ['costco', 'costco_food'], cat: 'local', img: 'hotdog', dish: '핫도그 · 피자', name: 'Costco 푸드코트', area: '이윌레이', query: 'Costco Iwilei Honolulu HI',
+      items: [['핫도그 + 음료', '$1.50 (비공식)'], ['피자 1조각', '$1.99 (비공식)'], ['피자 한 판 (18인치)', '$9.95 (비공식)']], note: '8명이 가볍게 먹기 가장 싼 곳 · 결제는 비자 카드', checked: '2026.11' },
+    { placeId: 'bluewater', cat: 'local', img: 'shrimp', dish: '갈릭 새우', name: 'Blue Water Shrimp', area: '와이키키', query: 'Blue Water Shrimp Waikiki HI',
+      items: [['Garlic Shrimp', '$23.00'], ['Coconut Shrimp', '$22.00'], ['Steak & Shrimp', '$25.00']], checked: '2026.11' },
+    { placeId: 'rays', cat: 'local', img: 'chicken', dish: '키아베 숯불 통닭', name: "Ray's Kiawe Broiled Chicken", area: '할레이바', query: "Ray's Kiawe Broiled Chicken Haleiwa HI",
+      items: [['통닭 한 마리', '약 $16 (비공식)']], note: '토·일요일만 영업 · 현금 준비 · 오후엔 품절될 수 있어요', checked: '2026.08', src: 'https://wanderlustyle.com/best-huli-huli-chicken-oahu/' },
+    { placeId: 'matsumoto', cat: 'snack', img: 'shave', dish: '셰이브 아이스', name: 'Matsumoto Shave Ice', area: '할레이바', query: 'Matsumoto Shave Ice Haleiwa HI',
+      items: [['스몰', '약 $4.50~5.25 (비공식)'], ['라지', '약 $5.50~7.00 (비공식)']], note: '줄이 길지만 빨리 줄어요 · 매일 09~18시 무렵', checked: '2025.11', src: 'https://hawaiitravelwithkids.com/?p=2558' },
+    { placeId: 'fookyuen', cat: 'famous', img: 'lobster', dish: '랍스터 · 해산물 중식', name: 'Fook Yuen Seafood', area: '맥컬리', query: 'Fook Yuen Seafood Restaurant Honolulu HI',
+      items: [['랍스터 (생강·파 / 갈릭버터)', '시가 · 예약 때 확인'], ['XO 소스 랍스터 누들', '$28.00'], ['던지니스 크랩', '$25.00'], ['하우스 디럭스 클레이팟', '$42.00']], checked: '2026.11' },
+    { placeId: 'boots', cat: 'famous', img: 'pancake', dish: '마카다미아 소스 팬케이크', name: "Boots & Kimo's", area: '카일루아', query: "Boots & Kimo's Kailua HI",
+      items: [['마카다미아 소스 팬케이크', '$15.99'], ['바나나 팬케이크 + 마카다미아 소스', '$16.99'], ['딸기 와플 + 마카다미아 소스', '$12.99']], checked: '2026.11' },
+    { placeId: 'bogarts', cat: 'snack', img: 'acai', dish: '아사이볼 · 로코모코', name: "Bogart's Cafe", area: '다이아몬드헤드 아래', query: "Bogart's Cafe Honolulu HI",
+      items: [["Bogart's 아사이볼", '$15.50'], ['다크사이드 볼', '$16.50'], ['로코모코', '$21.00']], checked: '2026.11' },
+    { placeId: 'iyasume', cat: 'snack', img: 'musubi', dish: '스팸 무스비', name: 'Musubi Cafe Iyasume', area: '와이키키', query: 'Musubi Cafe Iyasume Waikiki HI',
+      items: [['데리야키 스팸', '$2.28'], ['베이컨·에그 스팸', '$2.98'], ['아보카도·베이컨·에그 스팸', '$3.48']], checked: '2026.11' },
+    { placeId: 'wolfgang', cat: 'famous', img: 'steak', dish: '드라이에이징 스테이크', name: "Wolfgang's Steakhouse", area: '와이키키', query: "Wolfgang's Steakhouse Waikiki HI",
+      items: [['라나이 해피아워 점보 갈릭 새우', '$24 (비공식)'], ['Taste of New York 코스', '$83.95 (비공식)']], note: '실내는 OpenTable 예약 · 야외 라나이 해피아워는 선착순', checked: '2026.11' },
+    { placeId: 'kayas', cat: 'local', img: 'plate', dish: '플레이트 런치 · 무스비', name: "Kaya's Store (Kaya's Kitchen)", area: '푸날루우 · 하우울라', query: "Kaya's Store 53-534 Kamehameha Hwy HI",
+      items: [['플레이트 런치 · 갈릭 새우 · 무스비', '가격 미확인 · 현장 확인']], note: '1946년부터 이어진 80년 된 동네 가게 (2026). 온라인에 최근 가격이 없어요', checked: '2026.07', src: 'https://www.hawaiinewsnow.com/2026/07/02/kaya-store-marks-80-years-north-shore-landmark/' },
+    { placeId: 'giovanni_haleiwa', cat: 'local', img: 'shrimp', dish: '갈릭 새우 스캠피', name: "Giovanni's Shrimp Truck", area: '할레이바', query: "Giovanni's Shrimp Truck Haleiwa HI",
+      items: [['Shrimp Scampi', '$18.50'], ['Hot & Spicy', '$18.50'], ['하프 플레이트', '$9.50']], checked: '2026.11' },
+    { placeId: 'dole', cat: 'snack', img: 'dolewhip', dish: '돌 휩 (파인애플 소프트아이스크림)', name: 'Dole Plantation', area: '와히아와', query: 'Dole Plantation Wahiawa HI',
+      items: [['돌 휩 컵·콘', '$7.50'], ['토핑 추가', '$8.50'], ['파인애플 플로트', '$10.75']], note: '공식 메뉴지만 2023년 판이라 조금 올랐을 수 있어요', checked: '2023.04', src: 'https://www.doleplantation.com/wp-content/uploads/2023/04/DOLE20-950_MAY-Update-Full-Menu_letter-bw-4-10-23.pdf' },
+    { placeId: 'lapperts', cat: 'snack', img: 'icecream', dish: '하와이 아이스크림', name: "Lappert's Hawaii", area: '힐튼 단지', query: "Lappert's Hawaii Hilton Hawaiian Village",
+      items: [['싱글 스쿱', '약 $5~8 (비공식 · 오아후 평균)']], note: '대표 맛: Kauai Pie, Kona Lava Java · 매일 06~22시', checked: '2026.08', src: 'https://wanderlustyle.com/best-ice-cream-oahu/' },
+    { placeId: 'plumeria', cat: 'famous', img: 'loco', dish: '바닷가 런치 (갈비 로코모코)', name: 'Plumeria Beach House', area: '카할라', query: 'Plumeria Beach House The Kahala HI',
+      items: [['갈비 숏립 로코모코', '$45'], ['돈카츠', '$32'], ['카할라 버거', '$30']], checked: '2026.11' },
+    { placeId: 'tropics', cat: 'famous', img: 'maitai', dish: '해변 바 & 그릴', name: 'Tropics Bar & Grill', area: '힐튼 단지', query: 'Tropics Bar & Grill Hilton Hawaiian Village',
+      items: [['푸푸 샘플러', '$39'], ['코코넛 새우', '$18'], ['무알코올 Island Sunset', '$9']], checked: '2026.11' },
+    // ---- 일정에 없는 간식·디저트 ----
+    { cat: 'snack', img: 'malasada', dish: '말라사다 (포르투갈식 설탕 도넛)', name: "Leonard's Bakery", area: '카파훌루 본점 · 공항 이동 매장', query: "Leonard's Bakery Kapahulu Honolulu HI", near: 'D1·D11 공항 가는 길 (540 Lagoon Dr, 매일 07~18시)',
+      items: [['6개 한 상자 (공항 매장)', '$13.20'], ['크림 든 말라사다 1개 (공항 매장)', '$2.70'], ['본점 1개 / 6개', '약 $1.65 / $9.90 (비공식)']], note: '갓 튀긴 게 제일 맛있어요 · 본점 매일 05:30~18:30', checked: '2026.03', src: 'https://alohastatedaily.com/2026/03/03/leonards-bakery-has-a-new-malasada-mobile-location/' },
+    { cat: 'snack', img: 'puff', dish: '코코퍼프 (초콜릿 크림 슈)', name: 'Liliha Bakery', area: '와이키키 비치워크 2층 · 인터내셔널 마켓플레이스', query: 'Liliha Bakery Waikiki Beach Walk HI', near: 'D6 비치워크 점심 때',
+      items: [['코코퍼프 1개', '$2.19'], ['코코퍼프 6개', '$12.50'], ['핫케이크 3장', '$12.50']], note: '본점 공식 메뉴 기준 · 와이키키 지점 가격은 조금 다를 수 있어요', checked: '2026', src: 'https://www.lilihabakery.com/_files/ugd/eac7c2_6a148f2a2e054f07b438b7265dfbdb92.pdf' },
+    { cat: 'snack', img: 'haupia', dish: '초콜릿 하우피아 파이', name: "Ted's Bakery", area: '노스쇼어 선셋비치', query: "Ted's Bakery 59-024 Kamehameha Hwy HI", near: 'D3·D7 노스쇼어',
+      items: [['초콜릿 하우피아 파이 한 판 (9인치)', '$24.52'], ['조각', '현장 가격 확인']], note: '한 판 사서 차에서 8명이 나눠 먹기 좋아요 · 플레이트는 오후에 품절될 수 있음', checked: '2026.11', src: 'https://order.toasttab.com/online/teds-bakery-59-024-kamehameha-highway' },
+    { cat: 'snack', img: 'shave', dish: '셰이브 아이스 (현지인 단골)', name: 'Waiola Shave Ice', area: '카파훌루', query: 'Waiola Shave Ice Kapahulu Honolulu HI', near: '와이키키에서 차로 10분',
+      items: [['스몰', '약 $4 (비공식)'], ['라지', '약 $5 (비공식)'], ['점보', '약 $8 (비공식)']], note: '현금을 준비하세요 · 마츠모토와 비교해 보기', checked: '2025.11', src: 'https://hawaiitravelwithkids.com/?p=2558' },
+    { cat: 'snack', img: 'acai', dish: '아사이볼 · 모아나볼', name: 'Island Vintage Coffee', area: '로열 하와이안 센터', query: 'Island Vintage Coffee Royal Hawaiian Center HI', near: '와이키키 아침',
+      items: [['오리지널 아사이볼', '$15.95~'], ['모아나볼 (하우피아·릴리코이 등)', '$15.25~'], ['리치 하우피아 모아나볼 24oz', '$21.20']], note: '줄이 길면 온라인 주문 후 픽업', checked: '2026.11', src: 'https://www.toasttab.com/local/order/ivcroyalhawaiian' },
+    // ---- 일정에 없는 푸드트럭·로컬 ----
+    { cat: 'local', img: 'shrimp', dish: '버터 갈릭 새우 (양식장 직판)', name: "Romy's Kahuku Prawns", area: '카후쿠', query: "Romy's Kahuku Prawns & Shrimp HI", near: 'D7 카야스 → 노스쇼어 가는 길',
+      items: [['버터 갈릭 새우 플레이트 (12마리)', '최근 공개 가격 없음 · 현장 확인']], note: '주문 후 조리라 30분~1시간 대기 · 미리 전화 주문 (808) 232-2202 · 영업일 확인 필요', checked: '2026.01', src: 'https://wanderlog.com/place/details/109308/romys-kahuku-prawns--shrimp-hut' },
+    { cat: 'local', img: 'poke', dish: '포케볼', name: 'Ono Seafood', area: '카파훌루 · 하와이카이', query: 'Ono Seafood Kapahulu Honolulu HI', near: 'D2 하나우마 가기 전 (하와이카이 지점)',
+      items: [['포케볼', '$17~ (비공식)']], note: '미소·스파이시·쇼유 포케가 대표 · 카파훌루점 화요일 휴무 (비공식)', checked: '2025.01', src: 'https://www.hawaiimagazine.com/top-poke-spot-on-oahu-according-to-yelp/' },
+    { cat: 'local', img: 'loco', dish: '로코모코 · 믹스 플레이트', name: 'Rainbow Drive-In', area: '카파훌루', query: 'Rainbow Drive-In Kapahulu Honolulu HI', near: '와이키키에서 차로 5분',
+      items: [['로코모코', '$8.25 (비공식)'], ['BBQ 믹스 플레이트', '$12.75 (비공식)'], ['레인보우 디럭스 믹스', '$14.75 (비공식)']], note: '1961년부터 이어진 현지 플레이트 런치집', checked: '2026', src: 'https://howtoliveinhawaii.com/rainbow-drive-in-kapahulu-plate/' },
+    { cat: 'local', img: 'kalua', dish: '하와이 전통 음식 (피피칼루아·칼루아 피그)', name: "Helena's Hawaiian Food", area: '칼리히', query: "Helena's Hawaiian Food Honolulu HI", near: '화~금만 영업: D2·D6·D7·D8·D9 중',
+      items: [['피피칼루아 숏립', '$11.75 (비공식)'], ['칼루아 피그', '$5.75 (비공식)'], ['피피칼루아 콤보 플레이트', '$19.50 (비공식)']], note: '제임스 비어드 상을 받은 집 · 화~금 10:00~19:30 (토~월 휴무)', checked: '2026.11', src: 'https://helenashawaiianfood.com' },
+    // ---- 유명 레스토랑 ----
+    { cat: 'famous', img: 'piechoc', dish: '훌라 파이 · 해변 레스토랑', name: "Duke's Waikiki", area: '와이키키 해변', query: "Duke's Waikiki Honolulu HI", near: '와이키키 해변 저녁',
+      items: [['키모의 오리지널 훌라 파이', '$14.00'], ['마카다미아 크러스트 생선 (저녁)', '$39'], ['프라임 립 12oz / 24oz', '$44 / $83']], note: '저녁은 예약 추천 · 훌라 파이는 여럿이 나눠 먹는 크기 · 메인 요리 가격은 2024년 공식 메뉴라 조금 올랐을 수 있음', checked: '2026.11', src: 'https://www.dukeswaikiki.com/wp-content/uploads/2024/02/24_TS_DW_Vinyl-Dinner_web_FEB07.pdf' },
+    { cat: 'famous', img: 'udon', dish: '사누키 우동', name: 'Marugame Udon Waikiki', area: '쿠히오 거리', query: 'Marugame Udon Waikiki 2310 Kuhio Ave', near: '와이키키 점심·저녁',
+      items: [['카케 우동 등', '$4.75~ (비공식 · 오래된 가격)'], ['니쿠타마 등 덮밥형 우동', '$6.75~ (비공식)']], note: '거의 항상 줄이 있지만 빨리 줄어요 · 점심 일찍 가면 덜 기다림 · 매일 10:00~21:30', checked: '오래된 정보', src: 'https://gowanderly.com/cheap-eats-waikiki/' },
+    { cat: 'famous', img: 'pancake', dish: '딸기 생크림 팬케이크', name: "Eggs 'n Things", area: '와이키키 사라토가', query: "Eggs 'n Things Saratoga Waikiki HI", near: '와이키키 아침',
+      items: [['딸기 휘핑크림 팬케이크', '$16.95 (비공식)']], note: '06~14시, 16~22시 · 아침 줄이 길어 06~07시에 가거나 저녁에', checked: '2026', src: 'https://www.opentable.com/r/eggs-n-things' },
+    { cat: 'famous', img: 'fish', dish: '미소야키 버터피시', name: "Roy's Waikiki", area: '와이키키', query: "Roy's Waikiki Honolulu HI", near: '기념일 저녁 후보',
+      items: [['미소야키 버터피시', '$67'], ['마카다미아 크러스트 로컬 생선', '$56'], ['초콜릿 수플레 (주문 후 굽기)', '$19']], note: 'OpenTable 예약 · 해피아워 14:30~16:00', checked: '2026.11', src: 'https://www.royyamaguchi.com/roys-waikiki-menus' }
+  ];
+
+  const FOOD_CATS = { plan: '📅 일정에 있음', snack: '🍩 간식·디저트', local: '🚚 푸드트럭·로컬', famous: '⭐ 유명 레스토랑' };
+  const FOOD_BY_PLACE = {};
+  let foodFilter = 'all';
+  function foodDays(f) { const ds = []; [].concat(f.placeId || []).forEach(id => { if (PLACES[id]) placeDays(id).forEach(d => { if (!ds.includes(d)) ds.push(d); }); }); return ds.sort((a, b) => a - b); }
+  function renderFood() {
+    const list = document.getElementById('food-list');
+    if (!list) return;
+    const filters = [['all', '전체']].concat(Object.entries(FOOD_CATS));
+    document.getElementById('food-filter').innerHTML = filters.map(([k, label]) =>
+      `<button type="button" data-ff="${k}" class="tip-chip ${foodFilter === k ? 'fx-on' : ''}">${label}</button>`).join('');
+    const rows = FOOD_PICKS.map(f => Object.assign({}, f, { days: foodDays(f) }))
+      .map(f => Object.assign(f, { cat: f.days.length ? 'plan' : f.cat }))
+      .filter(f => foodFilter === 'all' || f.cat === foodFilter)
+      .sort((a, b) => (a.days[0] || 99) - (b.days[0] || 99));
+    list.innerHTML = rows.map(f => {
+      const img = FOOD_IMG[f.img];
+      const dayChips = f.days.map(d => `<button type="button" onclick="goToDay(${d})" class="tip-chip !py-0.5 !px-2 !text-[11.5px]">📅 D${d}</button>`).join('');
+      return `
+        <div class="food-card">
+          <div class="shrink-0 w-[92px]">
+            ${img ? `<img src="${img.url}" alt="${escAttr(f.dish)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="food-img" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'food-img flex items-center justify-center text-[34px]',textContent:'🍽️'}))">
+            <a href="${img.page}" target="_blank" rel="noopener noreferrer" class="block text-[9.5px] leading-tight text-slate-400 mt-1">📷 사진 출처·저작권 ↗</a>` : `<div class="food-img flex items-center justify-center text-[34px]">🍽️</div>`}
+          </div>
+          <div class="min-w-0 flex-1 space-y-1">
+            <div class="flex items-start justify-between gap-1.5">
+              <div class="min-w-0">
+                <div class="text-[14px] font-extrabold text-slate-900 leading-snug">${f.dish}</div>
+                <div class="text-[12px] font-bold text-sky-800 leading-snug">${f.name} <span class="text-slate-500 font-semibold">· ${f.area}</span></div>
+              </div>
+              <span class="px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10.5px] font-extrabold nowrap-btn">${FOOD_CATS[f.cat].split(' ')[0]}</span>
+            </div>
+            <div class="space-y-0.5">
+              ${f.items.map(it => `<div class="flex justify-between gap-2 text-[12.5px]"><span class="font-semibold text-slate-700 min-w-0">${it[0]}</span><span class="font-extrabold text-sky-800 nowrap-btn">${it[1]}</span></div>`).join('')}
+            </div>
+            ${f.note ? `<p class="text-[11.5px] font-semibold text-amber-800 leading-relaxed">💡 ${f.note}</p>` : ''}
+            <div class="flex flex-wrap items-center gap-1 pt-0.5">
+              ${dayChips || (f.near ? `<span class="text-[11.5px] font-bold text-slate-500">🧭 ${f.near}</span>` : '')}
+              <a href="${gMapSearchQuery(f.query)}" target="_blank" rel="noopener noreferrer" class="gmap-chip !py-0.5 !px-2 !text-[11.5px]">📍 지도</a>
+            </div>
+            <div class="text-[10.5px] font-semibold text-slate-400">가격 기준 ${f.checked} · 세금·팁 별도${f.src ? ` · <a href="${f.src}" target="_blank" rel="noopener noreferrer" class="underline">출처</a>` : ''}</div>
+          </div>
+        </div>`;
+    }).join('') || '<div class="text-[13px] font-bold text-slate-500 text-center py-6">해당하는 음식이 없어요</div>';
+    document.getElementById('food-count').textContent = `${rows.length}곳`;
+  }
+  function initFood() {
+    const el = document.getElementById('food-filter');
+    if (!el) return;
+    el.addEventListener('click', e => { const b = e.target.closest('[data-ff]'); if (!b) return; foodFilter = b.dataset.ff; renderFood(); });
+    renderFood();
+  }
+
+  /* =====================================================================
    * [DATA] 사전 예약 목록 — 날짜·시각·비용은 일정표에서 자동으로 가져옴 (따로 적지 않음)
    *   place: 장소 id · lead: 예약 시점 · costKeys: 일정 비용 줄에서 찾을 단어
    * ===================================================================== */
@@ -3827,6 +3982,10 @@
       if (!day || !day.slots.some(s => s.label === label)) reportDataIssue(`꿀팁 '${name}': 연결된 칸 '${k}'이 없습니다`);
     });
     getReservations().forEach(r => { if (PLACES[r.place] && !placeSlot(r.place)) reportDataIssue(`예약 '${PLACES[r.place].name}': 지금 일정에 없습니다`); });
+    FOOD_PICKS.forEach(f => {
+      [].concat(f.placeId || []).forEach(id => { if (!PLACES[id]) reportDataIssue(`추천 음식 '${f.name}': 장소 목록에 없는 id '${id}'`); else if (!placeDays(id).length) reportDataIssue(`추천 음식 '${f.name}': 지금 일정에 없는 장소입니다`); });
+      if (f.img && !FOOD_IMG[f.img]) reportDataIssue(`추천 음식 '${f.name}': 사진 '${f.img}'이(가) 없습니다`);
+    });
     Object.entries(PLACE_PHRASES).forEach(([pid, ids]) => {
       if (!PLACES[pid]) reportDataIssue(`영어 표현 연결: 장소 목록에 없는 id '${pid}'`);
       ids.forEach(id => { if (!PHRASE_BY_ID[id]) reportDataIssue(`영어 표현 연결 '${pid}': 장면 ${id}이(가) 없습니다`); });
@@ -4060,6 +4219,7 @@
     renderReservations();
     renderFlights();
     initPhraseGuide();
+    initFood();
     document.querySelectorAll('[data-album-link]').forEach(a => { a.href = GOOGLE_PHOTOS_ALBUM_URL; });
     initSupabase();
     loadForecast();
