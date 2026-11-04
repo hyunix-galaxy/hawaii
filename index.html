@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611040616">
+  <link rel="stylesheet" href="/tailwind.css?v=202611040627">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -1510,6 +1510,19 @@
       desc: '🦐 할레이바 지오반니 새우트럭 오후 간식 (갈릭 새우 몇 접시 나눠 먹기) & 할레이바 타운 산책 ➔ 16:50 출발, H2 고속도로로 숙소 (17:50 전후 도착 · 일몰 18:34)',
       note: 'ℹ️ 할레이바 지점은 매일 10:30~17:00 (카후쿠 지점보다 일찍 닫아요)' }, after: '오후' },
     { day: 7, slot: '저녁', set: { desc: '🍽️ 숙소 복귀 및 자유 석식 (섬 북동부를 한 바퀴 돈 날이라 가볍게)' } },
+    // D8: Dole 파인애플 농장 워크업 투어 → Dole Plantation 기념품샵 → 와이켈레 아울렛 점심·쇼핑 (2026.11.04 결정)
+    { day: 8, daySet: { title: 'Day 8 · 돌 파인애플 농장 투어 · 와이켈레 아울렛', badge: 'Dole & Waikele' } },
+    { day: 8, slot: '오전', set: { placeName: 'Dole Pineapple Farm Tour & Store', placeId: 'dole_farm', time: '10:15', mapQuery: 'Dole Pineapple Farm Tour and Store 64-1551 Kamehameha Hwy Wahiawa HI', siteUrl: 'https://www.dolefruithawaii.com/pages/pineapple-farm-tours', extraLinks: [],
+      desc: '🍍 09:30 숙소 출발 ➔ 10:15 Dole 파인애플 농장 워크업 투어 (포장 공장 걸어서 둘러보기 약 40분) ➔ 매장에서 커피·초콜릿 구경' },
+      note: 'ℹ️ 목요일 워크업 투어는 10:00~12:00 사이 · 예약 없음, 당일 매장(808-219-9398)에 운영 여부 확인 · 앞이 막힌 신발 필수 · 만 4세 미만 참여 불가 · 만 12세 이상 파인애플 1개 증정' },
+    { day: 8, addSlot: { label: '기념품', color: 'bg-yellow-100 text-yellow-900', placeName: 'Dole Plantation (기념품샵)', placeId: 'dole', time: '11:10', mapQuery: 'Dole Plantation Wahiawa HI', siteUrl: 'https://www.doleplantation.com/',
+      desc: '🛍️ 바로 옆 Dole Plantation 기념품샵만 잠깐 들르기 (약 30분) ➔ 와이켈레로 이동 (약 20분)' }, after: '오전' },
+    { day: 8, slot: '점심', set: { placeName: 'Waikele Premium Outlets (점심)', placeId: 'waikele', time: '12:00', mapQuery: 'Waikele Premium Outlets Waipahu HI', siteUrl: 'https://www.premiumoutlets.com/outlet/waikele', extraLinks: [],
+      desc: '🍽️ 와이켈레 아울렛 도착 후 점심' } },
+    { day: 8, slot: '오후', set: { placeName: 'Waikele Premium Outlets', placeId: 'waikele', time: '13:00', mapQuery: 'Waikele Premium Outlets Waipahu HI', siteUrl: 'https://www.premiumoutlets.com/outlet/waikele', extraLinks: [],
+      desc: '🛍️ 와이켈레 아울렛 집중 쇼핑 ➔ 숙소 복귀 (아울렛에서 약 30분)' } },
+    { day: 8, costIndex: 0, cost: 'Dole 파인애플 농장 워크업 투어 만 12세 이상 $20 · 4~11세 $3 (공식) · Dole Plantation 기념품샵은 입장 무료' },
+    { day: 8, costIndex: 1, cost: '(참고) 필드 투어는 목요일 12:00~14:00, 만 12세 이상 $50 · 4~11세 $25, 사전 예약 필수' },
     // 카할라 일정: D9(금) 애프터눈 티 → D10(토) Plumeria Beach House 점심으로 이동 (2026.11.04 결정)
     { day: 9, daySet: { title: 'Day 9 · 진주만 투어 · 휴식 & 2차 불꽃놀이', badge: '불꽃놀이 피날레' } },
     { day: 9, slot: '오후', set: { placeName: "Lappert's Hawaii", mapQuery: "Lappert's Hawaii Hilton Hawaiian Village Honolulu HI", siteUrl: 'https://www.lappertshawaii.com/', extraLinks: [], desc: '🍦 숙소 복귀 후 휴식 · 라퍼츠 하와이 수제 와플콘 아이스크림 & 지인 선물 정리' } },
@@ -1880,6 +1893,7 @@
     costco_food:   { name: 'Costco Food Court', icon: '🌭', node: 'costco', query: 'Costco Wholesale Iwilei Honolulu HI', menu: 'costco' },
     kualoa_cafe:   { name: "Aunty Pat's Cafe (Kualoa Ranch)", icon: '🍔', node: 'kualoa', query: 'Kualoa Ranch Kaneohe HI' },
     kayas:         { name: "Kaya's Store (Hau'ula)", icon: '🍱', lat: 21.5865, lng: -157.8935, query: "Kaya's Store 53-534 Kamehameha Hwy Hauula HI" },   // 위치는 주소 기준 대략값
+    dole_farm:     { name: 'Dole Pineapple Farm Tour & Store', icon: '🍍', lat: 21.527181, lng: -158.0398184, query: 'Dole Pineapple Farm Tour and Store 64-1551 Kamehameha Hwy Wahiawa HI' },
     giovanni_haleiwa: { name: "Giovanni's Shrimp Truck (Haleiwa)", icon: '🦐', node: 'haleiwa', query: "Giovanni's Shrimp Truck 66-472 Kamehameha Hwy Haleiwa HI", menu: 'giovanni' },
     car_return:    { name: 'HNL Rent-A-Car Return', icon: '🚙', node: 'hnl', query: 'Consolidated Rent-A-Car Facility Honolulu HI' },
     incheon:       { name: 'Incheon Airport T2', icon: '🇰🇷', offOahu: true, query: 'Incheon International Airport Terminal 2' }
@@ -1930,7 +1944,8 @@
     'Fook Yuen Seafood': 'fookyuen', "Tantalus Lookout (Pu'u Ualaka'a)": 'tantalus', 'Makapuu Point': 'halona',
     "Boots & Kimo's": 'boots', 'Lanikai Beach': 'lanikai', 'Diamond Head': 'diamond', "Wolfgang's Steakhouse": 'wolfgang',
     'Kualoa Ranch': 'kualoa', "Giovanni's Shrimp Truck": 'giovanni_haleiwa', "Ho'omaluhia Botanical Garden": 'hoomaluhia',
-    'Dole Plantation': 'dole', 'Waikele Premium Outlets': 'waikele', 'Pearl Harbor': 'pearl',
+    // 'Dole Plantation' 꿀팁(기차 대기)은 기념품샵만 들르는 지금 일정과 맞지 않아 칸 연결 제외
+    'Waikele Premium Outlets': 'waikele', 'Pearl Harbor': 'pearl',
     'The Kahala — Plumeria Beach House': 'plumeria'
   };
   // 장소가 아니라 특정 칸에 붙는 꿀팁 ('일차-칸')
@@ -2049,7 +2064,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611040616').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611040627').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
