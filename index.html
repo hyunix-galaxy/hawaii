@@ -15,7 +15,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611041334">
+  <link rel="stylesheet" href="/tailwind.css?v=202611041345">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -2390,7 +2390,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611041334').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611041345').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -3720,6 +3720,10 @@
       items: [['스몰', '약 $4 (비공식)'], ['라지', '약 $5 (비공식)'], ['점보', '약 $8 (비공식)']], note: '현금을 준비하세요 · 마츠모토와 비교해 보기', checked: '2025.11', src: 'https://hawaiitravelwithkids.com/?p=2558' },
     { cat: 'snack', dish: '아사이볼 · 모아나볼', name: 'Island Vintage Coffee', area: '로열 하와이안 센터', query: 'Island Vintage Coffee Royal Hawaiian Center HI', near: '와이키키 아침',
       items: [['오리지널 아사이볼', '$15.95~'], ['모아나볼 (하우피아·릴리코이 등)', '$15.25~'], ['리치 하우피아 모아나볼 24oz', '$21.20']], note: '줄이 길면 온라인 주문 후 픽업', checked: '2026.11', src: 'https://www.toasttab.com/local/order/ivcroyalhawaiian' },
+    { placeId: ['alamoana', 'ward'], cat: 'snack', dish: '라테 · 아사이볼 (로컬 카페)', name: 'Island Brew Coffeehouse', area: '알라모아나 센터 맨 위층 · 워드 빌리지', query: 'Island Brew Coffeehouse Ala Moana Center Honolulu HI',
+      items: [['아사이볼', '$9.95 (2018년 가격 · 지금은 더 비쌈)'], ['카페 라테', '$4.45 (2018년 가격)'], ['아포가토', '$5.75 (2018년 가격)']], note: '알라모아나점은 블루밍데일스 앞 맨 위층 · 워드 빌리지점은 홀푸드 맞은편 · 매일 07시부터 · 최근 공개 가격이 없어 2018년 기사 가격이에요', checked: '2018.08', src: 'https://staradvertiser.com/?p=755127' },
+    { cat: 'snack', dish: '브라질식 아사이볼', name: 'Tropical Tribe', area: '와이키키 쇼어 (2161 Kalia Rd #110)', query: 'Tropical Tribe 2161 Kalia Rd Honolulu HI', near: '힐튼 단지에서 걸어서 약 10분 · Steak Shack과 같은 건물',
+      items: [['아사이볼 (토핑 골라 만들기)', '가격 미확인 · 공식 메뉴판 사진 참고']], note: '꿀·그래놀라·과일 토핑을 골라 만들어요 · 스무디·라테·빵지케이주(치즈빵)도 있어요 · 알라모아나에도 매장 · (808) 744-7079', checked: '2026.07', src: 'https://tropicaltribe.net/menu.php' },
     // ---- 일정에 없는 푸드트럭·로컬 ----
     { cat: 'local', dish: '버터 갈릭 새우 (양식장 직판)', name: "Romy's Kahuku Prawns", area: '카후쿠', query: "Romy's Kahuku Prawns & Shrimp HI", near: 'D7 카야스 → 노스쇼어 가는 길',
       items: [['버터 갈릭 새우 플레이트 (12마리)', '최근 공개 가격 없음 · 현장 확인']], note: '주문 후 조리라 30분~1시간 대기 · 미리 전화 주문 (808) 232-2202 · 영업일 확인 필요', checked: '2026.01', src: 'https://wanderlog.com/place/details/109308/romys-kahuku-prawns--shrimp-hut' },
@@ -3731,6 +3735,8 @@
       items: [['피피칼루아 숏립', '$11.75 (비공식)'], ['칼루아 피그', '$5.75 (비공식)'], ['피피칼루아 콤보 플레이트', '$19.50 (비공식)']], note: '제임스 비어드 상을 받은 집 · 화~금 10:00~19:30 (토~월 휴무)', checked: '2026.11', src: 'https://helenashawaiianfood.com' },
     { cat: 'local', dish: '스테이크 플레이트 (밥·샐러드 포함)', name: 'Steak Shack', area: '와이키키 비치 (Kalia Rd 2층)', query: 'Steak Shack 2161 Kalia Rd Honolulu HI', near: '힐튼 단지에서 걸어서 약 10분 · 포장해서 해변에서',
       items: [['스테이크 플레이트 6oz / 10oz / 14oz', '약 $12~24 (비공식)']], note: '데리야키 소스 추천 · 주문 후 15~20분 · 야외 테이블이 적어 포장 추천 · 늦게 가면 품절될 수 있음 · 월~목 10:30~19:00, 금·토 10:00~19:30, 일 10:00~19:00 (비공식)', checked: '2026.10', src: 'https://hawaiitravelwithkids.com/best-restaurants-in-waikiki-for-budget-travelers/' },
+    { cat: 'local', dish: '돼지곰탕 (미쉐린 서울 맛집)', name: '옥동식 호놀룰루 (OKDONGSIK)', area: '알라모아나 근처 (Sky Ala Moana 1층)', query: 'Okdongsik 1388 Kapiolani Blvd Honolulu HI', near: 'D2 알라모아나 쇼핑 때 · 월요일 휴무',
+      items: [['돼지곰탕', '$18'], ['돈카츠 (하루 40인분 한정)', '$21'], ['아이용 곰탕', '$10'], ['김치 냉국수', '$16']], note: '바 카운터 좌석만 있어 8명은 나눠 앉을 수 있어요 · Resy 예약 (10분 넘게 늦으면 노쇼) · 점심 화~일 11:30~14:30, 저녁 화~목·일 17~21시, 금·토 17~22시 · 주차권 확인 가능 · 가격은 2025.7 개점 기사 기준', checked: '2025.07', src: 'https://www.honolulumagazine.com/?p=807462' },
     // ---- 유명 레스토랑 ----
     { cat: 'famous', dish: '훌라 파이 · 해변 레스토랑', name: "Duke's Waikiki", area: '와이키키 해변', query: "Duke's Waikiki Honolulu HI", near: '와이키키 해변 저녁',
       items: [['키모의 오리지널 훌라 파이', '$14.00'], ['마카다미아 크러스트 생선 (저녁)', '$39'], ['프라임 립 12oz / 24oz', '$44 / $83']], note: '저녁은 예약 추천 · 훌라 파이는 여럿이 나눠 먹는 크기 · 메인 요리 가격은 2024년 공식 메뉴라 조금 올랐을 수 있음', checked: '2026.11', src: 'https://www.dukeswaikiki.com/wp-content/uploads/2024/02/24_TS_DW_Vinyl-Dinner_web_FEB07.pdf' },
@@ -3740,6 +3746,8 @@
       items: [['딸기 휘핑크림 팬케이크', '$16.95 (비공식)']], note: '06~14시, 16~22시 · 아침 줄이 길어 06~07시에 가거나 저녁에', checked: '2026', src: 'https://www.opentable.com/r/eggs-n-things' },
     { cat: 'famous', dish: '수플레 팬케이크', name: 'Aloha Kitchen', area: '와이키키 Ena Rd', query: 'Aloha Kitchen 432 Ena Rd Honolulu HI', near: '힐튼 단지에서 걸어서 약 5분 · 아침',
       items: [['과일 수플레 팬케이크', '$17 (비공식)'], ['다이아몬드헤드 수플레 팬케이크', '$16 (비공식)'], ['로코모코 · 갈릭 새우', '$12 · $16 (비공식)']], note: '아침·점심만 화~일 07:30~13:30 (마지막 주문 13:00), 월요일 휴무 → D5(2/22 월) 제외 · 수플레는 굽는 데 시간이 걸려요 · 예약·문의 (808) 943-6105 · 가격은 OpenTable 기준이라 올랐을 수 있음', checked: '날짜 미상', src: 'https://www.opentable.co.uk/r/aloha-kitchen-waikiki' },
+    { cat: 'famous', dish: '치즈케이크 · 대용량 미국식 요리', name: 'The Cheesecake Factory', area: '로열 하와이안 센터 C동 1층', query: 'The Cheesecake Factory Royal Hawaiian Center Honolulu HI', near: 'D6 울프강과 같은 쇼핑센터',
+      items: [['치즈케이크 1조각', '약 $10~13 (비공식)'], ['파스타·치킨 메인', '약 $20~30 (비공식)']], note: '양이 많아 8명이면 메인 몇 개 + 치즈케이크 나눠 먹기 추천 · 평일 11~23시, 주말 10~23시 · 저녁엔 대기가 길어 전화(808-924-5001)로 확인', checked: '2026.07', src: 'https://www.thepricer.org/the-cheesecake-factory-menu-prices/' },
     { cat: 'famous', dish: '미소야키 버터피시', name: "Roy's Waikiki", area: '와이키키', query: "Roy's Waikiki Honolulu HI", near: '기념일 저녁 후보',
       items: [['미소야키 버터피시', '$67'], ['마카다미아 크러스트 로컬 생선', '$56'], ['초콜릿 수플레 (주문 후 굽기)', '$19']], note: 'OpenTable 예약 · 해피아워 14:30~16:00', checked: '2026.11', src: 'https://www.royyamaguchi.com/roys-waikiki-menus' }
   ];
