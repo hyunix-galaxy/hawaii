@@ -913,6 +913,21 @@
   </div>
 </div>
 
+<!-- MENU PREVIEW SHEET -->
+<div id="menu-sheet" class="fixed inset-0 z-[1600] hidden">
+  <div id="menu-sheet-backdrop" class="absolute inset-0 bg-slate-950/50"></div>
+  <div class="absolute left-1/2 -translate-x-1/2 bottom-0 w-full max-w-[480px] max-h-[82vh] bg-white rounded-t-3xl shadow-2xl flex flex-col">
+    <div class="flex items-start justify-between gap-2 px-4 pt-4 pb-2 border-b border-slate-100">
+      <div class="min-w-0">
+        <div id="menu-sheet-title" class="text-[16px] font-extrabold text-slate-900 leading-snug"></div>
+        <div id="menu-sheet-sub" class="text-[11px] font-bold text-slate-500 mt-0.5"></div>
+      </div>
+      <button id="menu-sheet-close" type="button" class="w-8 h-8 rounded-full bg-slate-100 font-extrabold shrink-0">✕</button>
+    </div>
+    <div id="menu-sheet-body" class="overflow-y-auto px-4 py-3 space-y-3"></div>
+  </div>
+</div>
+
 <div id="app-toast" class="opacity-0">알림 메시지</div>
 
 <script>
@@ -1219,6 +1234,53 @@
     }).join('');
   }
 
+  /* [DATA] 식당 메뉴 미리보기 (일정표 식당만 · 공식 메뉴 기준, 가격은 확인일 기준)
+   *   MENU_SLOT_MAP: '일차-슬롯' → 메뉴 id   ·   MENUS: id → { name, checked, officialMenuUrl, items[{name,ko,price}], tips[] } */
+  const MENU_SLOT_MAP = {
+    '1-점심': 'nicos', '2-저녁': 'bluewater', '3-오전': 'rays', '3-점심': 'matsumoto', '4-점심': 'fookyuen',
+    '5-점심': 'boots', '6-오전': 'bogarts', '6-점심': 'iyasume', '6-오후': 'wolfgang', '7-점심': 'giovanni',
+    '8-점심': 'roundtable', '9-오후': 'lapperts', '10-점심': 'plumeria', '10-오후': 'tropics', '11-점심': 'costco'
+  };
+  const MENUS = {
+    /*__MENUS_DATA__*/
+  };
+
+  function menuIdFor(day, label) {
+    const id = MENU_SLOT_MAP[`${day}-${label}`];
+    return id && MENUS[id] ? id : null;
+  }
+
+  function openMenuSheet(id) {
+    const m = MENUS[id];
+    if (!m) return;
+    document.getElementById('menu-sheet-title').textContent = `🍽️ ${m.name}`;
+    document.getElementById('menu-sheet-sub').textContent = `대표 메뉴 미리보기 · ${m.checked} 확인 · 가격은 바뀔 수 있어요`;
+    const items = (m.items || []).map(it => `
+      <div class="flex items-start justify-between gap-3 py-2">
+        <div class="min-w-0">
+          <div class="text-[13px] font-extrabold text-slate-900 leading-snug">${it.name}</div>
+          <div class="text-[12px] text-slate-600 leading-snug mt-0.5">${it.ko || ''}</div>
+        </div>
+        <div class="text-[12.5px] font-extrabold text-sky-800 nowrap-btn text-right">${it.price || '<span class="text-slate-400 font-bold">가격 현장 확인</span>'}</div>
+      </div>`).join('');
+    const tips = (m.tips || []).length ? `
+      <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 space-y-1">
+        <div class="text-[11.5px] font-extrabold text-amber-900">👨‍👩‍👧‍👦 8인 주문 팁</div>
+        ${m.tips.map(t => `<div class="text-[12px] text-amber-900 leading-relaxed">• ${t}</div>`).join('')}
+      </div>` : '';
+    const link = m.officialMenuUrl ? `<a href="${m.officialMenuUrl}" target="_blank" rel="noopener noreferrer" class="block w-full py-2.5 rounded-xl bg-slate-900 text-white text-[13px] font-extrabold text-center">📋 전체 메뉴 보기 (공식) ↗</a>` : '';
+    document.getElementById('menu-sheet-body').innerHTML = `<div class="divide-y divide-slate-100">${items}</div>${tips}${link}<div class="h-2"></div>`;
+    const sheet = document.getElementById('menu-sheet');
+    sheet.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+  window.openMenuSheet = openMenuSheet;
+
+  function closeMenuSheet() {
+    document.getElementById('menu-sheet').classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
   /* [DATA] 일정표 */
   const scheduleData = [
     {
@@ -1435,6 +1497,7 @@
             <div class="flex flex-wrap items-center gap-1.5 pt-0.5">
               <a href="${searchUrl}" target="_blank" rel="noopener noreferrer" class="gmap-chip">📍 구글맵 ↗</a>
               <a href="${dirUrl}" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 길안내 ↗</a>
+              ${menuIdFor(data.day, slot.label) ? `<button type="button" onclick="openMenuSheet('${menuIdFor(data.day, slot.label)}')" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11.5px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200 nowrap-btn">🍽️ 메뉴</button>` : ''}
               ${slot.siteUrl ? `<a href="${slot.siteUrl}" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🌐 공식홈 ↗</a>` : ''}
               ${extraHtml}
             </div>
@@ -2497,6 +2560,9 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
+
+    document.getElementById('menu-sheet-close').addEventListener('click', closeMenuSheet);
+    document.getElementById('menu-sheet-backdrop').addEventListener('click', closeMenuSheet);
 
     document.getElementById('share-portal-btn').addEventListener('click', () => copyTextToClipboard(window.location.href, '앱 링크가 복사되었습니다.'));
     const copyAlbumBtn = document.getElementById('copy-album-url-btn');
