@@ -4,7 +4,7 @@
 //   → 같은 이름으로 이미지를 바꿔도 다음번 열 때 반영됨
 // - 글꼴·배경 사진·지도 타일: 한 번 받으면 저장해 두고 재사용 (현지 데이터 절약 · 오프라인)
 // - Supabase(정산 데이터)·날씨 API: 저장하지 않음 (항상 최신)
-const VERSION = '202611041357';
+const VERSION = '202611050321';
 const CACHE = 'hawaii-portal-' + VERSION;
 const RUNTIME = 'hawaii-runtime-v1';
 const TILES = 'hawaii-tiles-v1';
@@ -78,6 +78,8 @@ self.addEventListener('fetch', (event) => {
   // 실시간 데이터는 항상 네트워크
   if (url.hostname.endsWith('supabase.co') && !url.pathname.includes('/storage/v1/object/public/site-assets/')) return;
   if (url.hostname.includes('open-meteo.com')) return;
+  // 이 사이트의 중계 기능(음식 사진 등)은 저장하지 않고 항상 새로 받음
+  if (url.origin === self.location.origin && url.pathname.startsWith('/api/')) return;
 
   // 화면(HTML)
   if (req.mode === 'navigate' || (url.origin === self.location.origin && url.pathname.endsWith('.html'))) {

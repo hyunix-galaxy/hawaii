@@ -6,4 +6,5 @@ BUILD=$(date -u +%Y%m%d%H%M)
 npx --yes tailwindcss@3.4.17 -c tailwind.config.js -i tailwind.in.css -o tailwind.css --minify
 sed -i -E "s#/(tailwind\.css|road-legs\.json)\?v=[A-Za-z0-9_]+#/\1?v=${BUILD}#g" index.html
 sed -i -E "s#^const VERSION = '[^']*';#const VERSION = '${BUILD}';#" sw.js
+node scripts/food-queries.mjs index.html api/_food-queries.mjs
 echo "build ${BUILD}"

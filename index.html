@@ -15,7 +15,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611041357">
+  <link rel="stylesheet" href="/tailwind.css?v=202611050321">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -374,6 +374,7 @@
     .m3-segmented.seg-6 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; border-radius: 18px; }
     .m3-segmented.seg-6 .m3-seg-btn { padding: 8px 2px; font-size: 12.5px; letter-spacing: -0.2px; }
     @media (min-width: 768px) { .m3-segmented.seg-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); border-radius: 9999px; } }
+    .food-img { width: 96px; height: 96px; border-radius: 12px; object-fit: cover; background: #F1F5F9; display: block; }
     .food-card { display: flex; gap: 10px; padding: 10px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E8F0; }
     @media (min-width: 768px) { .food-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .food-grid > * { margin-top: 0 !important; } }
     @media (min-width: 1280px) { .food-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
@@ -1020,10 +1021,10 @@
             <h3 class="text-[15.5px] font-extrabold text-slate-900">🍴 추천 음식</h3>
             <span id="food-count" class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11.5px] font-bold nowrap-btn"></span>
           </div>
-          <p class="text-[12px] text-slate-600 leading-relaxed">사진은 <b>📷 사진 보기</b>를 누르면 공식·후기 사진이 열려요. 일정에 있는 곳은 <b>📅 D일차</b>를 누르면 그날 일정으로 가요. 가격은 세금·팁 별도이고 바뀔 수 있어요 (<b>비공식</b> 표시는 공식 메뉴가 아닌 최근 후기·메뉴 사이트 기준).</p>
+          <p class="text-[12px] text-slate-600 leading-relaxed">일정에 있는 곳은 <b>📅 D일차</b>를 누르면 그날 일정으로 가요. 가격은 세금·팁 별도이고 바뀔 수 있어요 (<b>비공식</b> 표시는 공식 메뉴가 아닌 최근 후기·메뉴 사이트 기준).</p>
           <div id="food-filter" class="flex flex-wrap gap-1.5"></div>
           <div id="food-list" class="food-grid space-y-2"></div>
-          <div class="text-[11px] font-semibold text-slate-500 leading-relaxed">가게·후기 사진은 저작권이 있어 앱에 직접 싣지 않았어요. <b>📷 사진 보기</b>는 구글 이미지 검색(공식·후기 사진), <b>📍 지도·후기</b>는 구글 지도의 방문자 후기 사진으로 바로 열려요.</div>
+          <div class="text-[11px] font-semibold text-slate-500 leading-relaxed">사진은 구글 지도에 올라온 그 가게 사진이에요 (사진 아래 이름 = 올린 사람). 인터넷이 될 때만 보이고, 사진을 누르면 구글 지도로 열려요. 더 많은 사진은 <b>📷 사진 보기</b>로.</div>
         </div>
       </div>
 
@@ -2390,7 +2391,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611041357').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611050321').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -3774,6 +3775,12 @@
       const dayChips = f.days.map(d => `<button type="button" onclick="goToDay(${d})" class="tip-chip !py-0.5 !px-2 !text-[11.5px]">📅 D${d}</button>`).join('');
       return `
         <div class="food-card">
+          <div class="shrink-0 w-[96px]">
+            <a href="${gMapSearchQuery(f.query)}" target="_blank" rel="noopener noreferrer" class="food-photo block" data-fq="${escAttr(f.query)}" aria-label="${escAttr(f.name)} 구글 지도">
+              <div class="food-img flex items-center justify-center text-[30px] animate-pulse">🍽️</div>
+            </a>
+            <div class="food-attr text-[9.5px] leading-tight text-slate-400 mt-1 break-words"></div>
+          </div>
           <div class="min-w-0 flex-1 space-y-1">
             <div class="flex items-start justify-between gap-1.5">
               <div class="min-w-0">
@@ -3783,7 +3790,7 @@
               <span class="px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10.5px] font-extrabold nowrap-btn">${FOOD_CATS[f.cat].split(' ')[0]}</span>
             </div>
             <div class="space-y-0.5">
-              ${f.items.map(it => `<div class="flex justify-between gap-2 text-[12.5px]"><span class="font-semibold text-slate-700 min-w-0">${it[0]}</span><span class="font-extrabold text-sky-800 nowrap-btn">${it[1]}</span></div>`).join('')}
+              ${f.items.map(it => `<div class="flex justify-between items-start gap-2 text-[12.5px]"><span class="font-semibold text-slate-700 min-w-0 flex-1">${it[0]}</span><span class="font-extrabold text-sky-800 text-right shrink-0 max-w-[55%]">${it[1]}</span></div>`).join('')}
             </div>
             ${f.note ? `<p class="text-[11.5px] font-semibold text-amber-800 leading-relaxed">💡 ${f.note}</p>` : ''}
             <div class="flex flex-wrap items-center gap-1 pt-0.5">
@@ -3796,6 +3803,46 @@
         </div>`;
     }).join('') || '<div class="text-[13px] font-bold text-slate-500 text-center py-6">해당하는 음식이 없어요</div>';
     document.getElementById('food-count').textContent = `${rows.length}곳`;
+    observeFoodPhotos(list);
+  }
+
+  /* 음식 카드 사진 — 구글 지도 공식 사진을 이 사이트의 중계 기능(/api/food-photo)으로 받아 옴
+   *   구글 키는 Vercel 비밀 설정에만 있고 화면 코드에는 없음 · 카드가 화면에 보일 때만 불러옴 (요금 절약)
+   *   사진 아래 이름은 구글 규정에 따른 사진 올린 사람 표시 */
+  const foodPhotoMem = {};
+  let foodPhotoObserver = null;
+  function fetchFoodPhoto(q) {
+    if (!foodPhotoMem[q]) {
+      foodPhotoMem[q] = fetch('/api/food-photo?q=' + encodeURIComponent(q)).then(r => r.ok ? r.json() : null);
+      foodPhotoMem[q].catch(() => { delete foodPhotoMem[q]; });
+    }
+    return foodPhotoMem[q];
+  }
+  async function loadFoodPhoto(link) {
+    const box = link.firstElementChild;
+    const attr = link.parentElement.querySelector('.food-attr');
+    const stop = () => box.classList.remove('animate-pulse');
+    try {
+      const ph = await fetchFoodPhoto(link.dataset.fq);
+      if (ph && ph.mapsUri) link.href = ph.mapsUri;
+      if (!ph || !ph.img) { stop(); return; }
+      const img = new Image();
+      img.className = 'food-img';
+      img.alt = '';
+      img.decoding = 'async';
+      img.onload = () => box.replaceWith(img);
+      img.onerror = stop;
+      img.src = ph.img;
+      if (attr && ph.author) attr.innerHTML = `📷 ${ph.authorUri ? `<a href="${escAttr(ph.authorUri)}" target="_blank" rel="noopener noreferrer" class="underline">${escAttr(ph.author)}</a>` : escAttr(ph.author)} · Google 지도`;
+    } catch (e) { stop(); }
+  }
+  function observeFoodPhotos(root) {
+    const links = root.querySelectorAll('.food-photo[data-fq]');
+    if (!('IntersectionObserver' in window)) { links.forEach(loadFoodPhoto); return; }
+    if (!foodPhotoObserver) foodPhotoObserver = new IntersectionObserver(entries => entries.forEach(en => {
+      if (en.isIntersecting) { foodPhotoObserver.unobserve(en.target); loadFoodPhoto(en.target); }
+    }), { rootMargin: '200px' });
+    links.forEach(l => foodPhotoObserver.observe(l));
   }
   function initFood() {
     const el = document.getElementById('food-filter');
