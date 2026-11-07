@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     if (p) {
       if (!PHOTO_NAME.test(p)) return res.status(400).json({ error: 'bad photo' });
       const m = await fetch(`https://places.googleapis.com/v1/${p}/media?maxWidthPx=320&maxHeightPx=320&skipHttpRedirect=true&key=${key}`);
-      if (!m.ok) return res.status(502).json({ error: 'photo ' + m.status });
+      if (!m.ok) { console.log('google photo', m.status, q); return res.status(m.status === 429 ? 429 : 502).json({ error: 'photo ' + m.status }); }
       const { photoUri } = await m.json();
       res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=600');
       return res.status(200).json({ img: photoUri || null });
@@ -32,7 +32,7 @@ export default async function handler(req, res) {
       headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': key, 'X-Goog-FieldMask': 'places.id,places.photos,places.googleMapsUri' },
       body: JSON.stringify({ textQuery: q, maxResultCount: 1, languageCode: 'ko', locationBias: { circle: { center: { latitude: 21.45, longitude: -157.97 }, radius: 50000 } } })
     });
-    if (!s.ok) return res.status(502).json({ error: 'search ' + s.status });
+    if (!s.ok) { console.log('google search', s.status, q); return res.status(s.status === 429 ? 429 : 502).json({ error: 'search ' + s.status }); }
     const place = ((await s.json()).places || [])[0];
     const photos = ((place && place.photos) || []).slice(0, 10).map(ph => {
       const a = (ph.authorAttributions || [])[0] || {};
