@@ -34,6 +34,7 @@ export default async function handler(req, res) {
     });
     if (!s.ok) { console.log('google search', s.status, q); return res.status(s.status === 429 ? 429 : 502).json({ error: 'search ' + s.status }); }
     const place = ((await s.json()).places || [])[0];
+    if (place && place.id) console.log('place-id', JSON.stringify([q, place.id]));
     const photos = ((place && place.photos) || []).slice(0, 10).map(ph => {
       const a = (ph.authorAttributions || [])[0] || {};
       return { name: ph.name, author: a.displayName || '', authorUri: a.uri || '' };
