@@ -15,7 +15,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611070028">
+  <link rel="stylesheet" href="/tailwind.css?v=202611070058">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -514,6 +514,27 @@
   </style>
 </head>
 <body>
+<!-- 카카오톡 안에서 열면 앱 설치가 안 되므로, 휴대폰 기본 브라우저(크롬·사파리)로 자동으로 다시 엶 -->
+<div id="kakao-open" class="hidden fixed inset-0 z-[4000] items-center justify-center px-6" style="background:linear-gradient(180deg,#0E75AB 0%,#33B4EE 60%,#075985 100%)">
+  <div class="w-full max-w-[340px] bg-white rounded-3xl p-6 shadow-2xl space-y-3 text-center">
+    <div class="text-[38px] leading-none">🌺</div>
+    <div class="text-[17px] font-extrabold text-slate-900">브라우저로 열어 주세요</div>
+    <p class="text-[13px] font-semibold text-slate-600 leading-relaxed">카카오톡 안에서는 앱 설치가 안 돼요.<br>아래 버튼을 누르면 크롬(아이폰은 사파리)으로 열려요.</p>
+    <a id="kakao-open-btn" href="#" class="block w-full py-3 rounded-xl bg-sky-700 text-white text-[15px] font-extrabold">🌐 브라우저로 열기</a>
+    <p class="text-[11.5px] font-semibold text-slate-500 leading-relaxed">안 열리면 오른쪽 위 <b>⋮</b>(아이폰은 아래 <b>⋯</b>) → <b>다른 브라우저로 열기</b>를 눌러 주세요.</p>
+  </div>
+</div>
+<script>
+  (function () {
+    var ua = navigator.userAgent || '';
+    if (!/KAKAOTALK/i.test(ua)) return;
+    var target = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(location.href);
+    var box = document.getElementById('kakao-open');
+    box.classList.remove('hidden'); box.style.display = 'flex';
+    document.getElementById('kakao-open-btn').href = target;
+    location.href = target;
+  })();
+</script>
 <!-- 처음 접속할 때 한 번만 입장 코드 확인 (확인되면 이 휴대폰에 저장, 정산 저장에도 같은 코드 사용) -->
 <div id="entry-gate" class="fixed inset-0 z-[3000] flex items-center justify-center px-6" style="background:linear-gradient(180deg,#0E75AB 0%,#33B4EE 60%,#075985 100%)">
   <div class="w-full max-w-[340px] bg-white rounded-3xl p-6 shadow-2xl space-y-4 text-center">
@@ -2391,7 +2412,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611070028').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611070058').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -4409,13 +4430,19 @@
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
     if (isStandalone) document.getElementById('install-done-msg').classList.remove('hidden');
     let deferredInstall = null;
+    // 아이폰·아이패드(사파리)는 설치 버튼 대신 '홈 화면에 추가' 안내
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (isIOS && !isStandalone) installBtns.forEach(b => b && b.classList.remove('hidden'));
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredInstall = e;
       installBtns.forEach(b => b && b.classList.remove('hidden'));
     });
     installBtns.forEach(b => b && b.addEventListener('click', async () => {
-      if (!deferredInstall) { showToast('크롬 ⋮ 메뉴 → 앱 설치를 눌러 주세요.'); return; }
+      if (!deferredInstall) {
+        if (isIOS) { showToast('사파리 아래 공유 버튼(⬆️) → \'홈 화면에 추가\'를 눌러 주세요.'); return; }
+        showToast('크롬 ⋮ 메뉴 → 앱 설치를 눌러 주세요.'); return;
+      }
       deferredInstall.prompt();
       const choice = await deferredInstall.userChoice;
       deferredInstall = null;
