@@ -15,7 +15,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611070020">
+  <link rel="stylesheet" href="/tailwind.css?v=202611070028">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -1024,7 +1024,7 @@
           <p class="text-[12px] text-slate-600 leading-relaxed">일정에 있는 곳은 <b>📅 D일차</b>를 누르면 그날 일정으로 가요. 가격은 세금·팁 별도이고 바뀔 수 있어요 (<b>비공식</b> 표시는 공식 메뉴가 아닌 최근 후기·메뉴 사이트 기준).</p>
           <div id="food-filter" class="flex flex-wrap gap-1.5"></div>
           <div id="food-list" class="food-grid space-y-2"></div>
-          <div class="text-[11px] font-semibold text-slate-500 leading-relaxed">사진은 구글 지도에 올라온 그 가게 사진이에요 (사진 아래 이름 = 올린 사람). 음식 사진이 아니면 <b>‹ ›</b>로 넘겨 보세요. 고른 사진은 이 휴대폰에 기억돼요. 인터넷이 될 때만 보이고, 사진을 누르면 구글 지도로 열려요. 더 많은 사진은 <b>📷 사진 보기</b>로.</div>
+          <div class="text-[11px] font-semibold text-slate-500 leading-relaxed">사진은 구글 지도에 올라온 그 가게 사진이에요 (사진 아래 이름 = 올린 사람). 음식 사진이 아니면 <b>‹ ›</b>로 넘겨 보세요. 고른 사진은 가족 모두에게 같이 보여요. 인터넷이 될 때만 보이고, 사진을 누르면 구글 지도로 열려요. 더 많은 사진은 <b>📷 사진 보기</b>로.</div>
         </div>
       </div>
 
@@ -2391,7 +2391,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611070020').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611070028').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -3817,12 +3817,42 @@
   const foodPhotoMem = {};
   let foodPhotoObserver = null;
   /* [DATA] 카드별 기본 사진 번호 (0부터) — 구글 지도 사진 순서 중 음식이 잘 보이는 사진. 비어 있으면 0번
-   *   각자 ‹ › 로 고른 사진은 그 휴대폰에 따로 기억됨 */
+   *   ‹ › 로 고른 사진은 Supabase(food_photo_picks)에 저장돼 가족 모두에게 같이 보임 (우선순위: 공용 > 이 휴대폰 > 이 표 > 0) */
   const FOOD_PHOTO_PICK = {};
   const PHOTO_PICK_KEY = 'hawaii_food_photo_pick_v1';
   function readPicks() { try { return JSON.parse(localStorage.getItem(PHOTO_PICK_KEY) || '{}') || {}; } catch (e) { return {}; } }
-  function photoIndex(q) { const m = readPicks(); return m[q] != null ? m[q] : (FOOD_PHOTO_PICK[q] || 0); }
-  function savePick(q, i) { const m = readPicks(); m[q] = i; try { localStorage.setItem(PHOTO_PICK_KEY, JSON.stringify(m)); } catch (e) {} }
+  // 가족 공용 사진 번호 (Supabase food_photo_picks) — 누가 ‹ ›로 고르면 모두에게 같은 사진이 보임
+  let sharedPicks = {};
+  function photoIndex(q) {
+    if (sharedPicks[q] != null) return sharedPicks[q];
+    const m = readPicks();
+    return m[q] != null ? m[q] : (FOOD_PHOTO_PICK[q] || 0);
+  }
+  function pushPick(q, i) {
+    const code = readSavedCode();
+    if (!sb || !/^\d{6}$/.test(code)) return;
+    sb.rpc('set_food_photo_pick', { p_code: code, p_query: q, p_idx: i }).then(() => {}, () => {});
+  }
+  function savePick(q, i) {
+    const m = readPicks(); m[q] = i;
+    try { localStorage.setItem(PHOTO_PICK_KEY, JSON.stringify(m)); } catch (e) {}
+    sharedPicks[q] = i;
+    pushPick(q, i);
+  }
+  async function loadSharedPicks() {
+    if (!sb) return;
+    try {
+      const { data, error } = await sb.from('food_photo_picks').select('query,idx');
+      if (error || !data) return;
+      const next = {};
+      data.forEach(r => { next[r.query] = r.idx; });
+      // 이 휴대폰에서 먼저 골라 둔 사진 중 아직 공용에 없는 것은 공용으로 올림
+      Object.entries(readPicks()).forEach(([q, i]) => { if (next[q] == null) { next[q] = i; pushPick(q, i); } });
+      const changed = Object.keys(next).some(q => next[q] !== sharedPicks[q]);
+      sharedPicks = next;
+      if (changed && document.getElementById('food-list') && document.getElementById('food-list').children.length) renderFood();
+    } catch (e) {}
+  }
   // 가게별 사진 목록은 한 번만 받고(장소 검색 1회), 넘길 때는 사진만 받음
   function fetchJson(url) {
     if (!foodPhotoMem[url]) {
@@ -3875,6 +3905,7 @@
   function initFood() {
     const el = document.getElementById('food-filter');
     if (!el) return;
+    loadSharedPicks();
     el.addEventListener('click', e => { const b = e.target.closest('[data-ff]'); if (!b) return; foodFilter = b.dataset.ff; renderFood(); });
     renderFood();
   }
