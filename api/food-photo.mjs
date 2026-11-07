@@ -1,10 +1,11 @@
 // 추천 음식 카드 사진 중계 — 구글 지도(Places API New) 키는 Vercel 비밀 설정(GOOGLE_PLACES_KEY)에만 있음
 //   1) 사진 목록: /api/food-photo?q=<카드의 장소 검색어>
-//        → { mapsUri, photos: [{ name, author, authorUri }] }   (장소 검색 1회 · 6시간 동안 같은 답을 재사용)
+//        → { mapsUri, photos: [{ name, author, authorUri }] }   (장소 번호가 있으면 '장소 정보' 1회, 없으면 '장소 검색' 1회 · 6시간 재사용)
 //   2) 사진 한 장: /api/food-photo?q=<검색어>&p=<목록의 name>
 //        → { img }                                             (사진 1회 · 장소 검색은 다시 하지 않음)
 //   허용 목록(_food-queries.mjs)에 있는 검색어만 처리 (build.sh가 index.html의 추천 음식에서 자동 생성)
 import QUERIES from './_food-queries.mjs';
+import PLACE_IDS from './_place-ids.mjs';
 
 const ALLOWED = new Set(QUERIES);
 const ORIGINS = /^https:\/\/(hawaii-seven\.vercel\.app|hawaii-[a-z0-9-]+-aniac1\.vercel\.app)(\/|$)/;
@@ -27,14 +28,23 @@ export default async function handler(req, res) {
       res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=600');
       return res.status(200).json({ img: photoUri || null });
     }
+    let place = null;
+    const gid = PLACE_IDS[q];
+    if (gid) {
+      const d = await fetch(`https://places.googleapis.com/v1/places/${encodeURIComponent(gid)}`, { headers: { 'X-Goog-Api-Key': key, 'X-Goog-FieldMask': 'id,photos,googleMapsUri' } });
+      if (d.ok) place = await d.json();
+      else console.log('google details', d.status, q);
+    }
+    if (!place) {
     const s = await fetch('https://places.googleapis.com/v1/places:searchText', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': key, 'X-Goog-FieldMask': 'places.id,places.photos,places.googleMapsUri' },
       body: JSON.stringify({ textQuery: q, maxResultCount: 1, languageCode: 'ko', locationBias: { circle: { center: { latitude: 21.45, longitude: -157.97 }, radius: 50000 } } })
     });
     if (!s.ok) { console.log('google search', s.status, q); return res.status(s.status === 429 ? 429 : 502).json({ error: 'search ' + s.status }); }
-    const place = ((await s.json()).places || [])[0];
+    place = ((await s.json()).places || [])[0];
     if (place && place.id) console.log('place-id', JSON.stringify([q, place.id]));
+    }
     const photos = ((place && place.photos) || []).slice(0, 10).map(ph => {
       const a = (ph.authorAttributions || [])[0] || {};
       return { name: ph.name, author: a.displayName || '', authorUri: a.uri || '' };
