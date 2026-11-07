@@ -16,7 +16,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611070102">
+  <link rel="stylesheet" href="/tailwind.css?v=202611071036">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -2413,7 +2413,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611070102').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611071036').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -3704,76 +3704,76 @@
       items: [['오늘의 포케 6oz (해피아워)', '$12.00'], ['포케 샘플러', '$25.50'], ['수산시장 카운터 포케 1lb', '약 $16~22 (비공식)']], note: '수산시장 카운터에서 무게로 사서 앞 야외 테이블에서 먹으면 저렴해요', checked: '2026.08', src: 'https://places.singleplatform.com/nicos-at-pier-38/menu' },
     { placeId: ['costco', 'costco_food'], cat: 'local', dish: '핫도그 · 피자', name: 'Costco 푸드코트', area: '이윌레이', query: 'Costco Iwilei Honolulu HI',
       items: [['핫도그 + 음료', '$1.50 (비공식)'], ['피자 1조각', '$1.99 (비공식)'], ['피자 한 판 (18인치)', '$9.95 (비공식)']], note: '8명이 가볍게 먹기 가장 싼 곳 · 결제는 비자 카드', checked: '2026.11' },
-    { placeId: 'bluewater', cat: 'local', dish: '갈릭 새우', name: 'Blue Water Shrimp', area: '와이키키', query: 'Blue Water Shrimp Waikiki HI',
+    { placeId: 'bluewater', cat: 'local', dish: '갈릭 쉬림프', name: 'Blue Water Shrimp', area: '와이키키', query: 'Blue Water Shrimp Waikiki HI',
       items: [['Garlic Shrimp', '$23.00'], ['Coconut Shrimp', '$22.00'], ['Steak & Shrimp', '$25.00']], checked: '2026.11' },
-    { placeId: 'rays', cat: 'local', dish: '키아베 숯불 통닭', name: "Ray's Kiawe Broiled Chicken", area: '할레이바', query: "Ray's Kiawe Broiled Chicken Haleiwa HI",
-      items: [['통닭 한 마리', '약 $16 (비공식)']], note: '토·일요일만 영업 · 현금 준비 · 오후엔 품절될 수 있어요', checked: '2026.08', src: 'https://wanderlustyle.com/best-huli-huli-chicken-oahu/' },
+    { placeId: 'rays', cat: 'local', dish: '훌리훌리 치킨', name: "Ray's Kiawe Broiled Chicken", area: '할레이바', query: "Ray's Kiawe Broiled Chicken Haleiwa HI",
+      items: [['훌리훌리 치킨 한 마리', '약 $16 (비공식)']], note: '토·일요일만 영업 · 현금 준비 · 오후엔 품절될 수 있어요', checked: '2026.08', src: 'https://wanderlustyle.com/best-huli-huli-chicken-oahu/' },
     { placeId: 'matsumoto', cat: 'snack', dish: '셰이브 아이스', name: 'Matsumoto Shave Ice', area: '할레이바', query: 'Matsumoto Shave Ice Haleiwa HI',
       items: [['스몰', '약 $4.50~5.25 (비공식)'], ['라지', '약 $5.50~7.00 (비공식)']], note: '줄이 길지만 빨리 줄어요 · 매일 09~18시 무렵', checked: '2025.11', src: 'https://hawaiitravelwithkids.com/?p=2558' },
-    { placeId: 'fookyuen', cat: 'famous', dish: '랍스터 · 해산물 중식', name: 'Fook Yuen Seafood', area: '맥컬리', query: 'Fook Yuen Seafood Restaurant Honolulu HI',
+    { placeId: 'fookyuen', cat: 'famous', dish: '랍스터 볶음 (생강·파 / 갈릭)', name: 'Fook Yuen Seafood', area: '맥컬리', query: 'Fook Yuen Seafood Restaurant Honolulu HI',
       items: [['랍스터 (생강·파 / 갈릭버터)', '시가 · 예약 때 확인'], ['XO 소스 랍스터 누들', '$28.00'], ['던지니스 크랩', '$25.00'], ['하우스 디럭스 클레이팟', '$42.00']], checked: '2026.11' },
-    { placeId: 'boots', cat: 'famous', dish: '마카다미아 소스 팬케이크', name: "Boots & Kimo's", area: '카일루아', query: "Boots & Kimo's Kailua HI",
+    { placeId: 'boots', cat: 'famous', dish: '마카다미아넛 소스 팬케이크', name: "Boots & Kimo's", area: '카일루아', query: "Boots & Kimo's Kailua HI",
       items: [['마카다미아 소스 팬케이크', '$15.99'], ['바나나 팬케이크 + 마카다미아 소스', '$16.99'], ['딸기 와플 + 마카다미아 소스', '$12.99']], checked: '2026.11' },
     { placeId: 'bogarts', cat: 'snack', dish: '아사이볼 · 로코모코', name: "Bogart's Cafe", area: '다이아몬드헤드 아래', query: "Bogart's Cafe Honolulu HI",
       items: [["Bogart's 아사이볼", '$15.50'], ['다크사이드 볼', '$16.50'], ['로코모코', '$21.00']], checked: '2026.11' },
     { placeId: 'iyasume', cat: 'snack', dish: '스팸 무스비', name: 'Musubi Cafe Iyasume', area: '와이키키', query: 'Musubi Cafe Iyasume Waikiki HI',
       items: [['데리야키 스팸', '$2.28'], ['베이컨·에그 스팸', '$2.98'], ['아보카도·베이컨·에그 스팸', '$3.48']], checked: '2026.11' },
-    { placeId: 'wolfgang', cat: 'famous', dish: '드라이에이징 스테이크', name: "Wolfgang's Steakhouse", area: '와이키키', query: "Wolfgang's Steakhouse Waikiki HI",
+    { placeId: 'wolfgang', cat: 'famous', dish: '포터하우스 스테이크', name: "Wolfgang's Steakhouse", area: '와이키키', query: "Wolfgang's Steakhouse Waikiki HI",
       items: [['라나이 해피아워 점보 갈릭 새우', '$24 (비공식)'], ['Taste of New York 코스', '$83.95 (비공식)']], note: '실내는 OpenTable 예약 · 야외 라나이 해피아워는 선착순', checked: '2026.11' },
     { placeId: 'kayas', cat: 'local', dish: '플레이트 런치 · 무스비', name: "Kaya's Store (Kaya's Kitchen)", area: '푸날루우 · 하우울라', query: "Kaya's Store 53-534 Kamehameha Hwy HI",
       items: [['플레이트 런치 · 갈릭 새우 · 무스비', '가격 미확인 · 현장 확인']], note: '1946년부터 이어진 80년 된 동네 가게 (2026). 온라인에 최근 가격이 없어요', checked: '2026.07', src: 'https://www.hawaiinewsnow.com/2026/07/02/kaya-store-marks-80-years-north-shore-landmark/' },
-    { placeId: 'giovanni_haleiwa', cat: 'local', dish: '갈릭 새우 스캠피', name: "Giovanni's Shrimp Truck", area: '할레이바', query: "Giovanni's Shrimp Truck Haleiwa HI",
+    { placeId: 'giovanni_haleiwa', cat: 'local', dish: '갈릭 쉬림프 (스캠피)', name: "Giovanni's Shrimp Truck", area: '할레이바', query: "Giovanni's Shrimp Truck Haleiwa HI",
       items: [['Shrimp Scampi', '$18.50'], ['Hot & Spicy', '$18.50'], ['하프 플레이트', '$9.50']], checked: '2026.11' },
-    { placeId: 'dole', cat: 'snack', dish: '돌 휩 (파인애플 소프트아이스크림)', name: 'Dole Plantation', area: '와히아와', query: 'Dole Plantation Wahiawa HI',
+    { placeId: 'dole', cat: 'snack', dish: '돌 휩 (Dole Whip)', name: 'Dole Plantation', area: '와히아와', query: 'Dole Plantation Wahiawa HI',
       items: [['돌 휩 컵·콘', '$7.50'], ['토핑 추가', '$8.50'], ['파인애플 플로트', '$10.75']], note: '공식 메뉴지만 2023년 판이라 조금 올랐을 수 있어요', checked: '2023.04', src: 'https://www.doleplantation.com/wp-content/uploads/2023/04/DOLE20-950_MAY-Update-Full-Menu_letter-bw-4-10-23.pdf' },
-    { placeId: 'lapperts', cat: 'snack', dish: '하와이 아이스크림', name: "Lappert's Hawaii", area: '힐튼 단지', query: "Lappert's Hawaii Hilton Hawaiian Village",
+    { placeId: 'lapperts', cat: 'snack', dish: '카우아이 파이 아이스크림', name: "Lappert's Hawaii", area: '힐튼 단지', query: "Lappert's Hawaii Hilton Hawaiian Village",
       items: [['싱글 스쿱', '약 $5~8 (비공식 · 오아후 평균)']], note: '대표 맛: Kauai Pie, Kona Lava Java · 매일 06~22시', checked: '2026.08', src: 'https://wanderlustyle.com/best-ice-cream-oahu/' },
-    { placeId: 'plumeria', cat: 'famous', dish: '바닷가 런치 (갈비 로코모코)', name: 'Plumeria Beach House', area: '카할라', query: 'Plumeria Beach House The Kahala HI',
+    { placeId: 'plumeria', cat: 'famous', dish: '갈비 로코모코', name: 'Plumeria Beach House', area: '카할라', query: 'Plumeria Beach House The Kahala HI',
       items: [['갈비 숏립 로코모코', '$45'], ['돈카츠', '$32'], ['카할라 버거', '$30']], checked: '2026.11' },
-    { placeId: 'tropics', cat: 'famous', dish: '해변 바 & 그릴', name: 'Tropics Bar & Grill', area: '힐튼 단지', query: 'Tropics Bar & Grill Hilton Hawaiian Village',
+    { placeId: 'tropics', cat: 'famous', dish: '코코넛 쉬림프 · 푸푸 플래터', name: 'Tropics Bar & Grill', area: '힐튼 단지', query: 'Tropics Bar & Grill Hilton Hawaiian Village',
       items: [['푸푸 샘플러', '$39'], ['코코넛 새우', '$18'], ['무알코올 Island Sunset', '$9']], checked: '2026.11' },
     // ---- 일정에 없는 간식·디저트 ----
-    { cat: 'snack', dish: '말라사다 (포르투갈식 설탕 도넛)', name: "Leonard's Bakery", area: '카파훌루 본점 · 공항 이동 매장', query: "Leonard's Bakery Kapahulu Honolulu HI", near: 'D1·D11 공항 가는 길 (540 Lagoon Dr, 매일 07~18시)',
+    { cat: 'snack', dish: '말라사다', name: "Leonard's Bakery", area: '카파훌루 본점 · 공항 이동 매장', query: "Leonard's Bakery Kapahulu Honolulu HI", near: 'D1·D11 공항 가는 길 (540 Lagoon Dr, 매일 07~18시)',
       items: [['6개 한 상자 (공항 매장)', '$13.20'], ['크림 든 말라사다 1개 (공항 매장)', '$2.70'], ['본점 1개 / 6개', '약 $1.65 / $9.90 (비공식)']], note: '갓 튀긴 게 제일 맛있어요 · 본점 매일 05:30~18:30', checked: '2026.03', src: 'https://alohastatedaily.com/2026/03/03/leonards-bakery-has-a-new-malasada-mobile-location/' },
-    { cat: 'snack', dish: '코코퍼프 (초콜릿 크림 슈)', name: 'Liliha Bakery', area: '와이키키 비치워크 2층 · 인터내셔널 마켓플레이스', query: 'Liliha Bakery Waikiki Beach Walk HI', near: 'D6 비치워크 점심 때',
+    { cat: 'snack', dish: '코코퍼프', name: 'Liliha Bakery', area: '와이키키 비치워크 2층 · 인터내셔널 마켓플레이스', query: 'Liliha Bakery Waikiki Beach Walk HI', near: 'D6 비치워크 점심 때',
       items: [['코코퍼프 1개', '$2.19'], ['코코퍼프 6개', '$12.50'], ['핫케이크 3장', '$12.50']], note: '본점 공식 메뉴 기준 · 와이키키 지점 가격은 조금 다를 수 있어요', checked: '2026', src: 'https://www.lilihabakery.com/_files/ugd/eac7c2_6a148f2a2e054f07b438b7265dfbdb92.pdf' },
     { cat: 'snack', dish: '초콜릿 하우피아 파이', name: "Ted's Bakery", area: '노스쇼어 선셋비치', query: "Ted's Bakery 59-024 Kamehameha Hwy HI", near: 'D3·D7 노스쇼어',
       items: [['초콜릿 하우피아 파이 한 판 (9인치)', '$24.52'], ['조각', '현장 가격 확인']], note: '한 판 사서 차에서 8명이 나눠 먹기 좋아요 · 플레이트는 오후에 품절될 수 있음', checked: '2026.11', src: 'https://order.toasttab.com/online/teds-bakery-59-024-kamehameha-highway' },
-    { cat: 'snack', dish: '셰이브 아이스 (현지인 단골)', name: 'Waiola Shave Ice', area: '카파훌루', query: 'Waiola Shave Ice Kapahulu Honolulu HI', near: '와이키키에서 차로 10분',
+    { cat: 'snack', dish: '셰이브 아이스', name: 'Waiola Shave Ice', area: '카파훌루', query: 'Waiola Shave Ice Kapahulu Honolulu HI', near: '와이키키에서 차로 10분',
       items: [['스몰', '약 $4 (비공식)'], ['라지', '약 $5 (비공식)'], ['점보', '약 $8 (비공식)']], note: '현금을 준비하세요 · 마츠모토와 비교해 보기', checked: '2025.11', src: 'https://hawaiitravelwithkids.com/?p=2558' },
     { cat: 'snack', dish: '아사이볼 · 모아나볼', name: 'Island Vintage Coffee', area: '로열 하와이안 센터', query: 'Island Vintage Coffee Royal Hawaiian Center HI', near: '와이키키 아침',
       items: [['오리지널 아사이볼', '$15.95~'], ['모아나볼 (하우피아·릴리코이 등)', '$15.25~'], ['리치 하우피아 모아나볼 24oz', '$21.20']], note: '줄이 길면 온라인 주문 후 픽업', checked: '2026.11', src: 'https://www.toasttab.com/local/order/ivcroyalhawaiian' },
-    { placeId: ['alamoana', 'ward'], cat: 'snack', dish: '라테 · 아사이볼 (로컬 카페)', name: 'Island Brew Coffeehouse', area: '알라모아나 센터 맨 위층 · 워드 빌리지', query: 'Island Brew Coffeehouse Ala Moana Center Honolulu HI',
+    { placeId: ['alamoana', 'ward'], cat: 'snack', dish: '아사이볼 · 라테', name: 'Island Brew Coffeehouse', area: '알라모아나 센터 맨 위층 · 워드 빌리지', query: 'Island Brew Coffeehouse Ala Moana Center Honolulu HI',
       items: [['아사이볼', '$9.95 (2018년 가격 · 지금은 더 비쌈)'], ['카페 라테', '$4.45 (2018년 가격)'], ['아포가토', '$5.75 (2018년 가격)']], note: '알라모아나점은 블루밍데일스 앞 맨 위층 · 워드 빌리지점은 홀푸드 맞은편 · 매일 07시부터 · 최근 공개 가격이 없어 2018년 기사 가격이에요', checked: '2018.08', src: 'https://staradvertiser.com/?p=755127' },
-    { cat: 'snack', dish: '브라질식 아사이볼', name: 'Tropical Tribe', area: '와이키키 쇼어 (2161 Kalia Rd #110)', query: 'Tropical Tribe 2161 Kalia Rd Honolulu HI', near: '힐튼 단지에서 걸어서 약 10분 · Steak Shack과 같은 건물',
+    { cat: 'snack', dish: '아사이볼 (브라질식)', name: 'Tropical Tribe', area: '와이키키 쇼어 (2161 Kalia Rd #110)', query: 'Tropical Tribe 2161 Kalia Rd Honolulu HI', near: '힐튼 단지에서 걸어서 약 10분 · Steak Shack과 같은 건물',
       items: [['아사이볼 (토핑 골라 만들기)', '가격 미확인 · 공식 메뉴판 사진 참고']], note: '꿀·그래놀라·과일 토핑을 골라 만들어요 · 스무디·라테·빵지케이주(치즈빵)도 있어요 · 알라모아나에도 매장 · (808) 744-7079', checked: '2026.07', src: 'https://tropicaltribe.net/menu.php' },
     // ---- 일정에 없는 푸드트럭·로컬 ----
-    { cat: 'local', dish: '버터 갈릭 새우 (양식장 직판)', name: "Romy's Kahuku Prawns", area: '카후쿠', query: "Romy's Kahuku Prawns & Shrimp HI", near: 'D7 카야스 → 노스쇼어 가는 길',
+    { cat: 'local', dish: '카후쿠 새우 (버터 갈릭)', name: "Romy's Kahuku Prawns", area: '카후쿠', query: "Romy's Kahuku Prawns & Shrimp HI", near: 'D7 카야스 → 노스쇼어 가는 길',
       items: [['버터 갈릭 새우 플레이트 (12마리)', '최근 공개 가격 없음 · 현장 확인']], note: '주문 후 조리라 30분~1시간 대기 · 미리 전화 주문 (808) 232-2202 · 영업일 확인 필요', checked: '2026.01', src: 'https://wanderlog.com/place/details/109308/romys-kahuku-prawns--shrimp-hut' },
     { cat: 'local', dish: '포케볼', name: 'Ono Seafood', area: '카파훌루 · 하와이카이', query: 'Ono Seafood Kapahulu Honolulu HI', near: 'D2 하나우마 가기 전 (하와이카이 지점)',
       items: [['포케볼', '$17~ (비공식)']], note: '미소·스파이시·쇼유 포케가 대표 · 카파훌루점 화요일 휴무 (비공식)', checked: '2025.01', src: 'https://www.hawaiimagazine.com/top-poke-spot-on-oahu-according-to-yelp/' },
-    { cat: 'local', dish: '로코모코 · 믹스 플레이트', name: 'Rainbow Drive-In', area: '카파훌루', query: 'Rainbow Drive-In Kapahulu Honolulu HI', near: '와이키키에서 차로 5분',
+    { cat: 'local', dish: '로코모코', name: 'Rainbow Drive-In', area: '카파훌루', query: 'Rainbow Drive-In Kapahulu Honolulu HI', near: '와이키키에서 차로 5분',
       items: [['로코모코', '$8.25 (비공식)'], ['BBQ 믹스 플레이트', '$12.75 (비공식)'], ['레인보우 디럭스 믹스', '$14.75 (비공식)']], note: '1961년부터 이어진 현지 플레이트 런치집', checked: '2026', src: 'https://howtoliveinhawaii.com/rainbow-drive-in-kapahulu-plate/' },
-    { cat: 'local', dish: '하와이 전통 음식 (피피칼루아·칼루아 피그)', name: "Helena's Hawaiian Food", area: '칼리히', query: "Helena's Hawaiian Food Honolulu HI", near: '화~금만 영업: D2·D6·D7·D8·D9 중',
+    { cat: 'local', dish: '피피칼루아 숏립 · 칼루아 피그', name: "Helena's Hawaiian Food", area: '칼리히', query: "Helena's Hawaiian Food Honolulu HI", near: '화~금만 영업: D2·D6·D7·D8·D9 중',
       items: [['피피칼루아 숏립', '$11.75 (비공식)'], ['칼루아 피그', '$5.75 (비공식)'], ['피피칼루아 콤보 플레이트', '$19.50 (비공식)']], note: '제임스 비어드 상을 받은 집 · 화~금 10:00~19:30 (토~월 휴무)', checked: '2026.11', src: 'https://helenashawaiianfood.com' },
-    { cat: 'local', dish: '스테이크 플레이트 (밥·샐러드 포함)', name: 'Steak Shack', area: '와이키키 비치 (Kalia Rd 2층)', query: 'Steak Shack 2161 Kalia Rd Honolulu HI', near: '힐튼 단지에서 걸어서 약 10분 · 포장해서 해변에서',
+    { cat: 'local', dish: '스테이크 플레이트', name: 'Steak Shack', area: '와이키키 비치 (Kalia Rd 2층)', query: 'Steak Shack 2161 Kalia Rd Honolulu HI', near: '힐튼 단지에서 걸어서 약 10분 · 포장해서 해변에서',
       items: [['스테이크 플레이트 6oz / 10oz / 14oz', '약 $12~24 (비공식)']], note: '데리야키 소스 추천 · 주문 후 15~20분 · 야외 테이블이 적어 포장 추천 · 늦게 가면 품절될 수 있음 · 월~목 10:30~19:00, 금·토 10:00~19:30, 일 10:00~19:00 (비공식)', checked: '2026.10', src: 'https://hawaiitravelwithkids.com/best-restaurants-in-waikiki-for-budget-travelers/' },
-    { cat: 'local', dish: '돼지곰탕 (미쉐린 서울 맛집)', name: '옥동식 호놀룰루 (OKDONGSIK)', area: '알라모아나 근처 (Sky Ala Moana 1층)', query: 'Okdongsik 1388 Kapiolani Blvd Honolulu HI', near: 'D2 알라모아나 쇼핑 때 · 월요일 휴무',
+    { cat: 'local', dish: '돼지곰탕', name: '옥동식 호놀룰루 (OKDONGSIK)', area: '알라모아나 근처 (Sky Ala Moana 1층)', query: 'Okdongsik 1388 Kapiolani Blvd Honolulu HI', near: 'D2 알라모아나 쇼핑 때 · 월요일 휴무',
       items: [['돼지곰탕', '$18'], ['돈카츠 (하루 40인분 한정)', '$21'], ['아이용 곰탕', '$10'], ['김치 냉국수', '$16']], note: '바 카운터 좌석만 있어 8명은 나눠 앉을 수 있어요 · Resy 예약 (10분 넘게 늦으면 노쇼) · 점심 화~일 11:30~14:30, 저녁 화~목·일 17~21시, 금·토 17~22시 · 주차권 확인 가능 · 가격은 2025.7 개점 기사 기준', checked: '2025.07', src: 'https://www.honolulumagazine.com/?p=807462' },
     { cat: 'local', dish: '포케볼 · 숯불 고기 플레이트 · 셰이브 아이스', name: 'Aloha food truck', area: '알라와이 항구 끝 · 카하나모쿠 비치 앞', query: 'Aloha food truck Ala Wai Boat Harbor Honolulu HI', near: '힐튼 단지 바로 옆 · 해변 놀다가 걸어가기 · 듀크 라군 날 (D1·D9·D10)',
       items: [['아히 포케볼 · 그릴 고기+밥+옥수수 · 피시앤칩스', '가격 미확인 · 현장 확인'], ['패션프루트 셰이브 아이스(연유) · 아사이볼 · 버거', '가격 미확인 · 현장 확인']], note: '구글 지도 메뉴 사진 기준 메뉴예요 · 온라인에 공개 가격이 없어요 · 지도·후기 버튼에서 메뉴판 사진 확인', checked: '2026.11', src: '' },
     { placeId: 'waikele', cat: 'local', dish: '한식 (갈비·불고기·제육·전·떡볶이)', name: 'MOOJIGAE Korean Grill (무지개식당 · Rainbow Stream)', area: '와이켈레 프리미엄 아울렛 바로 옆', query: 'MOOJIGAE Korean grill Rainbow Stream Waikele HI', photoQ: 'Korean food',
       items: [['갈비', '$26.50'], ['불고기 · 오삼불고기', '$20.50 · $21.50'], ['비빔밥 · 제육볶음 · 닭갈비', '각 $18.50'], ['해물전 · 김치전', '$20.50 · $19.50'], ['김치찌개 · 김치볶음밥 · 떡볶이', '각 $16.50'], ['라볶이 · 군만두', '$18.50 · $14.50']], note: 'D8 와이켈레 아울렛 점심 후보 · 도시락 용기에 샐러드·밥과 함께 나와요 · 구글 지도 가게 메뉴 기준', checked: '2026.11 (구글 지도 메뉴)', src: '' },
     // ---- 유명 레스토랑 ----
-    { cat: 'famous', dish: '훌라 파이 · 해변 레스토랑', name: "Duke's Waikiki", area: '와이키키 해변', query: "Duke's Waikiki Honolulu HI", near: '와이키키 해변 저녁',
+    { cat: 'famous', dish: '훌라 파이 (Hula Pie)', name: "Duke's Waikiki", area: '와이키키 해변', query: "Duke's Waikiki Honolulu HI", near: '와이키키 해변 저녁',
       items: [['키모의 오리지널 훌라 파이', '$14.00'], ['마카다미아 크러스트 생선 (저녁)', '$39'], ['프라임 립 12oz / 24oz', '$44 / $83']], note: '저녁은 예약 추천 · 훌라 파이는 여럿이 나눠 먹는 크기 · 메인 요리 가격은 2024년 공식 메뉴라 조금 올랐을 수 있음', checked: '2026.11', src: 'https://www.dukeswaikiki.com/wp-content/uploads/2024/02/24_TS_DW_Vinyl-Dinner_web_FEB07.pdf' },
     { cat: 'famous', dish: '사누키 우동', name: 'Marugame Udon Waikiki', area: '쿠히오 거리', query: 'Marugame Udon Waikiki 2310 Kuhio Ave', near: '와이키키 점심·저녁',
       items: [['카케 우동 등', '$4.75~ (비공식 · 오래된 가격)'], ['니쿠타마 등 덮밥형 우동', '$6.75~ (비공식)']], note: '거의 항상 줄이 있지만 빨리 줄어요 · 점심 일찍 가면 덜 기다림 · 매일 10:00~21:30', checked: '오래된 정보', src: 'https://gowanderly.com/cheap-eats-waikiki/' },
-    { cat: 'famous', dish: '딸기 생크림 팬케이크', name: "Eggs 'n Things", area: '와이키키 사라토가', query: "Eggs 'n Things Saratoga Waikiki HI", near: '와이키키 아침',
+    { cat: 'famous', dish: '딸기 휘핑크림 팬케이크', name: "Eggs 'n Things", area: '와이키키 사라토가', query: "Eggs 'n Things Saratoga Waikiki HI", near: '와이키키 아침',
       items: [['딸기 휘핑크림 팬케이크', '$16.95 (비공식)']], note: '06~14시, 16~22시 · 아침 줄이 길어 06~07시에 가거나 저녁에', checked: '2026', src: 'https://www.opentable.com/r/eggs-n-things' },
     { cat: 'famous', dish: '수플레 팬케이크', name: 'Aloha Kitchen', area: '와이키키 Ena Rd', query: 'Aloha Kitchen 432 Ena Rd Honolulu HI', near: '힐튼 단지에서 걸어서 약 5분 · 아침',
       items: [['과일 수플레 팬케이크', '$17 (비공식)'], ['다이아몬드헤드 수플레 팬케이크', '$16 (비공식)'], ['로코모코 · 갈릭 새우', '$12 · $16 (비공식)']], note: '아침·점심만 화~일 07:30~13:30 (마지막 주문 13:00), 월요일 휴무 → D5(2/22 월) 제외 · 수플레는 굽는 데 시간이 걸려요 · 예약·문의 (808) 943-6105 · 가격은 OpenTable 기준이라 올랐을 수 있음', checked: '날짜 미상', src: 'https://www.opentable.co.uk/r/aloha-kitchen-waikiki' },
-    { cat: 'famous', dish: '치즈케이크 · 대용량 미국식 요리', name: 'The Cheesecake Factory', area: '로열 하와이안 센터 C동 1층', query: 'The Cheesecake Factory Royal Hawaiian Center Honolulu HI', near: 'D6 울프강과 같은 쇼핑센터',
+    { cat: 'famous', dish: '치즈케이크', name: 'The Cheesecake Factory', area: '로열 하와이안 센터 C동 1층', query: 'The Cheesecake Factory Royal Hawaiian Center Honolulu HI', near: 'D6 울프강과 같은 쇼핑센터',
       items: [['치즈케이크 1조각', '약 $10~13 (비공식)'], ['파스타·치킨 메인', '약 $20~30 (비공식)']], note: '양이 많아 8명이면 메인 몇 개 + 치즈케이크 나눠 먹기 추천 · 평일 11~23시, 주말 10~23시 · 저녁엔 대기가 길어 전화(808-924-5001)로 확인', checked: '2026.07', src: 'https://www.thepricer.org/the-cheesecake-factory-menu-prices/' },
     { cat: 'famous', dish: '미소야키 버터피시', name: "Roy's Waikiki", area: '와이키키', query: "Roy's Waikiki Honolulu HI", near: '기념일 저녁 후보',
       items: [['미소야키 버터피시', '$67'], ['마카다미아 크러스트 로컬 생선', '$56'], ['초콜릿 수플레 (주문 후 굽기)', '$19']], note: 'OpenTable 예약 · 해피아워 14:30~16:00', checked: '2026.11', src: 'https://www.royyamaguchi.com/roys-waikiki-menus' }
