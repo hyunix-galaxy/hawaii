@@ -15,7 +15,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611070018">
+  <link rel="stylesheet" href="/tailwind.css?v=202611070020">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -2391,7 +2391,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611070018').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611070020').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -3823,17 +3823,16 @@
   function readPicks() { try { return JSON.parse(localStorage.getItem(PHOTO_PICK_KEY) || '{}') || {}; } catch (e) { return {}; } }
   function photoIndex(q) { const m = readPicks(); return m[q] != null ? m[q] : (FOOD_PHOTO_PICK[q] || 0); }
   function savePick(q, i) { const m = readPicks(); m[q] = i; try { localStorage.setItem(PHOTO_PICK_KEY, JSON.stringify(m)); } catch (e) {} }
-  function fetchFoodPhoto(q, i) {
-    const k = q + '#' + i;
-    if (!foodPhotoMem[k]) {
-      foodPhotoMem[k] = fetch('/api/food-photo?q=' + encodeURIComponent(q) + '&i=' + i).then(r => r.ok ? r.json() : null);
-      foodPhotoMem[k].catch(() => { delete foodPhotoMem[k]; });
+  // 가게별 사진 목록은 한 번만 받고(장소 검색 1회), 넘길 때는 사진만 받음
+  function fetchJson(url) {
+    if (!foodPhotoMem[url]) {
+      foodPhotoMem[url] = fetch(url).then(r => r.ok ? r.json() : null);
+      foodPhotoMem[url].catch(() => { delete foodPhotoMem[url]; });
     }
-    return foodPhotoMem[k];
+    return foodPhotoMem[url];
   }
   async function loadFoodPhoto(link, idx) {
     const q = link.dataset.fq;
-    const i = idx != null ? idx : photoIndex(q);
     const wrap = link.parentElement;
     const attr = wrap.querySelector('.food-attr');
     const nav = wrap.querySelector('.food-nav');
@@ -3841,22 +3840,26 @@
     const stop = () => box.classList.remove('animate-pulse');
     box.classList.add('animate-pulse');
     try {
-      const ph = await fetchFoodPhoto(q, i);
-      if (ph && ph.mapsUri) link.href = ph.mapsUri;
-      if (!ph || !ph.img) { stop(); return; }
+      const list = await fetchJson('/api/food-photo?q=' + encodeURIComponent(q));
+      if (list && list.mapsUri) link.href = list.mapsUri;
+      const photos = (list && list.photos) || [];
+      if (!photos.length) { stop(); return; }
+      const i = Math.min(idx != null ? idx : photoIndex(q), photos.length - 1);
+      const ph = photos[i];
+      const one = await fetchJson('/api/food-photo?q=' + encodeURIComponent(q) + '&p=' + encodeURIComponent(ph.name));
+      if (!one || !one.img) { stop(); return; }
       const img = new Image();
       img.className = 'food-img';
       img.alt = '';
       img.decoding = 'async';
       img.onload = () => link.replaceChildren(img);
       img.onerror = stop;
-      img.src = ph.img;
-      link.dataset.fi = ph.i;
-      if (nav && ph.count > 1) {
+      img.src = one.img;
+      if (nav && photos.length > 1) {
         nav.classList.remove('hidden'); nav.classList.add('flex');
-        nav.querySelector('.food-idx').textContent = `${ph.i + 1}/${ph.count}`;
-        nav.querySelector('.food-prev').onclick = () => { const n = (ph.i - 1 + ph.count) % ph.count; savePick(q, n); loadFoodPhoto(link, n); };
-        nav.querySelector('.food-next').onclick = () => { const n = (ph.i + 1) % ph.count; savePick(q, n); loadFoodPhoto(link, n); };
+        nav.querySelector('.food-idx').textContent = `${i + 1}/${photos.length}`;
+        nav.querySelector('.food-prev').onclick = () => { const n = (i - 1 + photos.length) % photos.length; savePick(q, n); loadFoodPhoto(link, n); };
+        nav.querySelector('.food-next').onclick = () => { const n = (i + 1) % photos.length; savePick(q, n); loadFoodPhoto(link, n); };
       }
       if (attr) attr.innerHTML = ph.author ? `📷 ${ph.authorUri ? `<a href="${escAttr(ph.authorUri)}" target="_blank" rel="noopener noreferrer" class="underline">${escAttr(ph.author)}</a>` : escAttr(ph.author)} · Google 지도` : '';
     } catch (e) { stop(); }
