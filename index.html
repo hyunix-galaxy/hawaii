@@ -16,7 +16,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611080452">
+  <link rel="stylesheet" href="/tailwind.css?v=202611081116">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -584,9 +584,9 @@
       <div class="flex items-center gap-2 min-w-0">
         <span class="text-lg">🏨</span>
         <div class="truncate">
-          <div class="text-[10.5px] text-sky-200 font-semibold leading-tight">현재 등록 객실</div>
+          <div id="hero-room-label" class="text-[10.5px] text-sky-200 font-semibold leading-tight">현재 등록 객실</div>
           <div class="text-[13.5px] font-extrabold text-white truncate">
-            <span>The Grand Islander</span> · <span class="text-amber-300">#2307</span>
+            <span id="hero-room-tower">The Grand Islander</span> · <span id="hero-room-unit" class="text-amber-300">#2307</span>
           </div>
         </div>
       </div>
@@ -694,7 +694,7 @@
 
         <div id="resort-spot-detail" class="bg-sky-50/80 border border-sky-200 rounded-2xl p-3 space-y-2">
           <div class="min-w-0">
-            <a id="resort-spot-title" href="https://www.google.com/maps/dir/?api=1&destination=The+Grand+Islander+by+Hilton+Grand+Vacations+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="text-[14px] font-extrabold text-sky-900 underline underline-offset-2 block">⭐ The Grand Islander (#2307) ↗</a>
+            <a id="resort-spot-title" href="https://www.google.com/maps/dir/?api=1&destination=The+Grand+Islander+by+Hilton+Grand+Vacations+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="text-[14px] font-extrabold text-sky-900 underline underline-offset-2 block" data-room-text>⭐ The Grand Islander (#2307) ↗</a>
             <div id="resort-spot-desc" class="text-[12px] text-slate-600 mt-0.5">우리 가족 베이스캠프 · 2베드룸 풀키친 스위트</div>
           </div>
           <div class="flex flex-wrap gap-1.5">
@@ -742,7 +742,7 @@
           <div class="m3-card p-3.5 space-y-1.5">
             <div class="text-[12.5px] font-bold text-slate-500">숙소 타워 · 호수</div>
             <a href="https://www.google.com/maps/dir/?api=1&destination=The+Grand+Islander+by+Hilton+Grand+Vacations+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="text-[14.5px] font-extrabold text-sky-800 underline block">📍 The Grand Islander</a>
-            <div class="text-[12.5px] font-bold text-slate-700">#2307 (2BR Suite)</div>
+            <div class="text-[12.5px] font-bold text-slate-700" data-room-text>#2307 (2BR Suite)</div>
             <div class="flex gap-1 pt-1">
               <a href="https://www.google.com/maps/search/?api=1&query=The+Grand+Islander+by+Hilton+Grand+Vacations+Honolulu+HI" target="_blank" rel="noopener noreferrer" class="gmap-chip">📍 구글맵</a>
               <a href="https://www.google.com/maps/dir/?api=1&destination=The+Grand+Islander+by+Hilton+Grand+Vacations+Honolulu+HI&travelmode=driving" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 길안내</a>
@@ -1953,6 +1953,7 @@
     });
     day.updated = updated;
     day.updatedAt = updatedAt;
+    day.slots = day.slots.map(sl => Object.assign({}, sl, { placeName: roomText(sl.placeName), desc: roomText(sl.desc) }));
     return day;
   }
 
@@ -2413,7 +2414,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611080452').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611081116').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -3953,7 +3954,33 @@
       costKeys: ['Plumeria', '카할라 주차'], links: [{ label: '점심 예약', url: 'https://www.opentable.com/restaurant/profile/58801' }, { label: '주차 안내', url: 'https://www.kahalaresort.com/luxury-hotel/faqs/' }] }
   ];
   /* [보정 계층] 예약 목록 수정 (2026.11.04 일정 변경 반영) */
+  /* [보정 계층] 숙소 객실 정보 — 원본의 '#2307'은 그대로 두고 화면에서만 바꿔 보여 줌 (2026.11.08)
+   *   예약이 확정되면 confirmed: true 로 바꾸고 tower·unit·type을 실제 값으로 적으면 모든 화면에 반영됨 */
+  const ROOM_INFO = {
+    confirmed: false,
+    tower: 'The Grand Islander',          // 확정 전에는 '예정'으로 표시
+    unit: '#2307',
+    type: '2BR Suite',
+    bookOn: '2027년 1월 중순 (체크인 1개월 전 HGVC 오픈 시즌)'
+  };
+  function roomText(str) {
+    if (typeof str !== 'string' || !str) return str;
+    if (ROOM_INFO.confirmed) return str.replace(/#2307/g, ROOM_INFO.unit).replace(/The Grand Islander/g, ROOM_INFO.tower);
+    return str.replace(/#2307 \(2BR Suite\)/g, '객실 미정 (예약 전)').replace(/\s*\(#2307\)/g, ' (객실 미정)').replace(/#2307/g, '객실 미정');
+  }
+  function applyRoomInfo() {
+    if (PLACES.hgvc) PLACES.hgvc.name = roomText(PLACES.hgvc.name);
+    resortSpots.forEach(sp => { sp.name = roomText(sp.name); });
+    document.querySelectorAll('[data-room-text]').forEach(el => { el.textContent = roomText(el.textContent); });
+    const label = document.getElementById('hero-room-label'), tower = document.getElementById('hero-room-tower'), unit = document.getElementById('hero-room-unit');
+    if (!label) return;
+    if (ROOM_INFO.confirmed) { label.textContent = '확정 객실'; tower.textContent = ROOM_INFO.tower; unit.textContent = ROOM_INFO.unit; }
+    else { label.textContent = '숙소 (객실 미확정 · 1개월 전 예약)'; tower.textContent = ROOM_INFO.tower + ' 예정'; unit.textContent = '객실 미정'; }
+  }
+
   const RESERVATION_UPDATES = [
+    { add: { place: 'hgvc', lead: '1개월 전 (오픈 시즌)', tone: 'rose', note: 'HGVC 오픈 시즌이 열리면 바로 숙소 예약 (2027년 1월 중순 무렵) · 타워·객실 번호는 예약 후 확정 → 확정되면 포털 객실 정보 수정',
+      costKeys: [], links: [{ label: 'HGVC 예약', url: 'https://www.hgvc.com/' }] } },
     { place: 'kualoa', set: { note: '무비 사이트 투어 11:20 회차(오전 마지막) 예약 · 10:45까지 도착 · UTV 랩터 투어로 하면 약 2시간' } },
     { add: { place: 'enterprise_hhv', time: '08:00', lead: '2~4주 전', tone: 'amber', note: 'D7 하루 렌트카 1대 (미니밴과 2대로 나눠 이동) · 08:00 픽업, 같은 날 반납 · 소형~중형 승용차/SUV면 충분',
       costKeys: ['렌트카'], links: [{ label: 'Enterprise 힐튼 지점', url: 'https://www.enterprise.co.uk/en/car-hire/locations/us/hi/hilton-hawaiian-village-36hv.html' }] } },
@@ -4325,6 +4352,7 @@
   }
 
   window.addEventListener('DOMContentLoaded', () => {
+    applyRoomInfo();
     // 상단 배경은 시간대에 따라 자동 전환 (5분마다, 앱으로 돌아올 때마다 확인)
     applyHeroTheme(getAutoThemeIdxByHour(), false);
     const syncHeroTheme = () => { const i = getAutoThemeIdxByHour(); if (i !== currentHeroThemeIdx) applyHeroTheme(i, false); };
