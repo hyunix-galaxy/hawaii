@@ -16,7 +16,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611080447">
+  <link rel="stylesheet" href="/tailwind.css?v=202611080452">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -830,7 +830,7 @@
                 <label class="block text-[12px] font-bold text-slate-600 mb-1">분담 방식</label>
                 <select id="exp-split-input" class="w-full px-2.5 py-2 rounded-xl border border-slate-300 text-[12.5px] font-bold bg-white">
                   <option value="8p">8인 (3:3:2)</option>
-                  <option value="6p">선발6인 (3:3:0)</option>
+                  <option value="6p">선발 2가족 일산·광명 (1:1)</option>
                   <option value="equal">3가족 (1:1:1)</option>
                 </select>
               </div>
@@ -2413,7 +2413,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611080447').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611080452').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -3152,7 +3152,7 @@
   // 가족 이름 표시 — 저장된 정산 데이터는 A/B/C 그대로 두고 화면에만 이름으로 보여 줌
   const FAMILY_NAME = { A: '일산', B: '광명', C: '신림' };
   const famName = f => (FAMILY_NAME[f] || f) + ' 가족';
-  const SPLIT_LABEL = { '8p': '8인 3:3:2', '6p': '선발6인 3:3:0', 'equal': '3가족 1:1:1' };
+  const SPLIT_LABEL = { '8p': '8인 3:3:2', '6p': '선발 2가족 일산·광명 1:1', 'equal': '3가족 1:1:1' };
   const SPLIT_RATIO = { '8p': { A: 3/8, B: 3/8, C: 2/8 }, '6p': { A: 1/2, B: 1/2, C: 0 }, 'equal': { A: 1/3, B: 1/3, C: 1/3 } };
   const VALID_DATES = ['사전'].concat(scheduleData.map(d => d.date.split(' ')[0]));   // 일정표 날짜에서 자동 생성
 
