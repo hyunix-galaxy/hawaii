@@ -16,7 +16,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611071036">
+  <link rel="stylesheet" href="/tailwind.css?v=202611080447">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -2413,7 +2413,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611071036').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611080447').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -3811,8 +3811,8 @@
           <div class="min-w-0 flex-1 space-y-1">
             <div class="flex items-start justify-between gap-1.5">
               <div class="min-w-0">
-                <div class="text-[14px] font-extrabold text-slate-900 leading-snug">${f.dish}</div>
-                <div class="text-[12px] font-bold text-sky-800 leading-snug">${f.name} <span class="text-slate-500 font-semibold">· ${f.area}</span></div>
+                <a href="${gMapSearchQuery(f.query)}" target="_blank" rel="noopener noreferrer" class="food-name-link text-[14.5px] font-extrabold text-sky-800 leading-snug underline decoration-sky-300 underline-offset-2">${f.name} <span class="no-underline text-[11px]">↗</span></a>
+                <div class="text-[12.5px] font-extrabold text-slate-800 leading-snug mt-0.5">${f.dish} <span class="text-slate-500 font-semibold text-[12px]">· ${f.area}</span></div>
               </div>
               <span class="px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10.5px] font-extrabold nowrap-btn">${FOOD_CATS[f.cat].split(' ')[0]}</span>
             </div>
@@ -3895,7 +3895,7 @@
       const want = idx != null ? idx : photoIndex(q);
       // 첫 표시: 목록 + 고른 사진을 한 번에 받음 · 넘길 때: 사진만 받음
       const list = await fetchJson('/api/food-photo?q=' + encodeURIComponent(q) + (idx == null ? '&i=' + want : ''));
-      if (list && list.mapsUri) link.href = list.mapsUri;
+      if (list && list.mapsUri) { link.href = list.mapsUri; const nm = link.closest('.food-card') && link.closest('.food-card').querySelector('.food-name-link'); if (nm) nm.href = list.mapsUri; }
       const photos = (list && list.photos) || [];
       if (!photos.length) { stop(); return; }
       const i = Math.min(want, photos.length - 1);
