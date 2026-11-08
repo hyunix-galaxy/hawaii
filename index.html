@@ -16,7 +16,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611081116">
+  <link rel="stylesheet" href="/tailwind.css?v=202611081120">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -2414,7 +2414,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611081116').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611081120').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -3961,7 +3961,7 @@
     tower: 'The Grand Islander',          // 확정 전에는 '예정'으로 표시
     unit: '#2307',
     type: '2BR Suite',
-    bookOn: '2027년 1월 중순 (체크인 1개월 전 HGVC 오픈 시즌)'
+    bookOn: '2027년 1월 29일(금) 한국 14:00 무렵 (체크아웃 2/28 기준 30일 전, 미국 동부 자정)'
   };
   function roomText(str) {
     if (typeof str !== 'string' || !str) return str;
@@ -3979,7 +3979,7 @@
   }
 
   const RESERVATION_UPDATES = [
-    { add: { place: 'hgvc', lead: '1개월 전 (오픈 시즌)', tone: 'rose', note: 'HGVC 오픈 시즌이 열리면 바로 숙소 예약 (2027년 1월 중순 무렵) · 타워·객실 번호는 예약 후 확정 → 확정되면 포털 객실 정보 수정',
+    { add: { place: 'hgvc', lead: '1개월 전 (오픈 시즌)', tone: 'rose', note: 'HGVC 오픈 시즌이 열리면 바로 숙소 예약 · 체크아웃(2/28)이 30일 안에 들어오는 1/29(금) 한국 14:00(미국 동부 자정) 무렵 열림 (회원 커뮤니티 정보, HGVC에 확인) · 오픈 시즌 예약은 변경 어렵고 취소 위약금 있음 · 타워·객실 번호 확정되면 포털 객실 정보 수정',
       costKeys: [], links: [{ label: 'HGVC 예약', url: 'https://www.hgvc.com/' }] } },
     { place: 'kualoa', set: { note: '무비 사이트 투어 11:20 회차(오전 마지막) 예약 · 10:45까지 도착 · UTV 랩터 투어로 하면 약 2시간' } },
     { add: { place: 'enterprise_hhv', time: '08:00', lead: '2~4주 전', tone: 'amber', note: 'D7 하루 렌트카 1대 (미니밴과 2대로 나눠 이동) · 08:00 픽업, 같은 날 반납 · 소형~중형 승용차/SUV면 충분',
