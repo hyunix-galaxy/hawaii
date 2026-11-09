@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611092317">
+  <link rel="stylesheet" href="/tailwind.css?v=202611092324">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -1097,6 +1097,34 @@
     .search-hint-chips { display: flex; flex-wrap: wrap; gap: 8px; }
     .search-hint-chips button { min-height: 40px; padding: 0 16px; border-radius: 9999px; border: 1px solid var(--line); background: #ffffff; font: inherit; font-size: 14px; font-weight: 600; color: var(--ink); cursor: pointer; transition: transform 0.14s ease; }
     .search-hint-chips button:active { transform: scale(0.95); }
+
+    /* =====================================================================
+       하와이 느낌 (2026.11) — 포인트 색(바다 청록) · 그날 장소 사진 배경 · 현지 시각
+       ===================================================================== */
+    :root { --sea: #0b8f88; --sea-soft: #e1f3f0; }
+    /* 포인트 색은 '오늘·지금·고른 메뉴'에만 */
+    .m3-nav-item.active { color: var(--sea) !important; }
+    .day-chip.is-today:not(.active) { box-shadow: inset 0 0 0 2px var(--sea) !important; color: var(--sea) !important; }
+    .day-chip.is-today.active { background: var(--sea) !important; }
+    .slot-now { background: var(--sea); }
+    .slot-item.is-now { box-shadow: inset 0 0 0 2px var(--sea); background: var(--sea-soft); }
+    .slot-item.is-now .slot-go { background: var(--sea); }
+    .sched-all-table tr.is-today td:first-child { box-shadow: inset 3px 0 0 var(--sea); }
+    main input[type=checkbox] { accent-color: var(--sea); }
+    .hc-dot { display: inline-block; width: 7px; height: 7px; border-radius: 9999px; background: #5eead4; margin-right: 6px; vertical-align: 1px; box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.25); }
+
+    /* 머리줄: 제목 아래 현지 시각 한 줄 (내리면 숨김) */
+    .app-head-text { display: flex; flex-direction: column; min-width: 0; }
+    .head-clock { font-size: 12.5px; font-weight: 600; color: rgba(255, 255, 255, 0.92); text-shadow: 0 1px 8px rgba(0, 0, 0, 0.3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-height: 20px; transition: opacity 0.2s ease, max-height 0.22s ease; }
+    body.head-scrolled .head-clock { opacity: 0; max-height: 0; }
+    .app-head-title { line-height: 1.15; }
+
+    /* 그날 장소 사진: 시간대 사진 위에 겹쳐 서서히 바뀜 */
+    .app-backdrop-day { opacity: 0; transition: opacity 0.6s ease, height 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); background-color: transparent; }
+    .app-backdrop-day.on { opacity: 1; }
+    .hero-cover-cap { margin-top: 8px; font-size: 11px; color: rgba(255, 255, 255, 0.85); text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4); }
+    .hero-cover-cap:empty { display: none; }
+    .hero-cover-cap a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
   </style>
 </head>
 <body>
@@ -1140,9 +1168,13 @@
 <div class="app-shell">
   <!-- 하와이 배경 사진: 모든 화면 위쪽에 깔림 (시간대별로 바뀜: 일출·낮·노을·밤) -->
   <div id="app-backdrop" class="app-backdrop" aria-hidden="true"></div>
+  <div id="app-backdrop-day" class="app-backdrop app-backdrop-day" aria-hidden="true"></div>
   <!-- 1층 머리줄: 다섯 메뉴 모두 같은 자리 (제목은 메뉴에 따라 바뀜) -->
   <header id="app-head" class="app-head">
-    <h1 id="app-head-title" class="app-head-title">일정</h1>
+    <div class="app-head-text">
+      <h1 id="app-head-title" class="app-head-title">일정</h1>
+      <div id="head-clock" class="head-clock" aria-live="off"></div>
+    </div>
     <div class="head-actions">
     <button id="head-search" type="button" class="head-btn" aria-label="장소·음식·영어 표현 찾기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.3-4.3"/></svg></button>
     <button id="head-share" type="button" class="head-btn" aria-label="앱 링크 복사해서 공유"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/></svg></button>
@@ -1200,6 +1232,7 @@
             📸 공유앨범 ↗
           </a>
         </div>
+        <div id="hero-cover-cap" class="hero-cover-cap"></div>
       </div>
 
       <div class="m3-card p-2.5 sched-daypicker">
@@ -2648,6 +2681,7 @@
   let scheduleAll = false;
   function showScheduleAll() {
     scheduleAll = true;
+    setTimeout(updateDayCover, 0);
     document.getElementById('tab-schedule').classList.add('sched-all');
     document.querySelectorAll('#schedule-day-grid .day-chip').forEach(chip => chip.classList.toggle('active', chip.dataset.day === 'all'));
     centerActiveChip('schedule-day-grid');
@@ -2961,6 +2995,7 @@
 
     loadSlotThumbs();
     animateDayChange(prevDay, dayNum);
+    updateDayCover();
     updateScheduleSideMap(dayNum);
 
     const prevBtn = document.getElementById('prev-day-btn');
@@ -3216,7 +3251,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611092317').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611092324').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -4566,6 +4601,7 @@
       if (MOTION_OK() && head.animate) head.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 220, easing: EASE });
     }
     window.scrollTo(0, scrollMem[to] || 0);
+    updateDayCover();
     const sec = document.getElementById(to);
     if (from && from !== to) {
       if (a[0] === b[0]) {
@@ -4776,6 +4812,81 @@
       if (e.key === '/' && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '')) { e.preventDefault(); openSearchSheet(); }
       if (e.key === 'Escape' && !document.getElementById('search-sheet').classList.contains('hidden')) closeSearchSheet();
     });
+  });
+
+  /* ===== 하와이 느낌: 그날 장소 사진 배경 · 현지 시각과 노을 ===== */
+  /* [DATA] 일정 화면 배경으로 쓸 그날의 대표 장소 (일정 mapQuery 값 — 사진 허용 목록에 이미 있음) */
+  const DAY_COVER = {
+    1: ['Duke Kahanamoku Lagoon Honolulu HI', '듀크 라군'],
+    2: ['Hanauma Bay Nature Preserve Honolulu HI', '하나우마 베이'],
+    3: ['Laniakea Beach Haleiwa HI', '라니아케아 비치'],
+    4: ['Puu Ualakaa State Wayside Honolulu HI', '탄탈루스 전망대'],
+    5: ['Lanikai Beach Kailua HI', '라니카이 비치'],
+    6: ['Diamond Head State Monument Honolulu HI', '다이아몬드 헤드'],
+    7: ['Kualoa Ranch Kaneohe HI', '쿠알로아 랜치'],
+    8: ['Dole Plantation Wahiawa HI', '돌 플랜테이션'],
+    9: ['Pearl Harbor National Memorial Honolulu HI', '진주만'],
+    10: ['Plumeria Beach House The Kahala Hotel and Resort Honolulu HI', '카할라'],
+    11: ['Waikiki Beach Honolulu HI', '와이키키 비치']
+  };
+  let coverTok = 0;
+  function updateDayCover() {
+    const layer = document.getElementById('app-backdrop-day');
+    const cap = document.getElementById('hero-cover-cap');
+    if (!layer) return;
+    const tok = ++coverTok;
+    const want = currentTab === 'tab-schedule' && !scheduleAll ? DAY_COVER[currentDayIndex] : null;
+    if (!want) { layer.classList.remove('on'); if (cap) cap.textContent = ''; return; }
+    placePhoto(want[0]).then(r => {
+      if (tok !== coverTok) return;
+      if (!r || !r.img) { layer.classList.remove('on'); if (cap) cap.textContent = ''; return; }
+      const img = new Image();
+      img.onload = () => {
+        if (tok !== coverTok) return;
+        layer.style.backgroundImage = `linear-gradient(180deg, rgba(8, 18, 30, 0.55) 0%, rgba(8, 18, 30, 0.15) 42%, rgba(8, 18, 30, 0.35) 100%), url('${r.img}')`;
+        layer.classList.add('on');
+        if (cap) cap.innerHTML = `배경 · D${currentDayIndex} ${escAttr(want[1])}${r.author ? ` · 사진 ${r.authorUri ? `<a href="${escAttr(r.authorUri)}" target="_blank" rel="noopener noreferrer">${escAttr(r.author)}</a>` : escAttr(r.author)}` : ''} · Google 지도`;
+      };
+      img.src = r.img;
+    });
+  }
+
+  // 호놀룰루 해 지는 시각 (NOAA 간이식 · 여행 날짜는 위 DAY_ENV 값을 그대로 씀)
+  function honoluluSun(y, m, d) {
+    const md = `${m}/${d}`;
+    if (y === TRIP_YEAR && DAY_ENV[md]) return { rise: timeToMin(DAY_ENV[md].sunrise), set: timeToMin(DAY_ENV[md].sunset) };
+    const lat = 21.28, lng = -157.83, rad = Math.PI / 180;
+    const N = Math.floor((Date.UTC(y, m - 1, d) - Date.UTC(y, 0, 0)) / 86400000);
+    const g = 2 * Math.PI / 365 * (N - 1);
+    const eq = 229.18 * (0.000075 + 0.001868 * Math.cos(g) - 0.032077 * Math.sin(g) - 0.014615 * Math.cos(2 * g) - 0.040849 * Math.sin(2 * g));
+    const decl = 0.006918 - 0.399912 * Math.cos(g) + 0.070257 * Math.sin(g) - 0.006758 * Math.cos(2 * g) + 0.000907 * Math.sin(2 * g) - 0.002697 * Math.cos(3 * g) + 0.00148 * Math.sin(3 * g);
+    const ha = Math.acos(Math.cos(90.833 * rad) / (Math.cos(lat * rad) * Math.cos(decl)) - Math.tan(lat * rad) * Math.tan(decl)) / rad;
+    const noon = 720 - 4 * lng - eq - 600;   // 하와이 표준시 UTC-10 (서머타임 없음)
+    return { rise: Math.round(noon - 4 * ha), set: Math.round(noon + 4 * ha) };
+  }
+  function fmtKoTime(min) {
+    const h = Math.floor(min / 60) % 24, m = min % 60;
+    return `${h < 12 ? '오전' : '오후'} ${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')}`;
+  }
+  function fmtDur(min) { const h = Math.floor(min / 60), m = min % 60; return h ? `${h}시간${m ? ` ${m}분` : ''}` : `${m}분`; }
+  function updateHeadClock() {
+    const el = document.getElementById('head-clock');
+    if (!el) return;
+    const n = hawaiiNowParts();
+    if (!n) { el.textContent = ''; return; }
+    const [mo, da] = n.md.split('/').map(Number);
+    const sun = honoluluSun(n.year, mo, da);
+    let tail;
+    if (n.min < sun.rise) tail = `일출 ${fmtKoTime(sun.rise)}까지 ${fmtDur(sun.rise - n.min)}`;
+    else if (n.min < sun.set) tail = `노을까지 ${fmtDur(sun.set - n.min)}`;
+    else tail = `노을 ${fmtKoTime(sun.set)} 지남`;
+    el.innerHTML = `<span class="hc-dot"></span>호놀룰루 ${fmtKoTime(n.min)} · ${tail}`;
+  }
+  document.addEventListener('DOMContentLoaded', () => {
+    updateHeadClock();
+    setInterval(updateHeadClock, 30000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) updateHeadClock(); });
+    setTimeout(updateDayCover, 300);
   });
 
   /* ===== 디자인 4단계: 인사 · D-day · 한 번에 찾기 =====
