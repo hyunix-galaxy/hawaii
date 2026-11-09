@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611091449">
+  <link rel="stylesheet" href="/tailwind.css?v=202611091455">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -863,6 +863,49 @@
       #food-list .food-card { flex: none; width: 80%; max-width: 320px; scroll-snap-align: start; }
     }
     @media (min-width: 768px) { #food-list.food-grid { gap: 12px; } }
+
+    /* =====================================================================
+       디자인 개편 4단계 (2026.11) — 인사 · D-day · 한 번에 찾기
+       ===================================================================== */
+    .hero-title h1 { font-size: 24px !important; font-weight: 700; letter-spacing: -0.5px; }
+    .hero-compact .hero-title h1 { font-size: 16px !important; }
+    .hero-dday { font-size: 13px !important; color: rgba(255, 255, 255, 0.88) !important; font-weight: 600; }
+    .gs-wrap { position: relative; }
+    .gs-bar {
+      display: flex; align-items: center; gap: 10px; background: #ffffff; border-radius: 9999px;
+      padding: 6px 6px 6px 18px; box-shadow: var(--shadow-card);
+    }
+    .gs-ic { width: 20px; height: 20px; flex: none; color: var(--ink); }
+    main .gs-bar input#gs-input {
+      flex: 1; min-width: 0; min-height: 44px; border: 0 !important; box-shadow: none !important; padding: 0; background: transparent;
+      font: inherit; font-size: 15.5px; color: var(--ink); border-radius: 0 !important;
+    }
+    #gs-input::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
+    .gs-clear { flex: none; width: 32px; height: 32px; border-radius: 9999px; background: var(--bg); color: var(--ink-3); border: 0; display: flex; align-items: center; justify-content: center; }
+    .gs-clear.hidden { display: none; }
+    .gs-clear svg { width: 14px; height: 14px; }
+    .gs-all { flex: none; width: 44px; height: 44px; border-radius: 9999px; border: 0; background: var(--ink); color: #ffffff; display: flex; align-items: center; justify-content: center; }
+    .gs-all svg { width: 20px; height: 20px; }
+    .gs-results {
+      margin-top: 8px; background: #ffffff; border-radius: var(--r-card); box-shadow: 0 12px 36px rgba(33, 37, 41, 0.12);
+      padding: 8px 8px 12px; max-height: 70vh; overflow-y: auto;
+    }
+    .gs-results.hidden { display: none; }
+    .gs-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 12px 6px; font-size: 12.5px; font-weight: 700; color: var(--ink-3); }
+    .gs-n { min-width: 24px; height: 22px; padding: 0 8px; border-radius: 9999px; background: var(--bg); display: inline-flex; align-items: center; justify-content: center; font-size: 11.5px; color: var(--ink); }
+    .gs-item { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 10px 12px; border: 0; background: transparent; border-radius: 18px; font: inherit; color: inherit; cursor: pointer; }
+    .gs-item:active { background: var(--bg); }
+    .gs-badge { flex: none; width: 44px; height: 44px; border-radius: 14px; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--ink); }
+    .gs-badge svg { width: 20px; height: 20px; }
+    .gs-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    .gs-title { font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.35; }
+    .gs-sub { font-size: 12.5px; color: var(--ink-3); line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .gs-results mark { background: #ffe8a3; color: inherit; border-radius: 4px; padding: 0 1px; }
+    .gs-phr { display: flex; flex-direction: column; gap: 6px; padding: 0 4px; }
+    .gs-more { display: block; margin: 8px 4px 0; width: calc(100% - 8px); min-height: 44px; border-radius: 9999px; border: 0; background: var(--bg); font: inherit; font-size: 13.5px; font-weight: 600; color: var(--ink); }
+    .gs-empty { padding: 20px 12px; text-align: center; font-size: 13.5px; color: var(--ink-3); }
+    .food-card.gs-flash { box-shadow: 0 0 0 3px var(--ink), var(--shadow-card); transition: box-shadow 0.2s ease; }
+    @media (min-width: 1024px) { #tab-schedule .gs-wrap { grid-column: 1 / -1; } #tab-schedule .sched-side { grid-row: 3 / span 2; } }
   </style>
 </head>
 <body>
@@ -953,6 +996,18 @@
 
     <!-- ================= TAB 1: 📅 일정표 (D1 ~ D11) ================= -->
     <section id="tab-schedule" class="main-screen space-y-3">
+      <!-- 디자인 4단계: 한 번에 찾기 (일정·꿀팁·음식·영어 표현) -->
+      <div class="gs-wrap">
+        <div class="gs-bar">
+          <svg class="gs-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.3-4.3"/></svg>
+          <label for="gs-input" class="sr-only">찾기</label>
+          <input id="gs-input" type="search" inputmode="search" autocomplete="off" enterkeyhint="search" placeholder="장소 · 음식 · 영어 표현 찾기">
+          <button id="gs-clear" type="button" class="gs-clear hidden" aria-label="지우기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          <button id="gs-all" type="button" class="gs-all" aria-label="전체 일정 한눈에"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></button>
+        </div>
+        <div id="gs-results" class="gs-results hidden" aria-live="polite"></div>
+      </div>
+
       <div class="m3-card p-2.5 sched-daypicker">
         <div class="flex items-center justify-between mb-2 px-1">
           <span id="day-picker-label" class="text-[12.5px] font-extrabold text-slate-700">📅 일자별 일정</span>
@@ -2922,7 +2977,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611091449').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611091455').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -4201,6 +4256,137 @@
   }
   if ('speechSynthesis' in window) { pickEnVoice(); speechSynthesis.addEventListener && speechSynthesis.addEventListener('voiceschanged', pickEnVoice); }
   document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-say]'); if (b) sayPhrase(b); });
+
+  /* ===== 디자인 4단계: 인사 · D-day · 한 번에 찾기 =====
+   *   찾는 곳: 일정(장소·설명·주의·꿀팁) · 추천 음식(가게·메뉴·지역) · 영어 표현(영어·우리말·상황)
+   *   데이터는 읽기만 함 (고치는 것 없음) */
+  const TRIP_START = '2027-02-18';   // 한국 출발일
+  function seoulToday() {
+    if (URL_PARAMS.get('kst')) return URL_PARAMS.get('kst');   // 확인용: ?kst=2027-02-10
+    try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); } catch (e) { return null; }
+  }
+  function applyGreeting() {
+    const h1 = document.querySelector('#app-hero-banner .hero-title h1');
+    const sub = document.querySelector('#app-hero-banner .hero-title span');
+    if (!h1 || !sub) return;
+    const today = seoulToday();
+    const left = today ? Math.round((Date.parse(TRIP_START) - Date.parse(today)) / 86400000) : null;
+    const tDay = tripTodayDay();
+    let line;
+    if (tDay) { const d = scheduleData.find(x => x.day === tDay); line = `여행 ${tDay}일째 · ${d ? d.date : ''}`; }
+    else if (left == null) line = '2027.02.18 ~ 02.28 (8인)';
+    else if (left > 0) line = `결혼기념 오아후 · D-${left}`;
+    else if (left === 0) line = '오늘 출발해요! · 인천 22:20';
+    else if (left >= -11) line = '여행 중 · 2027.02.18 ~ 02.28';
+    else line = '다녀왔어요 · 2027.02.18 ~ 02.28';
+    h1.textContent = '알로하, 3가족!';
+    sub.textContent = line;
+    sub.classList.add('hero-dday');
+  }
+
+  function gsNorm(t) { return String(t || '').toLowerCase().replace(/[’']/g, "'"); }
+  function gsMatch(hay, words) { const h = gsNorm(hay); return words.every(w => h.includes(w)); }
+  function gsMark(text, words) {
+    let out = escAttr(text);
+    words.filter(w => w.length > 0).forEach(w => {
+      const re = new RegExp('(' + escAttr(w).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig');
+      out = out.replace(re, '<mark>$1</mark>');
+    });
+    return out;
+  }
+  function gsCut(text, words, n) {
+    const t = String(text || '');
+    const i = words.length ? gsNorm(t).indexOf(words[0]) : -1;
+    if (t.length <= n) return t;
+    const s = Math.max(0, i - 18);
+    return (s > 0 ? '…' : '') + t.slice(s, s + n) + (s + n < t.length ? '…' : '');
+  }
+  function globalSearch(q) {
+    const words = gsNorm(q).split(/\s+/).filter(Boolean);
+    const res = { plan: [], food: [], phrase: [] };
+    if (!words.length) return res;
+    for (let d = 1; d <= TOTAL_DAYS; d++) {
+      const day = getScheduleDay(d);
+      (day && day.slots || []).forEach((sl, si) => {
+        const tips = tipsForSlot(d, sl).map(it => it.place + ' ' + it.tips.join(' ')).join(' ');
+        const hay = [sl.placeName, sl.desc, sl.note, sl.label, sl.time, day.date, `d${d}`, day.title, sl.mapQuery, tips].join(' ');
+        if (gsMatch(hay, words)) {
+          const inMain = gsMatch([sl.placeName, sl.desc, sl.note, day.title].join(' '), words);
+          res.plan.push({ d, si, day, sl, tipHit: !inMain && gsMatch(tips, words), tips });
+        }
+      });
+    }
+    FOOD_PICKS.forEach(f => {
+      const hay = [f.name, f.dish, f.area, f.near, f.note, (f.items || []).map(i => i.join(' ')).join(' ')].join(' ');
+      if (gsMatch(hay, words)) res.food.push(f);
+    });
+    PHRASE_SCENES.forEach(sc => sc.items.forEach(([en, ko]) => {
+      if (gsMatch(en + ' ' + ko + ' ' + sc.title, words)) res.phrase.push([en, ko, sc.title]);
+    }));
+    return res;
+  }
+  function renderGlobalSearch() {
+    const input = document.getElementById('gs-input');
+    const box = document.getElementById('gs-results');
+    const q = input.value.trim();
+    document.getElementById('gs-clear').classList.toggle('hidden', !q);
+    if (!q) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+    const words = gsNorm(q).split(/\s+/).filter(Boolean);
+    const r = globalSearch(q);
+    const total = r.plan.length + r.food.length + r.phrase.length;
+    const head = (title, n) => `<div class="gs-head"><span>${title}</span><span class="gs-n">${n}</span></div>`;
+    let html = '';
+    if (r.plan.length) html += head('일정 · 꿀팁', r.plan.length) + r.plan.slice(0, 8).map(x => `
+      <button type="button" class="gs-item" data-gs-plan="${x.d},${x.si}">
+        <span class="gs-badge">D${x.d}</span>
+        <span class="gs-txt"><span class="gs-title">${gsMark(x.sl.placeName, words)}</span>
+        <span class="gs-sub">${x.day.date} · ${escAttr(x.sl.label)}${x.sl.time ? ' ' + escAttr(x.sl.time) : ''} · ${gsMark(gsCut(x.tipHit ? '꿀팁: ' + x.tips : x.sl.desc, words, 60), words)}</span></span>
+      </button>`).join('');
+    if (r.food.length) html += head('추천 음식', r.food.length) + r.food.slice(0, 6).map(f => `
+      <button type="button" class="gs-item" data-gs-food="${escAttr(f.query)}">
+        <span class="gs-badge is-food"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v8M4.5 3v5a2.5 2.5 0 005 0V3M7 11v10"/><path d="M17 21V3c-2.2 1.2-3.5 3.6-3.5 7v3H17"/></svg></span>
+        <span class="gs-txt"><span class="gs-title">${gsMark(f.name, words)}</span>
+        <span class="gs-sub">${gsMark(f.dish, words)} · ${escAttr(f.area)}</span></span>
+      </button>`).join('');
+    if (r.phrase.length) html += head('영어 표현 · 누르면 발음', r.phrase.length) + `<div class="gs-phr">${phraseRowsHtml(r.phrase.slice(0, 5).map(p => [p[0], p[1]]))}</div>`
+      + (r.phrase.length > 5 ? `<button type="button" class="gs-more" data-gs-phrase>영어 표현 ${r.phrase.length}개 모두 보기</button>` : '');
+    box.innerHTML = html || `<div class="gs-empty">'${escAttr(q)}'에 맞는 일정·음식·영어 표현이 없어요</div>`;
+    box.classList.remove('hidden');
+    if (total) box.setAttribute('data-total', total);
+  }
+  function gsGoFood(query) {
+    switchMainScreen('tab-guide');
+    const btn = document.querySelector('.guide-seg-btn[data-guide="food"]');
+    if (btn) btn.click();
+    foodFilter = 'all';
+    renderFood();
+    const card = [...document.querySelectorAll('#food-list .food-card')].find(c => { const a = c.querySelector('[data-fq]'); return a && a.dataset.fq === query; });
+    if (card) setTimeout(() => {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'start' });
+      card.classList.add('gs-flash'); setTimeout(() => card.classList.remove('gs-flash'), 1800);
+    }, 60);
+  }
+  function initGlobalSearch() {
+    const input = document.getElementById('gs-input');
+    if (!input) return;
+    let t = null;
+    input.addEventListener('input', () => { clearTimeout(t); t = setTimeout(renderGlobalSearch, 120); });
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); });
+    document.getElementById('gs-clear').addEventListener('click', () => { input.value = ''; renderGlobalSearch(); input.focus(); });
+    document.getElementById('gs-all').addEventListener('click', () => { showScheduleAll(); document.querySelector('.sched-daypicker').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+    document.getElementById('gs-results').addEventListener('click', e => {
+      const p = e.target.closest('[data-gs-plan]');
+      if (p) { const [d, si] = p.dataset.gsPlan.split(',').map(Number); updateDayView(d); openPlaceSheet(d, si); return; }
+      const f = e.target.closest('[data-gs-food]');
+      if (f) { gsGoFood(f.dataset.gsFood); return; }
+      if (e.target.closest('[data-gs-phrase]')) {
+        window.openPhraseGuide();
+        const ps = document.getElementById('phrase-search');
+        if (ps) { ps.value = input.value.trim(); renderPhraseGuide(); }
+      }
+    });
+  }
+  document.addEventListener('DOMContentLoaded', () => { applyGreeting(); initGlobalSearch(); });
 
   /* =====================================================================
    * [DATA] 추천 음식 — placeId가 있으면 일정과 자동 연결 (일정이 바뀌면 D일차도 따라감)
