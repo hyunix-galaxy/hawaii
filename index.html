@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611091455">
+  <link rel="stylesheet" href="/tailwind.css?v=202611091513">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -906,6 +906,35 @@
     .gs-empty { padding: 20px 12px; text-align: center; font-size: 13.5px; color: var(--ink-3); }
     .food-card.gs-flash { box-shadow: 0 0 0 3px var(--ink), var(--shadow-card); transition: box-shadow 0.2s ease; }
     @media (min-width: 1024px) { #tab-schedule .gs-wrap { grid-column: 1 / -1; } #tab-schedule .sched-side { grid-row: 3 / span 2; } }
+
+    /* =====================================================================
+       구조 개편 (2026.11) — 아래 메뉴 5개: 일정(목록·지도) · 음식 · 숙소 · 정산(정산·환율) · 준비
+       ===================================================================== */
+    .m3-bottom-nav { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .m3-nav-item { font-size: 11.5px; letter-spacing: -0.2px; }
+    @media (orientation: landscape) and (max-height: 500px) {
+      .m3-bottom-nav { grid-template-rows: repeat(5, 1fr); grid-template-columns: 1fr; }
+    }
+    .view-sw {
+      display: flex; gap: 4px; padding: 4px; background: #ffffff; border-radius: 9999px; box-shadow: var(--shadow-card);
+    }
+    .view-sw-btn {
+      flex: 1; min-height: 44px; border: 0; border-radius: 9999px; background: transparent; color: var(--ink-3);
+      display: flex; align-items: center; justify-content: center; gap: 6px; font: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer;
+    }
+    .view-sw-btn svg { width: 18px; height: 18px; }
+    .view-sw-btn.active { background: var(--ink); color: #ffffff; }
+    .m3-segmented.seg-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .m3-segmented.seg-4 .m3-seg-btn { padding: 0 2px; font-size: 13px; }
+    .map-detail-btn {
+      display: block; width: 100%; margin-top: 8px; min-height: 36px; border: 0; border-radius: 9999px;
+      background: #212529; color: #ffffff; font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer;
+    }
+    @media (min-width: 768px) { .view-sw { max-width: 420px; } }
+    @media (min-width: 1024px) {
+      #tab-schedule .view-sw, #tab-expense .view-sw { grid-column: 1 / -1; }
+      #tab-schedule .sched-side { grid-row: 4 / span 2; }
+    }
   </style>
 </head>
 <body>
@@ -996,6 +1025,7 @@
 
     <!-- ================= TAB 1: 📅 일정표 (D1 ~ D11) ================= -->
     <section id="tab-schedule" class="main-screen space-y-3">
+      <div class="view-sw" role="tablist" aria-label="일정 보기 방식"><button type="button" class="view-sw-btn active" data-view="tab-schedule"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><path d="M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01"/></svg><span>목록</span></button><button type="button" class="view-sw-btn" data-view="tab-oahu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4.5L3.5 6.5v13l5.5-2 6 2 5.5-2v-13l-5.5 2-6-2z"/><path d="M9 4.5v13M15 6.5v13"/></svg><span>지도</span></button></div>
       <!-- 디자인 4단계: 한 번에 찾기 (일정·꿀팁·음식·영어 표현) -->
       <div class="gs-wrap">
         <div class="gs-bar">
@@ -1044,10 +1074,11 @@
 
     <!-- ================= TAB 2: 🗺️ 오아후맵 ================= -->
     <section id="tab-oahu" class="main-screen hidden space-y-3">
+      <div class="view-sw" role="tablist" aria-label="일정 보기 방식"><button type="button" class="view-sw-btn" data-view="tab-schedule"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><path d="M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01"/></svg><span>목록</span></button><button type="button" class="view-sw-btn active" data-view="tab-oahu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4.5L3.5 6.5v13l5.5-2 6 2 5.5-2v-13l-5.5 2-6-2z"/><path d="M9 4.5v13M15 6.5v13"/></svg><span>지도</span></button></div>
       <div class="m3-card p-3.5 space-y-3">
         <div>
-          <h2 class="text-[16px] font-extrabold text-slate-900">🗺️ 오아후 동선 지도</h2>
-          <p class="text-[12px] text-slate-600 mt-0.5">일자를 누르면 그날 일정표의 방문 순서와 대략적인 이동 경로가 표시돼요. 일정이 바뀌면 동선도 자동으로 바뀝니다.</p>
+          <h2 class="text-[16px] font-extrabold text-slate-900">🗺️ 동선 지도</h2>
+          <p class="text-[12px] text-slate-600 mt-0.5">일자를 누르면 그날 방문 순서와 대략적인 이동 경로가 나와요. 핀을 누르고 <b>자세히</b>를 누르면 그 장소 안내가 열려요.</p>
         </div>
 
         <div class="grid grid-cols-2 gap-2">
@@ -1179,6 +1210,7 @@
 
     <!-- ================= TAB 4: 💰 정산 (등록 전용 공유 원장) ================= -->
     <section id="tab-expense" class="main-screen hidden space-y-3">
+      <div class="view-sw" role="tablist" aria-label="정산·환율"><button type="button" class="view-sw-btn active" data-view="tab-expense"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3.5"/><path d="M3 10.5h18M15.5 15h2.5"/></svg><span>정산</span></button><button type="button" class="view-sw-btn" data-view="tab-fx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5h14l-3.5-3.5M20 15.5H6l3.5 3.5"/></svg><span>환율</span></button></div>
       <div class="m3-segmented">
         <button id="seg-exp-summary-btn" type="button" class="m3-seg-btn active">📊 정산 요약</button>
         <button id="seg-exp-list-btn" type="button" class="m3-seg-btn">📋 지출 내역 목록</button>
@@ -1303,6 +1335,7 @@
     <!-- ================= TAB 5: 📌 예약·꿀팁 ================= -->
     <!-- ================= TAB: 💱 환율 계산기 ================= -->
     <section id="tab-fx" class="main-screen hidden space-y-3">
+      <div class="view-sw" role="tablist" aria-label="정산·환율"><button type="button" class="view-sw-btn" data-view="tab-expense"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3.5"/><path d="M3 10.5h18M15.5 15h2.5"/></svg><span>정산</span></button><button type="button" class="view-sw-btn active" data-view="tab-fx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5h14l-3.5-3.5M20 15.5H6l3.5 3.5"/></svg><span>환율</span></button></div>
       <div class="m3-card p-4 space-y-2">
         <div class="flex items-center justify-between gap-2">
           <h2 class="text-[16px] font-extrabold text-slate-900">💱 환율 계산기 (USD ↔ 원)</h2>
@@ -1366,14 +1399,28 @@
       <div class="text-[11px] font-semibold text-slate-500 px-1">환율 출처: <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener noreferrer" class="underline">Rates By Exchange Rate API</a> (하루 1회 갱신 · 기준 환율이라 실제 카드·환전 환율과 다를 수 있어요)</div>
     </section>
 
+    <!-- ================= 🍴 음식 (구조 개편: 예약·꿀팁 안에서 아래 메뉴로) ================= -->
+    <section id="tab-food" class="main-screen hidden space-y-3">
+      <div id="food-page" class="space-y-3">
+        <div class="m3-card p-4 space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <h3 class="text-[15.5px] font-extrabold text-slate-900">🍴 추천 음식</h3>
+            <span id="food-count" class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11.5px] font-bold nowrap-btn"></span>
+          </div>
+          <p class="text-[12px] text-slate-600 leading-relaxed">일정에 있는 곳은 <b>📅 D일차</b>를 누르면 그날 일정으로 가요. 가격은 세금·팁 별도이고 바뀔 수 있어요 (<b>비공식</b> 표시는 공식 메뉴가 아닌 최근 후기·메뉴 사이트 기준).</p>
+          <div id="food-filter" class="flex flex-wrap gap-1.5"></div>
+          <div id="food-list" class="food-grid space-y-2"></div>
+          <div class="text-[11px] font-semibold text-slate-500 leading-relaxed">사진은 구글 지도에 올라온 그 가게 사진이에요 (사진 아래 이름 = 올린 사람). 음식 사진이 아니면 <b>‹ ›</b>로 넘겨 보세요. 고른 사진은 가족 모두에게 같이 보여요. 인터넷이 될 때만 보이고, 사진을 누르면 구글 지도로 열려요. 더 많은 사진은 <b>📷 사진 보기</b>로.</div>
+        </div>
+      </div>
+    </section>
+
     <section id="tab-guide" class="main-screen hidden space-y-3">
-      <div class="m3-segmented seg-6">
+      <div class="m3-segmented seg-4">
         <button data-guide="dday" type="button" class="m3-seg-btn guide-seg-btn active">⏰ 예약</button>
-        <button data-guide="flight" type="button" class="m3-seg-btn guide-seg-btn">✈️ 항공·렌트</button>
         <button data-guide="check" type="button" class="m3-seg-btn guide-seg-btn">✅ 준비물</button>
-        <button data-guide="tips" type="button" class="m3-seg-btn guide-seg-btn">📸 꿀팁</button>
-        <button data-guide="food" type="button" class="m3-seg-btn guide-seg-btn">🍴 음식</button>
         <button data-guide="phrase" type="button" class="m3-seg-btn guide-seg-btn">🗣️ 영어</button>
+        <button data-guide="tips" type="button" class="m3-seg-btn guide-seg-btn">💡 꿀팁</button>
       </div>
 
       <div id="guide-sub-dday" class="guide-subpage space-y-2.5">
@@ -1382,9 +1429,6 @@
           <p class="text-[12.5px] text-slate-600">날짜·시각·비용은 일정표에서 자동으로 가져와요. 일정이 바뀌면 여기도 같이 바뀝니다.</p>
           <div id="reservation-list" class="space-y-2.5"></div>
         </div>
-      </div>
-
-      <div id="guide-sub-flight" class="guide-subpage hidden space-y-2.5">
         <div class="m3-card p-4 space-y-3">
           <h3 class="text-[15px] font-extrabold text-slate-900">✈️ 대한항공 (Korean Air) 공식 스케줄</h3>
           <div id="flight-list" class="space-y-2.5"></div>
@@ -1395,22 +1439,10 @@
         </div>
       </div>
 
-      <div id="guide-sub-check" class="guide-subpage hidden">
+      <div id="guide-sub-check" class="guide-subpage hidden space-y-3">
         <div class="m3-card p-4 space-y-2.5">
           <h3 class="text-[15px] font-extrabold text-slate-900">✅ 필수 준비물 체크리스트</h3>
           <div id="checklist-items" class="space-y-2"></div>
-        </div>
-      </div>
-
-      <div id="guide-sub-tips" class="guide-subpage hidden space-y-3">
-        <div class="m3-card p-4 space-y-2.5">
-          <div class="flex items-center justify-between gap-2">
-            <h3 class="text-[15.5px] font-extrabold text-slate-900">💡 장소별 꼭 알아둘 것</h3>
-            <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11.5px] font-bold nowrap-btn">2026.11 확인 기준</span>
-          </div>
-          <p class="text-[12px] text-slate-600">날짜를 누르면 펼쳐집니다. <span class="font-extrabold text-rose-700">⚠️</span> 표시는 현재 일정표 내용과 달라 확인이 필요한 항목입니다.</p>
-          <div id="place-tips-list" class="space-y-2"></div>
-          <div class="text-[11.5px] text-slate-500">영업시간·요금·예약 규칙은 바뀔 수 있으니 방문 전 공식 사이트에서 한 번 더 확인하세요.</div>
         </div>
         <div class="m3-card p-4 space-y-2.5">
           <h3 class="text-[15.5px] font-extrabold text-slate-900">📲 휴대폰에 앱으로 설치하기</h3>
@@ -1443,16 +1475,15 @@
         </div>
       </div>
 
-      <div id="guide-sub-food" class="guide-subpage hidden space-y-3">
+      <div id="guide-sub-tips" class="guide-subpage hidden space-y-3">
         <div class="m3-card p-4 space-y-2.5">
           <div class="flex items-center justify-between gap-2">
-            <h3 class="text-[15.5px] font-extrabold text-slate-900">🍴 추천 음식</h3>
-            <span id="food-count" class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11.5px] font-bold nowrap-btn"></span>
+            <h3 class="text-[15.5px] font-extrabold text-slate-900">💡 장소별 꼭 알아둘 것</h3>
+            <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11.5px] font-bold nowrap-btn">2026.11 확인 기준</span>
           </div>
-          <p class="text-[12px] text-slate-600 leading-relaxed">일정에 있는 곳은 <b>📅 D일차</b>를 누르면 그날 일정으로 가요. 가격은 세금·팁 별도이고 바뀔 수 있어요 (<b>비공식</b> 표시는 공식 메뉴가 아닌 최근 후기·메뉴 사이트 기준).</p>
-          <div id="food-filter" class="flex flex-wrap gap-1.5"></div>
-          <div id="food-list" class="food-grid space-y-2"></div>
-          <div class="text-[11px] font-semibold text-slate-500 leading-relaxed">사진은 구글 지도에 올라온 그 가게 사진이에요 (사진 아래 이름 = 올린 사람). 음식 사진이 아니면 <b>‹ ›</b>로 넘겨 보세요. 고른 사진은 가족 모두에게 같이 보여요. 인터넷이 될 때만 보이고, 사진을 누르면 구글 지도로 열려요. 더 많은 사진은 <b>📷 사진 보기</b>로.</div>
+          <p class="text-[12px] text-slate-600">날짜를 누르면 펼쳐집니다. <span class="font-extrabold text-rose-700">⚠️</span> 표시는 현재 일정표 내용과 달라 확인이 필요한 항목입니다.</p>
+          <div id="place-tips-list" class="space-y-2"></div>
+          <div class="text-[11.5px] text-slate-500">영업시간·요금·예약 규칙은 바뀔 수 있으니 방문 전 공식 사이트에서 한 번 더 확인하세요.</div>
         </div>
       </div>
 
@@ -1473,29 +1504,25 @@
   </main>
 
   <nav class="m3-bottom-nav" aria-label="하단 메인 메뉴">
-    <button type="button" data-target="tab-schedule" class="m3-nav-item active">
+    <button type="button" data-target="tab-schedule" data-also="tab-oahu" class="m3-nav-item active">
       <span class="m3-nav-pill" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>
-      <span>일정표</span>
+      <span>일정</span>
     </button>
-    <button type="button" data-target="tab-oahu" class="m3-nav-item">
-      <span class="m3-nav-pill" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4.5L3.5 6.5v13l5.5-2 6 2 5.5-2v-13l-5.5 2-6-2z"/><path d="M9 4.5v13M15 6.5v13"/></svg></span>
-      <span>오아후맵</span>
+    <button type="button" data-target="tab-food" class="m3-nav-item">
+      <span class="m3-nav-pill" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v8M4.5 3v5a2.5 2.5 0 005 0V3M7 11v10"/><path d="M17 21V3c-2.2 1.2-3.5 3.6-3.5 7v3H17"/></svg></span>
+      <span>음식</span>
     </button>
     <button type="button" data-target="tab-resort" class="m3-nav-item">
       <span class="m3-nav-pill" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20.5h18"/><path d="M5 20.5V7.5l7-4 7 4v13"/><path d="M9.5 20.5v-5h5v5"/></svg></span>
-      <span>숙소·단지</span>
+      <span>숙소</span>
     </button>
-    <button type="button" data-target="tab-expense" class="m3-nav-item">
+    <button type="button" data-target="tab-expense" data-also="tab-fx" class="m3-nav-item">
       <span class="m3-nav-pill" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3.5"/><path d="M3 10.5h18M15.5 15h2.5"/></svg></span>
       <span>정산</span>
     </button>
-    <button type="button" data-target="tab-fx" class="m3-nav-item">
-      <span class="m3-nav-pill" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5h14l-3.5-3.5M20 15.5H6l3.5 3.5"/></svg></span>
-      <span>환율</span>
-    </button>
     <button type="button" data-target="tab-guide" class="m3-nav-item">
-      <span class="m3-nav-pill" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.5 5.2 5.7.8-4.1 4 1 5.6L12 16.4l-5.1 2.7 1-5.6-4.1-4 5.7-.8z"/></svg></span>
-      <span>예약·꿀팁</span>
+      <span class="m3-nav-pill" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="3"/><path d="M9 4V3h6v1"/><path d="M8.5 11l2 2 4-4M8.5 16.5h7"/></svg></span>
+      <span>준비</span>
     </button>
   </nav>
 </div>
@@ -2977,7 +3004,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611091455').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611091513').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -3029,6 +3056,25 @@
     const loop = n > 2 && route.spots[0] === route.spots[n - 1];
     return route.spots.slice(0, loop ? n - 1 : n).map((id, idx) => ({ id, sp: PLACES[id], badge: loop && idx === 0 ? `1·${n}` : String(idx + 1) }));
   }
+  // 구조 개편: 지도 핀 → 그 장소가 들어 있는 일정 칸의 장소 화면
+  function findSlotForPlace(day, id) {
+    const days = day ? [day] : scheduleData.map(d => d.day);
+    for (const d of days) {
+      const sl = (getScheduleDay(d) || {}).slots || [];
+      const si = sl.findIndex(x => (x.placeIds || []).includes(id) || x.placeId === id);
+      if (si >= 0) return [d, si];
+    }
+    return null;
+  }
+  function placeDetailBtn(day, id) {
+    const hit = findSlotForPlace(day, id);
+    return hit ? `<button type="button" class="map-detail-btn" onclick="openPlaceFromMap(${hit[0]}, ${hit[1]})">자세히 보기 ›</button>` : '';
+  }
+  window.openPlaceFromMap = function (d, si) {
+    [oahuMap, sideMap].forEach(m => { if (m) m.closePopup(); });
+    if (d !== currentDayIndex || scheduleAll) updateDayView(d);
+    openPlaceSheet(d, si);
+  };
   function placePopupLinks(sp) {
     return `<div style="display:flex;gap:4px;flex-wrap:wrap;">
       <a href="${gMapSearchQuery(sp.query)}" target="_blank" rel="noopener noreferrer" style="padding:4px 8px;background:#ecfdf5;color:#047857;font-weight:800;font-size:12px;border-radius:99px;text-decoration:none;">📍 구글맵 ↗</a>
@@ -3096,7 +3142,7 @@
         const sp = PLACES[id];
         bounds.extend([sp.lat, sp.lng]);
         L.marker([sp.lat, sp.lng], { icon: spotIcon(sp) })
-          .bindPopup(`<div style="min-width:185px;"><div style="font-weight:800;font-size:13px;margin-bottom:6px;">${sp.icon} ${sp.name}</div>${placePopupLinks(sp)}</div>`)
+          .bindPopup(`<div style="min-width:185px;"><div style="font-weight:800;font-size:13px;margin-bottom:6px;">${sp.icon} ${sp.name}</div>${placePopupLinks(sp)}${placeDetailBtn(null, id)}</div>`)
           .addTo(oahuMarkersGroup);
       });
       if (used.length) oahuMap.fitBounds(bounds, { padding: [26, 26] });
@@ -3109,10 +3155,10 @@
     if (!route) return;
 
     const bounds = L.latLngBounds();
-    routeMarkers(route).forEach(({ sp, badge }) => {
+    routeMarkers(route).forEach(({ id, sp, badge }) => {
       bounds.extend([sp.lat, sp.lng]);
       L.marker([sp.lat, sp.lng], { icon: spotIcon(sp, badge) })
-        .bindPopup(`<div style="min-width:185px;"><div style="font-weight:800;font-size:13px;margin-bottom:6px;">[${badge}] ${sp.icon} ${sp.name}</div>${placePopupLinks(sp)}</div>`)
+        .bindPopup(`<div style="min-width:185px;"><div style="font-weight:800;font-size:13px;margin-bottom:6px;">[${badge}] ${sp.icon} ${sp.name}</div>${placePopupLinks(sp)}${placeDetailBtn(dayNum, id)}</div>`)
         .addTo(oahuMarkersGroup);
     });
 
@@ -3163,9 +3209,9 @@
     sideMap.invalidateSize();
     sideLayer.clearLayers();
     const bounds = L.latLngBounds();
-    routeMarkers(route).forEach(({ sp, badge }) => {
+    routeMarkers(route).forEach(({ id, sp, badge }) => {
       bounds.extend([sp.lat, sp.lng]);
-      L.marker([sp.lat, sp.lng], { icon: spotIcon(sp, badge) }).bindPopup(`<b>${badge}. ${sp.icon} ${sp.name}</b>${placePopupLinks(sp)}`).addTo(sideLayer);
+      L.marker([sp.lat, sp.lng], { icon: spotIcon(sp, badge) }).bindPopup(`<b>${badge}. ${sp.icon} ${sp.name}</b>${placePopupLinks(sp)}${placeDetailBtn(dayNum, id)}`).addTo(sideLayer);
     });
     if (route.roadPath.length > 1) L.polyline(route.roadPath, { color: '#006493', weight: 4.5, opacity: 0.9 }).addTo(sideLayer);
     if (keepView) { /* 보던 화면 유지 */ }
@@ -4257,6 +4303,20 @@
   if ('speechSynthesis' in window) { pickEnVoice(); speechSynthesis.addEventListener && speechSynthesis.addEventListener('voiceschanged', pickEnVoice); }
   document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-say]'); if (b) sayPhrase(b); });
 
+  // 구조 개편: [목록 | 지도] · [정산 | 환율] 전환
+  document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('.view-sw-btn');
+    if (!b || b.classList.contains('active')) return;
+    const v = b.dataset.view;
+    if (v === 'tab-oahu') { window.jumpToDayRoute(scheduleAll ? 'all' : currentDayIndex); return; }
+    if (v === 'tab-schedule') {
+      switchMainScreen('tab-schedule');
+      if (/^\d+$/.test(String(currentOahuFilter)) && +currentOahuFilter !== currentDayIndex) updateDayView(+currentOahuFilter);
+      return;
+    }
+    switchMainScreen(v);
+  });
+
   /* ===== 디자인 4단계: 인사 · D-day · 한 번에 찾기 =====
    *   찾는 곳: 일정(장소·설명·주의·꿀팁) · 추천 음식(가게·메뉴·지역) · 영어 표현(영어·우리말·상황)
    *   데이터는 읽기만 함 (고치는 것 없음) */
@@ -4355,9 +4415,7 @@
     if (total) box.setAttribute('data-total', total);
   }
   function gsGoFood(query) {
-    switchMainScreen('tab-guide');
-    const btn = document.querySelector('.guide-seg-btn[data-guide="food"]');
-    if (btn) btn.click();
+    switchMainScreen('tab-food');
     foodFilter = 'all';
     renderFood();
     const card = [...document.querySelectorAll('#food-list .food-card')].find(c => { const a = c.querySelector('[data-fq]'); return a && a.dataset.fq === query; });
@@ -4898,7 +4956,8 @@
     currentTab = targetId;
     if (changed && !(opts && opts.fromHistory)) navPush();
     document.querySelectorAll('.main-screen').forEach(sec => sec.classList.toggle('hidden', sec.id !== targetId));
-    document.querySelectorAll('.m3-nav-item').forEach(btn => btn.classList.toggle('active', btn.dataset.target === targetId));
+    document.querySelectorAll('.m3-nav-item').forEach(btn => btn.classList.toggle('active', btn.dataset.target === targetId || (btn.dataset.also || '').split(' ').includes(targetId)));
+    document.querySelectorAll('.view-sw-btn').forEach(b => b.classList.toggle('active', b.dataset.view === targetId));
     if (targetId === 'tab-oahu') setTimeout(() => { if (oahuMap) oahuMap.invalidateSize(); else initOahuMap(); }, 100);
     if (targetId === 'tab-resort') setTimeout(() => { if (resortMap) resortMap.invalidateSize(); else initResortMap(); }, 100);
     if (targetId === 'tab-expense') loadExpenses();
@@ -4907,6 +4966,7 @@
     // 일정표 외 화면에서는 헤더를 한 줄로 줄여 화면을 넓게 씀
     const hero = document.getElementById('app-hero-banner');
     if (hero) hero.classList.toggle('hero-compact', targetId !== 'tab-schedule');
+    if (targetId === 'tab-food') { const fl = document.getElementById('food-list'); if (fl) observeFoodPhotos(fl); }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
