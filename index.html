@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611091513">
+  <link rel="stylesheet" href="/tailwind.css?v=202611092258">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -935,6 +935,115 @@
       #tab-schedule .view-sw, #tab-expense .view-sw { grid-column: 1 / -1; }
       #tab-schedule .sched-side { grid-row: 4 / span 2; }
     }
+
+    /* =====================================================================
+       화면 층 정리 · 움직임 · 손 반응 (2026.11)
+       ===================================================================== */
+    :root { --head-h: 64px; }
+    body.head-scrolled { --head-h: 52px; }
+    .app-shell { overflow-x: clip; }
+    /* 1층 머리줄: 다섯 메뉴 모두 같은 자리·같은 크기 */
+    .app-head {
+      position: sticky; top: 0; z-index: 900; height: var(--head-h);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: env(safe-area-inset-top) var(--gutter) 0; box-sizing: content-box;
+      background: rgba(245, 246, 247, 0.92); -webkit-backdrop-filter: saturate(1.4) blur(14px); backdrop-filter: saturate(1.4) blur(14px);
+      transition: height 0.22s ease, box-shadow 0.22s ease;
+    }
+    body.head-scrolled .app-head { box-shadow: 0 1px 0 rgba(33, 37, 41, 0.08); }
+    .app-head-title { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.6px; color: var(--ink); transition: font-size 0.22s ease; }
+    body.head-scrolled .app-head-title { font-size: 19px; }
+    .head-btn { width: 44px; height: 44px; border-radius: 9999px; border: 0; background: #ffffff; color: var(--ink); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-card); cursor: pointer; }
+    .head-btn svg { width: 20px; height: 20px; }
+    #share-portal-btn { display: none !important; }
+    main.flex-1 { padding-top: 4px !important; }
+    main.flex-1 > .main-screen { margin-top: 0 !important; }   /* 숨은 화면 뒤에 오는 화면도 같은 높이에서 시작 */
+
+    /* 사진 박스: 이제 일정 화면의 첫 카드 */
+    #tab-schedule .hero-banner { margin: 0; }
+    @media (min-width: 1024px) {
+      #tab-schedule .hero-banner, #tab-schedule .sub-bar { grid-column: 1 / -1; }
+      #tab-schedule .sched-side { grid-row: 5 / span 2 !important; top: calc(var(--head-h) + 72px) !important; }
+      #tab-expense .sub-bar { grid-column: 1 / -1; }
+    }
+
+    /* 2층 전환줄: 머리줄 바로 아래 같은 자리, 내려도 붙어 있음 */
+    .sub-bar {
+      position: sticky; top: var(--head-h); z-index: 800;
+      margin: 0 calc(-1 * var(--gutter)); padding: 6px var(--gutter) 10px;
+      background: linear-gradient(to bottom, var(--bg) 82%, rgba(245, 246, 247, 0));
+      transition: top 0.22s ease;
+    }
+    .sub-bar > * { margin-top: 0 !important; }
+    @media (orientation: landscape) and (max-height: 500px) { .sub-bar { margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; } }
+
+    /* 미끄러지는 표시 */
+    .m3-bottom-nav { position: fixed; }
+    .nav-ind, .vs-ind {
+      position: absolute; left: 0; top: 0; border-radius: 9999px; pointer-events: none; z-index: 0;
+      transition: transform 0.34s cubic-bezier(0.3, 1.25, 0.5, 1), width 0.34s ease, height 0.34s ease;
+    }
+    .nav-ind { background: #ffffff; }
+    .vs-ind { background: var(--ink); }
+    .m3-nav-item, .view-sw-btn { position: relative; z-index: 1; }
+    .m3-nav-item.active { background: transparent !important; transition: color 0.2s ease 0.06s; }
+    .view-sw { position: relative; }
+    .view-sw-btn.active { background: transparent !important; transition: color 0.2s ease 0.06s; }
+    .m3-seg-btn { transition: background 0.2s ease, color 0.2s ease, transform 0.14s ease; }
+
+    /* 3층: 모두 아래에서 올라오는 판 */
+    #flight-modal { padding: 0 !important; align-items: flex-end !important; backdrop-filter: none; }
+    #flight-modal .sheet-panel { max-width: 480px !important; border-radius: 32px 32px 0 0 !important; padding: 8px 20px calc(24px + env(safe-area-inset-bottom)) !important; max-height: 88vh; overflow-y: auto; animation: sheetUp 0.26s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    #menu-sheet .sheet-panel { border-radius: 32px 32px 0 0 !important; animation: sheetUp 0.26s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    .sheet-head { position: relative; padding-top: 18px !important; }
+    .sheet-head::before { content: ''; position: absolute; top: 8px; left: 50%; width: 40px; height: 4px; margin-left: -20px; border-radius: 4px; background: #d3d7dc; }
+    #menu-sheet:not(.hidden) > div:first-child, #place-sheet:not(.hidden) > div:first-child, #flight-modal:not(.hidden) { animation: fadeIn 0.22s ease; }
+    @keyframes sheetUp { from { translate: 0 100%; } to { translate: 0 0; } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    #place-sheet .ps-panel { animation: sheetUp 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    #place-sheet.vt-open .ps-panel, #place-sheet.vt-open > div:first-child { animation: none; }
+    .drag-zone { touch-action: none; cursor: grab; }
+    .ps-hero > img { pointer-events: none; -webkit-user-drag: none; user-select: none; }
+    .ps-grab { width: 56px; height: 5px; margin-bottom: 14px; position: relative; }
+    .ps-grab::after { content: ''; position: absolute; inset: -14px -30px; }
+    @media (min-width: 768px) {
+      #flight-modal { align-items: center !important; }
+      #flight-modal .sheet-panel, #menu-sheet .sheet-panel { border-radius: 32px !important; }
+      #flight-modal .sheet-panel { animation: fadeIn 0.2s ease; }
+      #place-sheet .ps-panel, #menu-sheet .sheet-panel { animation: fadeIn 0.2s ease; }
+    }
+    /* 사진이 작은 칸에서 커지는 움직임 */
+    ::view-transition-group(ps-photo) { animation-duration: 0.34s; animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+    ::view-transition-old(ps-photo), ::view-transition-new(ps-photo) { height: 100%; width: 100%; object-fit: cover; overflow: hidden; }
+    ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.24s; }
+
+    /* 손 반응: 누르면 살짝 들어감 */
+    .slot-row, .gs-item, .view-sw-btn, .m3-nav-item, .m3-seg-btn, .day-chip, .oahu-filter-chip, .gmap-chip, .gnav-chip, .ext-link-chip,
+    .menu-chip, .tip-chip, .phrase-chip, .ps-circle, .ps-go, .gs-all, .head-btn, .phrase-row, .food-card, .map-detail-btn, main button.rounded-xl, main a.rounded-xl {
+      transition: transform 0.14s ease, background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    }
+    :is(.slot-row, .gs-item, .view-sw-btn, .m3-nav-item, .m3-seg-btn, .day-chip, .oahu-filter-chip, .gmap-chip, .gnav-chip, .ext-link-chip,
+    .menu-chip, .tip-chip, .phrase-chip, .ps-circle, .ps-go, .gs-all, .head-btn, .map-detail-btn, main button.rounded-xl, main a.rounded-xl):active { transform: scale(0.96); }
+    :is(.phrase-row, .food-card):active { transform: scale(0.985); }
+    .ps-close:active, .ps-map:active { transform: scale(0.92); }
+
+    /* 사진 자리: 불러오는 동안 은은하게 반짝, 오면 서서히 나타남 */
+    @keyframes shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+    .slot-thumb:not(.has-img):not(.no-img), #place-sheet .ps-hero.is-loading:not(.has-img) {
+      background: linear-gradient(90deg, #eceef0 30%, #f7f8f9 50%, #eceef0 70%); background-size: 300% 100%; animation: shimmer 1.4s linear infinite;
+    }
+    @keyframes imgIn { from { opacity: 0; transform: scale(1.03); } to { opacity: 1; transform: none; } }
+    .slot-thumb img, .ps-hero > img, .food-photo img { animation: imgIn 0.4s ease; }
+
+    /* 결과 움직임 */
+    @keyframes checkPop { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
+    #checklist-items .just-checked { animation: checkPop 0.36s cubic-bezier(0.3, 1.4, 0.5, 1); }
+    @keyframes rowIn { from { opacity: 0; transform: translateY(-10px); background: #fff7e6; } to { opacity: 1; transform: none; background: transparent; } }
+    #expense-list-container .row-in { animation: rowIn 0.6s ease; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+    }
   </style>
 </head>
 <body>
@@ -976,56 +1085,64 @@
 <script>try { if (/^\d{6}$/.test(localStorage.getItem('hawaii_trip_code') || '')) document.getElementById('entry-gate').remove(); } catch (e) {}</script>
 
 <div class="app-shell">
-  <!-- TOP HERO HEADER (Time-Adaptive Hawaiian Panorama) -->
-  <header id="app-hero-banner" class="hero-banner">
-    <div class="hero-top flex items-center justify-end gap-1.5 mb-2.5">
-      <div class="flex items-center gap-1.5">
-        <button id="open-flight-modal-btn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11.5px] font-bold bg-slate-900/65 text-white border border-white/25 nowrap-btn">
-          ✈️ 대한항공 KE051/052
-        </button>
-        <button id="install-app-btn" type="button" class="hidden inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11.5px] font-extrabold bg-white text-sky-800 border border-white nowrap-btn">
-          📲 설치
-        </button>
-        <button id="share-portal-btn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11.5px] font-bold bg-slate-900/65 text-white border border-white/25 nowrap-btn">
-          🔗 공유
-        </button>
-      </div>
-    </div>
-
-    <div class="hero-title mb-3">
-      <div class="flex items-baseline justify-between gap-2 flex-wrap">
-        <h1 class="text-[20px] font-extrabold tracking-tight text-white drop-shadow-sm">
-          하와이 3가족 오아후 트립
-        </h1>
-        <span class="text-[12px] font-bold text-sky-100 nowrap-btn">
-          2027.02.18 ~ 02.28 (8인)
-        </span>
-      </div>
-    </div>
-
-    <div class="hero-room flex items-center justify-between gap-2 bg-slate-900/65 backdrop-blur-md border border-white/20 rounded-2xl px-3 py-2">
-      <div class="flex items-center gap-2 min-w-0">
-        <span class="text-lg">🏨</span>
-        <div class="truncate">
-          <div id="hero-room-label" class="text-[10.5px] text-sky-200 font-semibold leading-tight">현재 등록 객실</div>
-          <div class="text-[13.5px] font-extrabold text-white truncate">
-            <span id="hero-room-tower">The Grand Islander</span> · <span id="hero-room-unit" class="text-amber-300">#2307</span>
-          </div>
-        </div>
-      </div>
-      <a href="https://photos.app.goo.gl/T7oLKmuA24sTGZky6" data-album-link target="_blank" rel="noopener noreferrer"
-         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white text-slate-900 text-[12px] font-extrabold shadow-sm nowrap-btn">
-        📸 공유앨범 ↗
-      </a>
-    </div>
+  <!-- 1층 머리줄: 다섯 메뉴 모두 같은 자리 (제목은 메뉴에 따라 바뀜) -->
+  <header id="app-head" class="app-head">
+    <h1 id="app-head-title" class="app-head-title">일정</h1>
+    <button id="head-share" type="button" class="head-btn" aria-label="앱 링크 복사해서 공유"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/></svg></button>
   </header>
+
 
   <!-- MAIN CONTENT AREA -->
   <main class="flex-1 px-3.5 pt-3.5 pb-4 space-y-3.5">
 
     <!-- ================= TAB 1: 📅 일정표 (D1 ~ D11) ================= -->
     <section id="tab-schedule" class="main-screen space-y-3">
-      <div class="view-sw" role="tablist" aria-label="일정 보기 방식"><button type="button" class="view-sw-btn active" data-view="tab-schedule"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><path d="M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01"/></svg><span>목록</span></button><button type="button" class="view-sw-btn" data-view="tab-oahu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4.5L3.5 6.5v13l5.5-2 6 2 5.5-2v-13l-5.5 2-6-2z"/><path d="M9 4.5v13M15 6.5v13"/></svg><span>지도</span></button></div>
+      <div class="sub-bar">
+        <div class="view-sw" role="tablist" aria-label="일정 보기 방식"><button type="button" class="view-sw-btn active" data-view="tab-schedule"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><path d="M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01"/></svg><span>목록</span></button><button type="button" class="view-sw-btn" data-view="tab-oahu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4.5L3.5 6.5v13l5.5-2 6 2 5.5-2v-13l-5.5 2-6-2z"/><path d="M9 4.5v13M15 6.5v13"/></svg><span>지도</span></button></div>
+      </div>
+      <!-- TOP HERO HEADER (Time-Adaptive Hawaiian Panorama) -->
+      <div id="app-hero-banner" class="hero-banner">
+        <div class="hero-top flex items-center justify-end gap-1.5 mb-2.5">
+          <div class="flex items-center gap-1.5">
+            <button id="open-flight-modal-btn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11.5px] font-bold bg-slate-900/65 text-white border border-white/25 nowrap-btn">
+              ✈️ 대한항공 KE051/052
+            </button>
+            <button id="install-app-btn" type="button" class="hidden inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11.5px] font-extrabold bg-white text-sky-800 border border-white nowrap-btn">
+              📲 설치
+            </button>
+            <button id="share-portal-btn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11.5px] font-bold bg-slate-900/65 text-white border border-white/25 nowrap-btn">
+              🔗 공유
+            </button>
+          </div>
+        </div>
+
+        <div class="hero-title mb-3">
+          <div class="flex items-baseline justify-between gap-2 flex-wrap">
+            <h1 class="text-[20px] font-extrabold tracking-tight text-white drop-shadow-sm">
+              하와이 3가족 오아후 트립
+            </h1>
+            <span class="text-[12px] font-bold text-sky-100 nowrap-btn">
+              2027.02.18 ~ 02.28 (8인)
+            </span>
+          </div>
+        </div>
+
+        <div class="hero-room flex items-center justify-between gap-2 bg-slate-900/65 backdrop-blur-md border border-white/20 rounded-2xl px-3 py-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-lg">🏨</span>
+            <div class="truncate">
+              <div id="hero-room-label" class="text-[10.5px] text-sky-200 font-semibold leading-tight">현재 등록 객실</div>
+              <div class="text-[13.5px] font-extrabold text-white truncate">
+                <span id="hero-room-tower">The Grand Islander</span> · <span id="hero-room-unit" class="text-amber-300">#2307</span>
+              </div>
+            </div>
+          </div>
+          <a href="https://photos.app.goo.gl/T7oLKmuA24sTGZky6" data-album-link target="_blank" rel="noopener noreferrer"
+             class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white text-slate-900 text-[12px] font-extrabold shadow-sm nowrap-btn">
+            📸 공유앨범 ↗
+          </a>
+        </div>
+      </div>
       <!-- 디자인 4단계: 한 번에 찾기 (일정·꿀팁·음식·영어 표현) -->
       <div class="gs-wrap">
         <div class="gs-bar">
@@ -1074,7 +1191,9 @@
 
     <!-- ================= TAB 2: 🗺️ 오아후맵 ================= -->
     <section id="tab-oahu" class="main-screen hidden space-y-3">
-      <div class="view-sw" role="tablist" aria-label="일정 보기 방식"><button type="button" class="view-sw-btn" data-view="tab-schedule"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><path d="M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01"/></svg><span>목록</span></button><button type="button" class="view-sw-btn active" data-view="tab-oahu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4.5L3.5 6.5v13l5.5-2 6 2 5.5-2v-13l-5.5 2-6-2z"/><path d="M9 4.5v13M15 6.5v13"/></svg><span>지도</span></button></div>
+      <div class="sub-bar">
+        <div class="view-sw" role="tablist" aria-label="일정 보기 방식"><button type="button" class="view-sw-btn" data-view="tab-schedule"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><path d="M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01"/></svg><span>목록</span></button><button type="button" class="view-sw-btn active" data-view="tab-oahu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4.5L3.5 6.5v13l5.5-2 6 2 5.5-2v-13l-5.5 2-6-2z"/><path d="M9 4.5v13M15 6.5v13"/></svg><span>지도</span></button></div>
+      </div>
       <div class="m3-card p-3.5 space-y-3">
         <div>
           <h2 class="text-[16px] font-extrabold text-slate-900">🗺️ 동선 지도</h2>
@@ -1210,7 +1329,9 @@
 
     <!-- ================= TAB 4: 💰 정산 (등록 전용 공유 원장) ================= -->
     <section id="tab-expense" class="main-screen hidden space-y-3">
-      <div class="view-sw" role="tablist" aria-label="정산·환율"><button type="button" class="view-sw-btn active" data-view="tab-expense"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3.5"/><path d="M3 10.5h18M15.5 15h2.5"/></svg><span>정산</span></button><button type="button" class="view-sw-btn" data-view="tab-fx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5h14l-3.5-3.5M20 15.5H6l3.5 3.5"/></svg><span>환율</span></button></div>
+      <div class="sub-bar">
+        <div class="view-sw" role="tablist" aria-label="정산·환율"><button type="button" class="view-sw-btn active" data-view="tab-expense"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3.5"/><path d="M3 10.5h18M15.5 15h2.5"/></svg><span>정산</span></button><button type="button" class="view-sw-btn" data-view="tab-fx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5h14l-3.5-3.5M20 15.5H6l3.5 3.5"/></svg><span>환율</span></button></div>
+      </div>
       <div class="m3-segmented">
         <button id="seg-exp-summary-btn" type="button" class="m3-seg-btn active">📊 정산 요약</button>
         <button id="seg-exp-list-btn" type="button" class="m3-seg-btn">📋 지출 내역 목록</button>
@@ -1335,7 +1456,9 @@
     <!-- ================= TAB 5: 📌 예약·꿀팁 ================= -->
     <!-- ================= TAB: 💱 환율 계산기 ================= -->
     <section id="tab-fx" class="main-screen hidden space-y-3">
-      <div class="view-sw" role="tablist" aria-label="정산·환율"><button type="button" class="view-sw-btn" data-view="tab-expense"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3.5"/><path d="M3 10.5h18M15.5 15h2.5"/></svg><span>정산</span></button><button type="button" class="view-sw-btn active" data-view="tab-fx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5h14l-3.5-3.5M20 15.5H6l3.5 3.5"/></svg><span>환율</span></button></div>
+      <div class="sub-bar">
+        <div class="view-sw" role="tablist" aria-label="정산·환율"><button type="button" class="view-sw-btn" data-view="tab-expense"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3.5"/><path d="M3 10.5h18M15.5 15h2.5"/></svg><span>정산</span></button><button type="button" class="view-sw-btn active" data-view="tab-fx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5h14l-3.5-3.5M20 15.5H6l3.5 3.5"/></svg><span>환율</span></button></div>
+      </div>
       <div class="m3-card p-4 space-y-2">
         <div class="flex items-center justify-between gap-2">
           <h2 class="text-[16px] font-extrabold text-slate-900">💱 환율 계산기 (USD ↔ 원)</h2>
@@ -1416,11 +1539,13 @@
     </section>
 
     <section id="tab-guide" class="main-screen hidden space-y-3">
+      <div class="sub-bar">
       <div class="m3-segmented seg-4">
         <button data-guide="dday" type="button" class="m3-seg-btn guide-seg-btn active">⏰ 예약</button>
         <button data-guide="check" type="button" class="m3-seg-btn guide-seg-btn">✅ 준비물</button>
         <button data-guide="phrase" type="button" class="m3-seg-btn guide-seg-btn">🗣️ 영어</button>
         <button data-guide="tips" type="button" class="m3-seg-btn guide-seg-btn">💡 꿀팁</button>
+      </div>
       </div>
 
       <div id="guide-sub-dday" class="guide-subpage space-y-2.5">
@@ -1529,8 +1654,8 @@
 
 <!-- FLIGHT MODAL -->
 <div id="flight-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-[1500] hidden items-center justify-center p-4">
-  <div class="bg-white rounded-3xl max-w-md w-full p-5 space-y-3.5 shadow-2xl">
-    <div class="flex items-center justify-between">
+  <div class="sheet-panel bg-white rounded-3xl max-w-md w-full p-5 space-y-3.5 shadow-2xl">
+    <div class="sheet-head flex items-center justify-between">
       <h3 class="text-[16px] font-extrabold text-slate-900">✈️ 대한항공 스케줄 (KE051 / KE052)</h3>
       <button id="close-flight-modal-btn" type="button" class="w-8 h-8 rounded-full bg-slate-100 font-extrabold">✕</button>
     </div>
@@ -1566,8 +1691,8 @@
 
 <div id="menu-sheet" class="fixed inset-0 z-[1600] hidden">
   <div id="menu-sheet-backdrop" class="absolute inset-0 bg-slate-950/50"></div>
-  <div class="absolute left-1/2 -translate-x-1/2 bottom-0 w-full max-w-[480px] max-h-[82vh] bg-white rounded-t-3xl shadow-2xl flex flex-col">
-    <div class="flex items-start justify-between gap-2 px-4 pt-4 pb-2 border-b border-slate-100">
+  <div class="sheet-panel absolute left-1/2 -translate-x-1/2 bottom-0 w-full max-w-[480px] max-h-[82vh] bg-white rounded-t-3xl shadow-2xl flex flex-col">
+    <div class="sheet-head flex items-start justify-between gap-2 px-4 pt-4 pb-2 border-b border-slate-100">
       <div class="min-w-0">
         <div id="menu-sheet-title" class="text-[16px] font-extrabold text-slate-900 leading-snug"></div>
         <div id="menu-sheet-sub" class="text-[12px] font-bold text-slate-500 mt-0.5"></div>
@@ -2070,6 +2195,7 @@
       + (m.reserveUrl ? `<a href="${m.reserveUrl}" target="_blank" rel="noopener noreferrer" class="block w-full py-2.5 rounded-xl bg-rose-600 text-white text-[13px] font-extrabold text-center">📅 OpenTable 예약 (공식) ↗</a>` : '');
     document.getElementById('menu-sheet-body').innerHTML = `<div class="divide-y divide-slate-100">${items}</div>${tips}${link}<div class="h-2"></div>`;
     const sheet = document.getElementById('menu-sheet');
+    sheetOpened(sheet);
     sheet.classList.remove('hidden');
     navPush({ overlay: 'menu' });
     document.body.style.overflow = 'hidden';
@@ -2077,8 +2203,9 @@
   window.openMenuSheet = openMenuSheet;
 
   function hideMenuSheet() {
-    document.getElementById('menu-sheet').classList.add('hidden');
-    document.body.style.overflow = '';
+    const sheet = document.getElementById('menu-sheet');
+    sheetClose(sheet, sheet.querySelector('.sheet-panel'));
+    if (document.getElementById('place-sheet').classList.contains('hidden')) document.body.style.overflow = '';
   }
   // 닫기 버튼·바깥 누르기: 뒤로가기 기록도 함께 되돌림
   function closeMenuSheet() {
@@ -2562,7 +2689,7 @@
   let slotThumbObserver = null;
   function fillSlotThumb(el) {
     placePhoto(el.dataset.pq).then(r => {
-      if (!r || !r.img) return;
+      if (!r || !r.img) { el.classList.add('no-img'); return; }
       const img = new Image();
       img.alt = ''; img.decoding = 'async';
       img.onload = () => { el.replaceChildren(img); el.classList.add('has-img'); };
@@ -2603,16 +2730,23 @@
     hero.querySelectorAll('img').forEach(i => i.remove());
     hero.classList.remove('has-img');
     attr.textContent = '';
+    // 일정 줄에 이미 사진이 있으면 바로 같은 사진을 깔아 둠 (커지는 움직임이 이어지게)
+    const thumbImg = document.querySelector(`#day-card-container .slot-item[data-si="${si}"] .slot-thumb img`);
+    if (thumbImg) { const im = new Image(); im.alt = ''; im.src = thumbImg.src; hero.prepend(im); hero.classList.add('has-img'); }
+    hero.classList.toggle('is-loading', !!slot.mapQuery && !thumbImg);
     if (slot.mapQuery) placePhoto(photoQ(slot.mapQuery)).then(r => {
-      if (!r || document.getElementById('ps-title').textContent !== slot.placeName) return;
+      if (document.getElementById('ps-title').textContent !== slot.placeName) return;
+      hero.classList.remove('is-loading');
+      if (!r) return;
       if (r.mapsUri && !PHOTO_QUERY[slot.mapQuery]) map.href = r.mapsUri;
-      if (!r.img) return;
+      if (r.author) attr.innerHTML = `사진 ${r.authorUri ? `<a href="${escAttr(r.authorUri)}" target="_blank" rel="noopener noreferrer">${escAttr(r.author)}</a>` : escAttr(r.author)} · Google 지도`;
+      if (!r.img || (hero.querySelector('img') && hero.querySelector('img').src === r.img)) return;
       const img = new Image();
       img.alt = ''; img.decoding = 'async';
-      img.onload = () => { hero.prepend(img); hero.classList.add('has-img'); };
+      img.onload = () => { hero.querySelectorAll('img').forEach(i => i.remove()); hero.prepend(img); hero.classList.add('has-img'); };
       img.src = r.img;
-      if (r.author) attr.innerHTML = `사진 ${r.authorUri ? `<a href="${escAttr(r.authorUri)}" target="_blank" rel="noopener noreferrer">${escAttr(r.author)}</a>` : escAttr(r.author)} · Google 지도`;
     });
+    sheetOpened(sheet);
     sheet.classList.remove('hidden');
     sheet.querySelector('.ps-scroll').scrollTop = 0;
     navPush({ overlay: 'place' });
@@ -2622,7 +2756,7 @@
   function hidePlaceSheet() {
     const sheet = document.getElementById('place-sheet');
     if (!sheet || sheet.classList.contains('hidden')) return;
-    sheet.classList.add('hidden');
+    sheetClose(sheet, sheet.querySelector('.ps-panel'));
     document.body.style.overflow = '';
   }
   function closePlaceSheet() {
@@ -2640,6 +2774,7 @@
   function updateDayView(dayNum) {
     const data = getScheduleDay(dayNum);
     if (!data) return;
+    const prevDay = scheduleAll ? null : currentDayIndex;
     currentDayIndex = dayNum;
     scheduleAll = false;
     document.getElementById('tab-schedule').classList.remove('sched-all');
@@ -2677,7 +2812,7 @@
         // 디자인 3단계: 사진 + 요약 (누르면 장소 화면) · 아래 slot-card는 그대로 두고 장소 화면에서 보여 줌
         return `
           <div class="slot-item ${isNow ? 'is-now' : ''}" data-si="${si}">
-            <button type="button" class="slot-row" onclick="openPlaceSheet(${data.day}, ${si})" aria-label="${escAttr(slot.placeName)} 자세히 보기">
+            <button type="button" class="slot-row" onclick="openPlaceWithMorph(${data.day}, ${si})" aria-label="${escAttr(slot.placeName)} 자세히 보기">
               <span class="slot-thumb" data-pq="${escAttr(photoQ(slot.mapQuery || ''))}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.5-7-11a7 7 0 0114 0c0 6.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
               <span class="slot-txt">
                 <span class="slot-meta"><span class="slot-tag ${slot.color}">${slot.label}${slot.time ? ` · ${slot.time}` : ''}</span>${isNow ? '<span class="slot-now">지금</span>' : ''}${isNext ? '<span class="slot-next">다음</span>' : ''}${tips.length ? `<span class="slot-count">꿀팁 ${tips.reduce((n, it) => n + it.tips.length, 0)}</span>` : ''}</span>
@@ -2749,6 +2884,7 @@
     }
 
     loadSlotThumbs();
+    animateDayChange(prevDay, dayNum);
     updateScheduleSideMap(dayNum);
 
     const prevBtn = document.getElementById('prev-day-btn');
@@ -3004,7 +3140,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611091513').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611092258').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -3876,7 +4012,7 @@
             const voidCls = item.is_void ? 'opacity-50 line-through' : '';
             const voidTag = item.is_void ? `<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[11.5px] font-extrabold no-underline">무효</span>` : '';
             return `
-            <div class="py-3 flex items-center justify-between gap-2">
+            <div class="py-3 flex items-center justify-between gap-2" data-eid="${esc(String(item.id))}">
               <div class="min-w-0">
                 <div class="flex items-center gap-1.5">
                   <span class="text-[13.5px] font-extrabold text-slate-900 truncate ${voidCls}">${esc(item.title)}</span>
@@ -4302,6 +4438,206 @@
   }
   if ('speechSynthesis' in window) { pickEnVoice(); speechSynthesis.addEventListener && speechSynthesis.addEventListener('voiceschanged', pickEnVoice); }
   document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-say]'); if (b) sayPhrase(b); });
+
+  /* =====================================================================
+   * 화면 층 정리 · 움직임 · 손 반응 (2026.11)
+   *   1층: 아래 메뉴 5개 — 같은 머리줄(제목), 옆으로 살짝 밀리며 바뀜, 흰 표시가 미끄러져 이동
+   *   2층: 목록|지도 · 정산|환율 · 예약/준비물/영어/꿀팁 — 화면 너비만큼 좌우로 밀림
+   *   3층: 장소·메뉴판·영어·항공편 — 아래에서 올라오고 내려가며 닫힘, 끌어내려 닫기
+   *   휴대폰의 '움직임 줄이기'를 켜면 움직임 없이 바로 바뀜
+   * ===================================================================== */
+  const MOTION_OK = () => !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const EASE = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+  const SCREEN_GROUP = { 'tab-schedule': [0, 0], 'tab-oahu': [0, 1], 'tab-food': [1, 0], 'tab-resort': [2, 0], 'tab-expense': [3, 0], 'tab-fx': [3, 1], 'tab-guide': [4, 0] };
+  const HEAD_TITLE = ['일정', '음식', '숙소', '정산', '준비'];
+  const scrollMem = {};
+  function buzz(ms) { try { if (navigator.vibrate) navigator.vibrate(ms || 8); } catch (e) {} }
+
+  // 흰 표시(아래 메뉴) · 검정 표시(목록|지도, 정산|환율)를 고른 버튼으로 미끄러뜨림
+  function placeInd(ind, btn, animate) {
+    if (!ind || !btn) return;
+    if (!animate) ind.style.transition = 'none';
+    ind.style.width = btn.offsetWidth + 'px';
+    ind.style.height = btn.offsetHeight + 'px';
+    ind.style.transform = `translate(${btn.offsetLeft}px, ${btn.offsetTop}px)`;
+    if (!animate) { void ind.offsetWidth; ind.style.transition = ''; }
+  }
+  function moveNavInd(animate) {
+    const nav = document.querySelector('.m3-bottom-nav');
+    if (!nav) return;
+    let ind = nav.querySelector('.nav-ind');
+    if (!ind) { ind = document.createElement('span'); ind.className = 'nav-ind'; ind.setAttribute('aria-hidden', 'true'); nav.prepend(ind); }
+    placeInd(ind, nav.querySelector('.m3-nav-item.active'), animate && MOTION_OK());
+  }
+  function vsInd(sw) {
+    let ind = sw.querySelector('.vs-ind');
+    if (!ind) { ind = document.createElement('span'); ind.className = 'vs-ind'; ind.setAttribute('aria-hidden', 'true'); sw.prepend(ind); }
+    return ind;
+  }
+  function slideIn(el, dx, dur) {
+    if (!el || !MOTION_OK() || !el.animate) return;
+    el.animate([{ transform: `translateX(${dx})`, opacity: 0.35 }, { transform: 'translateX(0)', opacity: 1 }], { duration: dur, easing: EASE });
+  }
+
+  // switchMainScreen 앞뒤에 붙는 부분 (화면 전환 코드에서 부름)
+  function beforeScreenSwitch(from) { scrollMem[from] = window.scrollY; }
+  function afterScreenSwitch(from, to) {
+    const a = SCREEN_GROUP[from] || [0, 0], b = SCREEN_GROUP[to] || [0, 0];
+    const head = document.getElementById('app-head-title');
+    if (head && HEAD_TITLE[b[0]] !== head.textContent) {
+      head.textContent = HEAD_TITLE[b[0]];
+      if (MOTION_OK() && head.animate) head.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 220, easing: EASE });
+    }
+    window.scrollTo(0, scrollMem[to] || 0);
+    const sec = document.getElementById(to);
+    if (from && from !== to) {
+      if (a[0] === b[0]) {
+        // 같은 메뉴 안 2층 전환: 화면 너비만큼 밀기 + 검정 표시 이동
+        [...sec.children].filter(c => !c.classList.contains('sub-bar')).forEach(c => slideIn(c, (b[1] > a[1] ? '100%' : '-100%'), 300));
+        const sw = sec.querySelector('.view-sw');
+        if (sw) {
+          const ind = vsInd(sw);
+          placeInd(ind, sw.querySelector(`.view-sw-btn[data-view="${from}"]`), false);
+          requestAnimationFrame(() => placeInd(ind, sw.querySelector('.view-sw-btn.active'), true));
+        }
+      } else {
+        slideIn(sec, (b[0] > a[0] ? '28px' : '-28px'), 240);
+        const sw = sec.querySelector('.view-sw');
+        if (sw) placeInd(vsInd(sw), sw.querySelector('.view-sw-btn.active'), false);
+      }
+    }
+    moveNavInd(true);
+  }
+
+  // 날짜 바꾸기: 앞날은 오른쪽에서, 지난날은 왼쪽에서
+  function animateDayChange(prev, next) {
+    if (!prev || prev === next || currentTab !== 'tab-schedule') return;
+    slideIn(document.getElementById('day-card-container'), next > prev ? '40px' : '-40px', 260);
+  }
+
+  // 겹친 화면(3층) 닫기: 아래로 내려가며 사라짐
+  function sheetClose(sheet, panel, done) {
+    if (!sheet || sheet.classList.contains('hidden')) { if (done) done(); return; }
+    const tok = sheet._tok = (sheet._tok || 0) + 1;
+    const finish = () => {
+      if (sheet._tok !== tok) return;
+      sheet.classList.add('hidden'); sheet.classList.remove('is-closing');
+      if (panel) panel.style.translate = '';
+      if (done) done();
+    };
+    if (!MOTION_OK() || !panel || !panel.animate) { finish(); return; }
+    sheet.classList.add('is-closing');
+    const from = panel.style.translate || '0 0';
+    panel.animate([{ translate: from }, { translate: '0 110%' }], { duration: 220, easing: 'cubic-bezier(0.4, 0, 1, 1)', fill: 'forwards' }).onfinish = function () { this.cancel(); finish(); };
+    const bd = sheet.firstElementChild;
+    if (bd && bd.animate && bd !== panel) bd.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, fill: 'forwards' }).onfinish = function () { this.cancel(); };
+  }
+  function sheetOpened(sheet) { if (sheet) { sheet._tok = (sheet._tok || 0) + 1; sheet.classList.remove('is-closing'); } }
+
+  // 끌어내려 닫기
+  function enableDragClose(zoneSel, panel, onClose) {
+    if (!panel) return;
+    let y0 = null, t0 = 0, dy = 0;
+    panel.querySelectorAll(zoneSel).forEach(z => {
+      z.classList.add('drag-zone');
+      z.addEventListener('pointerdown', e => {
+        if (e.button > 0 || e.target.closest('button, a, input')) return;
+        e.preventDefault();   // 사진 끌기·글자 선택이 끼어들지 않게
+        y0 = e.clientY; t0 = performance.now(); dy = 0;
+        try { z.setPointerCapture(e.pointerId); } catch (err) {}
+        panel.style.transition = 'none';
+      });
+      z.addEventListener('pointermove', e => {
+        if (y0 == null) return;
+        dy = Math.max(0, e.clientY - y0);
+        panel.style.translate = `0 ${dy}px`;
+      });
+      const end = () => {
+        if (y0 == null) return;
+        const v = dy / Math.max(1, performance.now() - t0);
+        y0 = null;
+        panel.style.transition = '';
+        if (dy > 110 || (dy > 30 && v > 0.6)) { buzz(6); onClose(); }
+        else if (dy > 0 && panel.animate && MOTION_OK()) {
+          panel.animate([{ translate: `0 ${dy}px` }, { translate: '0 0' }], { duration: 200, easing: EASE });
+          panel.style.translate = '';
+        } else panel.style.translate = '';
+      };
+      z.addEventListener('pointerup', end);
+      z.addEventListener('pointercancel', end);
+    });
+  }
+
+  // 장소 화면 열기: 일정 줄의 작은 사진이 커지며 위 사진이 됨 (지원하는 브라우저만)
+  function openPlaceWithMorph(day, si) {
+    const thumb = document.querySelector(`#day-card-container .slot-item[data-si="${si}"] .slot-thumb.has-img`);
+    const visible = thumb && thumb.getClientRects().length && thumb.getBoundingClientRect().bottom > 0 && thumb.getBoundingClientRect().top < innerHeight;
+    if (!visible || !document.startViewTransition || !MOTION_OK()) { openPlaceSheet(day, si); return; }
+    const hero = document.getElementById('ps-hero');
+    thumb.style.viewTransitionName = 'ps-photo';
+    const t = document.startViewTransition(() => {
+      thumb.style.viewTransitionName = '';
+      document.getElementById('place-sheet').classList.add('vt-open');
+      openPlaceSheet(day, si);
+      hero.style.viewTransitionName = 'ps-photo';
+    });
+    t.finished.finally(() => { hero.style.viewTransitionName = ''; document.getElementById('place-sheet').classList.remove('vt-open'); });
+  }
+  window.openPlaceWithMorph = openPlaceWithMorph;
+
+  function initMotion() {
+    moveNavInd(false);
+    document.querySelectorAll('.view-sw').forEach(sw => placeInd(vsInd(sw), sw.querySelector('.view-sw-btn.active'), false));
+    window.addEventListener('resize', () => {
+      moveNavInd(false);
+      document.querySelectorAll('.main-screen:not(.hidden) .view-sw').forEach(sw => placeInd(vsInd(sw), sw.querySelector('.view-sw-btn.active'), false));
+    });
+    // 머리줄: 내리면 작은 제목줄로 접힘
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (ticking) return; ticking = true;
+      requestAnimationFrame(() => { document.body.classList.toggle('head-scrolled', window.scrollY > 8); ticking = false; });
+    }, { passive: true });
+    // 아이폰에서 눌림 효과(:active)가 보이게
+    document.addEventListener('touchstart', () => {}, { passive: true });
+    // 준비 메뉴 칸 전환: 순서 방향으로 밀기
+    let guideIdx = 0;
+    document.addEventListener('click', e => {
+      const g = e.target.closest && e.target.closest('.guide-seg-btn');
+      if (g) {
+        const btns = [...document.querySelectorAll('.guide-seg-btn')];
+        const i = btns.indexOf(g);
+        if (i !== guideIdx) { slideIn(document.getElementById(`guide-sub-${g.dataset.guide}`), i > guideIdx ? '100%' : '-100%', 300); buzz(); }
+        guideIdx = i;
+        return;
+      }
+      if (e.target.closest && e.target.closest('.m3-nav-item, .view-sw-btn, .day-chip, .oahu-filter-chip')) buzz();
+    });
+    // 준비물 체크: 체크 표시가 톡 튀고 진동
+    document.addEventListener('change', e => {
+      const cb = e.target.closest && e.target.closest('[data-check]');
+      if (!cb) return;
+      buzz(cb.checked ? 12 : 6);
+      const row = document.querySelector(`#checklist-items [data-check="${cb.dataset.check}"]`);
+      if (row && cb.checked) { row.classList.add('just-checked'); setTimeout(() => row.classList.remove('just-checked'), 500); }
+    });
+    // 지출 등록: 새 줄이 위에서 내려오며 들어옴
+    const list = document.getElementById('expense-list-container');
+    if (list && window.MutationObserver) {
+      let seen = null;
+      new MutationObserver(() => {
+        const rows = [...list.querySelectorAll('[data-eid]')];
+        if (seen) rows.filter(r => !seen.has(r.dataset.eid)).forEach(r => { r.classList.add('row-in'); buzz(14); });
+        seen = new Set(rows.map(r => r.dataset.eid));
+      }).observe(list, { childList: true });
+    }
+    // 겹친 화면 끌어내려 닫기
+    enableDragClose('.ps-hero, .ps-grab', document.querySelector('#place-sheet .ps-panel'), () => closePlaceSheet());
+    enableDragClose('.sheet-head', document.querySelector('#menu-sheet .sheet-panel'), () => closeMenuSheet());
+    enableDragClose('.sheet-head', document.querySelector('#flight-modal .sheet-panel'), () => document.getElementById('close-flight-modal-btn').click());
+    document.getElementById('head-share').addEventListener('click', () => copyTextToClipboard(window.location.href, '앱 링크가 복사되었습니다.'));
+  }
+  document.addEventListener('DOMContentLoaded', initMotion);
 
   // 구조 개편: [목록 | 지도] · [정산 | 환율] 전환
   document.addEventListener('click', e => {
@@ -4924,7 +5260,7 @@
   }
   function hideFlightModal() {
     const m = document.getElementById('flight-modal');
-    m.classList.add('hidden'); m.classList.remove('flex');
+    sheetClose(m, m.querySelector('.sheet-panel'), () => m.classList.remove('flex'));
   }
   function initBackNavigation() {
     try { history.replaceState(Object.assign(navState(), { base: true }), ''); } catch (e) { return; }
@@ -4953,6 +5289,8 @@
 
   function switchMainScreen(targetId, opts) {
     const changed = targetId !== currentTab;
+    const fromTab = currentTab;
+    if (changed) beforeScreenSwitch(fromTab);
     currentTab = targetId;
     if (changed && !(opts && opts.fromHistory)) navPush();
     document.querySelectorAll('.main-screen').forEach(sec => sec.classList.toggle('hidden', sec.id !== targetId));
@@ -4963,11 +5301,8 @@
     if (targetId === 'tab-expense') loadExpenses();
     if (targetId === 'tab-fx') loadFxRate(false);
     if (targetId === 'tab-schedule') setTimeout(() => updateScheduleSideMap(currentDayIndex), 100);
-    // 일정표 외 화면에서는 헤더를 한 줄로 줄여 화면을 넓게 씀
-    const hero = document.getElementById('app-hero-banner');
-    if (hero) hero.classList.toggle('hero-compact', targetId !== 'tab-schedule');
     if (targetId === 'tab-food') { const fl = document.getElementById('food-list'); if (fl) observeFoodPhotos(fl); }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    afterScreenSwitch(changed ? fromTab : null, targetId);
   }
 
   /* ---- 💱 환율 계산기 ----
@@ -5205,7 +5540,7 @@
     });
 
     const flightModal = document.getElementById('flight-modal');
-    document.getElementById('open-flight-modal-btn').addEventListener('click', () => { flightModal.classList.remove('hidden'); flightModal.classList.add('flex'); navPush({ overlay: 'flight' }); });
+    document.getElementById('open-flight-modal-btn').addEventListener('click', () => { sheetOpened(flightModal); flightModal.classList.remove('hidden'); flightModal.classList.add('flex'); navPush({ overlay: 'flight' }); });
     document.getElementById('close-flight-modal-btn').addEventListener('click', () => {
       if (history.state && history.state.overlay === 'flight') history.back(); else hideFlightModal();
     });
