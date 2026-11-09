@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611092324">
+  <link rel="stylesheet" href="/tailwind.css?v=202611092339">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -3251,7 +3251,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611092324').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611092339').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -4135,7 +4135,7 @@
               <span class="text-[14px] font-extrabold nowrap-btn ${voidCls}">$${Number(item.amount).toFixed(2)}</span>
             </div>`;
           }).join('')
-        : `<div class="py-6 text-center text-[12.5px] text-slate-500 font-semibold">아직 등록된 지출이 없습니다.</div>`;
+        : `<div class="py-6 text-center text-[12.5px] text-slate-500 font-semibold">아직 기록된 지출이 없어요 · 첫 결제를 등록하면 여기에 쌓여요</div>`;
     }
   }
 
@@ -4375,7 +4375,7 @@
       document.getElementById('exp-title-input').value = '';
       document.getElementById('exp-amount-input').value = '';
       clearReceipt();
-      showToast('지출 내역이 저장되었습니다.');
+      showToast('Mahalo! 지출을 기록했어요 🌺');
       loadExpenses();
     } catch (e) {
       showToast('저장에 실패했습니다. 잠시 후 다시 시도해 주세요.');
@@ -4734,6 +4734,8 @@
       buzz(cb.checked ? 12 : 6);
       const row = document.querySelector(`#checklist-items [data-check="${cb.dataset.check}"]`);
       if (row && cb.checked) { row.classList.add('just-checked'); setTimeout(() => row.classList.remove('just-checked'), 500); }
+      const all = [...document.querySelectorAll('#checklist-items [data-check]')];
+      if (cb.checked && all.length && all.every(x => x.checked)) showToast('Mākaukau(준비 완료)! 이제 떠나기만 하면 돼요 🌺');
     });
     // 지출 등록: 새 줄이 위에서 내려오며 들어옴
     const list = document.getElementById('expense-list-container');
@@ -4749,7 +4751,7 @@
     enableDragClose('.ps-hero, .ps-grab', document.querySelector('#place-sheet .ps-panel'), () => closePlaceSheet());
     enableDragClose('.sheet-head', document.querySelector('#menu-sheet .sheet-panel'), () => closeMenuSheet());
     enableDragClose('.sheet-head', document.querySelector('#flight-modal .sheet-panel'), () => document.getElementById('close-flight-modal-btn').click());
-    document.getElementById('head-share').addEventListener('click', () => copyTextToClipboard(window.location.href, '앱 링크가 복사되었습니다.'));
+    document.getElementById('head-share').addEventListener('click', () => copyTextToClipboard(window.location.href, 'Mahalo! 앱 링크를 복사했어요 · 카톡에 붙여 넣어 보내세요'));
   }
   document.addEventListener('DOMContentLoaded', initMotion);
 
@@ -4908,9 +4910,10 @@
     if (tDay) { const d = scheduleData.find(x => x.day === tDay); line = `여행 ${tDay}일째 · ${d ? d.date : ''}`; }
     else if (left == null) line = '2027.02.18 ~ 02.28 (8인)';
     else if (left > 0) line = `결혼기념 오아후 · D-${left}`;
-    else if (left === 0) line = '오늘 출발해요! · 인천 22:20';
+    else if (left === 0) line = 'E hele kākou(가 볼까요)! · 오늘 인천 22:20 출발';
     else if (left >= -11) line = '여행 중 · 2027.02.18 ~ 02.28';
-    else line = '다녀왔어요 · 2027.02.18 ~ 02.28';
+    else line = 'A hui hou(또 만나요) · 다녀왔어요 2027.02.18 ~ 02.28';
+    if (tDay === TOTAL_DAYS) line = `A hui hou(또 만나요)! · 마지막 날 ${scheduleData.find(x => x.day === tDay).date}`;
     h1.textContent = '알로하, 3가족!';
     sub.textContent = line;
     sub.classList.add('hero-dday');
@@ -4982,7 +4985,7 @@
       </button>`).join('');
     if (r.phrase.length) html += head('영어 표현 · 누르면 발음', r.phrase.length) + `<div class="gs-phr">${phraseRowsHtml(r.phrase.slice(0, 5).map(p => [p[0], p[1]]))}</div>`
       + (r.phrase.length > 5 ? `<button type="button" class="gs-more" data-gs-phrase>영어 표현 ${r.phrase.length}개 모두 보기</button>` : '');
-    box.innerHTML = html || `<div class="gs-empty">'${escAttr(q)}'에 맞는 일정·음식·영어 표현이 없어요</div>`;
+    box.innerHTML = html || `<div class="gs-empty">'${escAttr(q)}'에 맞는 일정·음식·영어 표현이 없어요<br>다른 말로 찾아볼까요?</div>`;
     box.classList.remove('hidden');
     if (total) box.setAttribute('data-total', total);
   }
@@ -5807,7 +5810,7 @@
       const choice = await deferredInstall.userChoice;
       deferredInstall = null;
       installBtns.forEach(x => x && x.classList.add('hidden'));
-      if (choice && choice.outcome === 'accepted') showToast('홈 화면에 설치되었습니다.');
+      if (choice && choice.outcome === 'accepted') showToast('E komo mai(환영해요)! 홈 화면에 설치됐어요');
     }));
     window.addEventListener('appinstalled', () => installBtns.forEach(x => x && x.classList.add('hidden')));
     if ('serviceWorker' in navigator) {
@@ -5817,9 +5820,9 @@
     document.getElementById('menu-sheet-close').addEventListener('click', closeMenuSheet);
     document.getElementById('menu-sheet-backdrop').addEventListener('click', closeMenuSheet);
 
-    document.getElementById('share-portal-btn').addEventListener('click', () => copyTextToClipboard(window.location.href, '앱 링크가 복사되었습니다.'));
+    document.getElementById('share-portal-btn').addEventListener('click', () => copyTextToClipboard(window.location.href, 'Mahalo! 앱 링크를 복사했어요 · 카톡에 붙여 넣어 보내세요'));
     const copyAlbumBtn = document.getElementById('copy-album-url-btn');
-    if (copyAlbumBtn) copyAlbumBtn.addEventListener('click', () => copyTextToClipboard(GOOGLE_PHOTOS_ALBUM_URL, '구글 포토 공유앨범 링크가 복사되었습니다.'));
+    if (copyAlbumBtn) copyAlbumBtn.addEventListener('click', () => copyTextToClipboard(GOOGLE_PHOTOS_ALBUM_URL, '공유앨범 링크를 복사했어요 · Mahalo!'));
   });
 </script>
 <script>
