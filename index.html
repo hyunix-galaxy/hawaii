@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611092258">
+  <link rel="stylesheet" href="/tailwind.css?v=202611092317">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -963,7 +963,7 @@
     #tab-schedule .hero-banner { margin: 0; }
     @media (min-width: 1024px) {
       #tab-schedule .hero-banner, #tab-schedule .sub-bar { grid-column: 1 / -1; }
-      #tab-schedule .sched-side { grid-row: 5 / span 2 !important; top: calc(var(--head-h) + 72px) !important; }
+      #tab-schedule .sched-side { grid-row: 4 / span 2 !important; top: calc(var(--head-h) + 72px) !important; }
       #tab-expense .sub-bar { grid-column: 1 / -1; }
     }
 
@@ -1044,6 +1044,59 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
     }
+
+    /* =====================================================================
+       하와이 배경 사진 · 어디서나 찾기 (2026.11)
+       ===================================================================== */
+    .app-shell { position: relative; }
+    .app-backdrop {
+      position: absolute; left: 0; right: 0; top: 0; z-index: 0; pointer-events: none;
+      height: calc(var(--bd-h, 250px) + env(safe-area-inset-top));
+      background-color: #0284c7; background-size: cover; background-position: center 40%;
+      -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 100%); mask-image: linear-gradient(to bottom, #000 62%, transparent 100%);
+      transition: height 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), background-image 0.6s ease;
+    }
+    body[data-screen="tab-schedule"] { --bd-h: 400px; }
+    body[data-screen="tab-oahu"], body[data-screen="tab-fx"], body[data-screen="tab-expense"], body[data-screen="tab-guide"] { --bd-h: 230px; }
+    main.flex-1, .app-head { position: relative; z-index: 1; }
+    .app-head { position: sticky; z-index: 900; }
+    /* 사진 위의 머리줄: 흰 글씨 → 내리면 밝은 유리 바탕에 검정 글씨 */
+    body:not(.head-scrolled) .app-head { background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+    body:not(.head-scrolled) .app-head-title { color: #ffffff; text-shadow: 0 1px 12px rgba(0, 0, 0, 0.25); }
+    body:not(.head-scrolled) .head-btn { background: rgba(255, 255, 255, 0.22); color: #ffffff; box-shadow: none; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+    .head-actions { display: flex; gap: 8px; }
+    .app-head-title { transition: font-size 0.22s ease, color 0.22s ease; }
+    .head-btn { transition: background 0.22s ease, color 0.22s ease, transform 0.14s ease; }
+    /* 2층 전환줄: 사진 위에서는 바탕 없이, 붙으면 밝은 바탕 */
+    body:not(.head-scrolled) .sub-bar { background: transparent; }
+    /* 일정의 인사 카드: 별도 사진 대신 배경 사진 위에 바로 */
+    #tab-schedule .hero-banner {
+      background: none !important; border: 0; padding: 4px 2px 6px; box-shadow: none; overflow: visible;
+    }
+    #tab-schedule .hero-banner::before, #tab-schedule .hero-banner::after { display: none; }
+    #tab-schedule .hero-banner .hero-title h1 { font-size: 30px !important; text-shadow: 0 2px 16px rgba(0, 0, 0, 0.3); }
+    #tab-schedule .hero-banner .hero-dday { text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35); }
+    #tab-schedule .hero-banner .hero-room { -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); background: rgba(15, 23, 42, 0.38) !important; }
+    @media (min-width: 1024px) { body[data-screen="tab-schedule"] { --bd-h: 360px; } }
+
+    /* 찾기 판: 위에서 내려옴 */
+    .search-sheet {
+      position: fixed; inset: 0; z-index: 1450; background: rgba(245, 246, 247, 0.97);
+      -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); overflow-y: auto; animation: fadeIn 0.2s ease;
+      padding: calc(10px + env(safe-area-inset-top)) var(--gutter) 120px;
+    }
+    .search-sheet.hidden { display: none; }
+    .search-top { display: flex; align-items: flex-start; gap: 10px; max-width: 720px; margin: 0 auto; animation: searchDown 0.26s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    @keyframes searchDown { from { translate: 0 -24px; opacity: 0; } to { translate: 0 0; opacity: 1; } }
+    .search-top .gs-wrap { flex: 1; min-width: 0; }
+    .search-close { flex: none; height: 56px; padding: 0 6px; border: 0; background: transparent; font: inherit; font-size: 15px; font-weight: 600; color: var(--ink); cursor: pointer; }
+    .search-sheet .gs-results { max-height: none; }
+    .search-hint { max-width: 720px; margin: 20px auto 0; }
+    .search-hint.hidden { display: none; }
+    .search-hint-title { font-size: 13px; font-weight: 700; color: var(--ink-3); margin: 0 4px 10px; }
+    .search-hint-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .search-hint-chips button { min-height: 40px; padding: 0 16px; border-radius: 9999px; border: 1px solid var(--line); background: #ffffff; font: inherit; font-size: 14px; font-weight: 600; color: var(--ink); cursor: pointer; transition: transform 0.14s ease; }
+    .search-hint-chips button:active { transform: scale(0.95); }
   </style>
 </head>
 <body>
@@ -1085,10 +1138,15 @@
 <script>try { if (/^\d{6}$/.test(localStorage.getItem('hawaii_trip_code') || '')) document.getElementById('entry-gate').remove(); } catch (e) {}</script>
 
 <div class="app-shell">
+  <!-- 하와이 배경 사진: 모든 화면 위쪽에 깔림 (시간대별로 바뀜: 일출·낮·노을·밤) -->
+  <div id="app-backdrop" class="app-backdrop" aria-hidden="true"></div>
   <!-- 1층 머리줄: 다섯 메뉴 모두 같은 자리 (제목은 메뉴에 따라 바뀜) -->
   <header id="app-head" class="app-head">
     <h1 id="app-head-title" class="app-head-title">일정</h1>
+    <div class="head-actions">
+    <button id="head-search" type="button" class="head-btn" aria-label="장소·음식·영어 표현 찾기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.3-4.3"/></svg></button>
     <button id="head-share" type="button" class="head-btn" aria-label="앱 링크 복사해서 공유"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/></svg></button>
+    </div>
   </header>
 
 
@@ -1142,17 +1200,6 @@
             📸 공유앨범 ↗
           </a>
         </div>
-      </div>
-      <!-- 디자인 4단계: 한 번에 찾기 (일정·꿀팁·음식·영어 표현) -->
-      <div class="gs-wrap">
-        <div class="gs-bar">
-          <svg class="gs-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.3-4.3"/></svg>
-          <label for="gs-input" class="sr-only">찾기</label>
-          <input id="gs-input" type="search" inputmode="search" autocomplete="off" enterkeyhint="search" placeholder="장소 · 음식 · 영어 표현 찾기">
-          <button id="gs-clear" type="button" class="gs-clear hidden" aria-label="지우기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-          <button id="gs-all" type="button" class="gs-all" aria-label="전체 일정 한눈에"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></button>
-        </div>
-        <div id="gs-results" class="gs-results hidden" aria-live="polite"></div>
       </div>
 
       <div class="m3-card p-2.5 sched-daypicker">
@@ -1664,6 +1711,30 @@
 </div>
 
 <!-- MENU PREVIEW SHEET -->
+<!-- 어디서나 찾기 (머리줄 돋보기 버튼) -->
+<div id="search-sheet" class="search-sheet hidden" role="dialog" aria-modal="true" aria-label="찾기">
+  <div class="search-top">
+      <!-- 디자인 4단계: 한 번에 찾기 (일정·꿀팁·음식·영어 표현) -->
+    <div class="gs-wrap">
+        <div class="gs-bar">
+          <svg class="gs-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.3-4.3"/></svg>
+          <label for="gs-input" class="sr-only">찾기</label>
+          <input id="gs-input" type="search" inputmode="search" autocomplete="off" enterkeyhint="search" placeholder="장소 · 음식 · 영어 표현 찾기">
+          <button id="gs-clear" type="button" class="gs-clear hidden" aria-label="지우기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          <button id="gs-all" type="button" class="gs-all" aria-label="전체 일정 한눈에"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></button>
+        </div>
+        <div id="gs-results" class="gs-results hidden" aria-live="polite"></div>
+      </div>
+    <button id="search-close" type="button" class="search-close">닫기</button>
+  </div>
+  <div id="search-hint" class="search-hint">
+    <div class="search-hint-title">이렇게 찾아보세요</div>
+    <div class="search-hint-chips">
+      <button type="button" data-q="새우">새우</button><button type="button" data-q="쿠알로아">쿠알로아</button><button type="button" data-q="주차">주차</button><button type="button" data-q="화장실">화장실</button><button type="button" data-q="팁">팁</button><button type="button" data-q="코스트코">코스트코</button>
+    </div>
+  </div>
+</div>
+
 <!-- 디자인 3단계: 장소 화면 (일정 줄을 누르면 아래에서 올라옴) -->
 <div id="place-sheet" class="fixed inset-0 z-[1500] hidden" role="dialog" aria-modal="true" aria-labelledby="ps-title">
   <div id="ps-backdrop" class="absolute inset-0 bg-slate-950/50"></div>
@@ -1808,6 +1879,11 @@
     if (banner) {
       banner.style.backgroundColor = theme.bgColor;
       banner.style.backgroundImage = `${theme.gradient}, url('${theme.photoUrl}')`;
+    }
+    const backdrop = document.getElementById('app-backdrop');
+    if (backdrop) {
+      backdrop.style.backgroundColor = theme.bgColor;
+      backdrop.style.backgroundImage = `linear-gradient(180deg, rgba(10, 20, 35, 0.50) 0%, rgba(10, 20, 35, 0.18) 45%, rgba(10, 20, 35, 0.30) 100%), url('${theme.photoUrl}')`;
     }
     if (labelEl) labelEl.textContent = theme.label;
     if (notify) showToast(`${theme.label} 풍경으로 전환되었습니다.`);
@@ -3140,7 +3216,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611092258').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611092317').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -4483,6 +4559,7 @@
   function beforeScreenSwitch(from) { scrollMem[from] = window.scrollY; }
   function afterScreenSwitch(from, to) {
     const a = SCREEN_GROUP[from] || [0, 0], b = SCREEN_GROUP[to] || [0, 0];
+    document.body.dataset.screen = to;
     const head = document.getElementById('app-head-title');
     if (head && HEAD_TITLE[b[0]] !== head.textContent) {
       head.textContent = HEAD_TITLE[b[0]];
@@ -4586,6 +4663,7 @@
   window.openPlaceWithMorph = openPlaceWithMorph;
 
   function initMotion() {
+    document.body.dataset.screen = currentTab || 'tab-schedule';
     moveNavInd(false);
     document.querySelectorAll('.view-sw').forEach(sw => placeInd(vsInd(sw), sw.querySelector('.view-sw-btn.active'), false));
     window.addEventListener('resize', () => {
@@ -4651,6 +4729,53 @@
       return;
     }
     switchMainScreen(v);
+  });
+
+  /* ---- 어디서나 찾기: 머리줄 돋보기 → 위에서 내려오는 찾기 판 ---- */
+  function openSearchSheet() {
+    const sh = document.getElementById('search-sheet');
+    if (!sh.classList.contains('hidden')) return;
+    sheetOpened(sh);
+    sh.classList.remove('hidden');
+    navPush({ overlay: 'search' });
+    document.body.style.overflow = 'hidden';
+    const input = document.getElementById('gs-input');
+    document.getElementById('search-hint').classList.toggle('hidden', !!input.value.trim());
+    input.focus({ preventScroll: true });
+    if (input.value) input.select();
+  }
+  function hideSearchSheet() {
+    const sh = document.getElementById('search-sheet');
+    if (!sh || sh.classList.contains('hidden')) return;
+    document.getElementById('gs-input').blur();
+    sheetClose(sh, sh.querySelector('.search-top'));
+    if (document.getElementById('place-sheet').classList.contains('hidden')) document.body.style.overflow = '';
+  }
+  function closeSearchSheet() {
+    if (history.state && history.state.overlay === 'search') history.back(); else hideSearchSheet();
+  }
+  // 결과로 이동할 때: 찾기 판은 닫고, 뒤로가기 기록에서도 찾기를 지움
+  function leaveSearch() {
+    const sh = document.getElementById('search-sheet');
+    sh.classList.add('hidden');
+    document.body.style.overflow = '';
+    try { if (history.state && history.state.overlay === 'search') history.replaceState(Object.assign({}, history.state, { overlay: undefined }), ''); } catch (e) {}
+  }
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('head-search').addEventListener('click', openSearchSheet);
+    document.getElementById('search-close').addEventListener('click', closeSearchSheet);
+    document.getElementById('search-sheet').addEventListener('click', e => {
+      const c = e.target.closest('[data-q]');
+      if (c) { const input = document.getElementById('gs-input'); input.value = c.dataset.q; renderGlobalSearch(); document.getElementById('search-hint').classList.add('hidden'); }
+      if (e.target.id === 'search-sheet') closeSearchSheet();
+    });
+    document.getElementById('gs-input').addEventListener('input', () => {
+      document.getElementById('search-hint').classList.toggle('hidden', !!document.getElementById('gs-input').value.trim());
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === '/' && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '')) { e.preventDefault(); openSearchSheet(); }
+      if (e.key === 'Escape' && !document.getElementById('search-sheet').classList.contains('hidden')) closeSearchSheet();
+    });
   });
 
   /* ===== 디자인 4단계: 인사 · D-day · 한 번에 찾기 =====
@@ -4767,13 +4892,14 @@
     input.addEventListener('input', () => { clearTimeout(t); t = setTimeout(renderGlobalSearch, 120); });
     input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); });
     document.getElementById('gs-clear').addEventListener('click', () => { input.value = ''; renderGlobalSearch(); input.focus(); });
-    document.getElementById('gs-all').addEventListener('click', () => { showScheduleAll(); document.querySelector('.sched-daypicker').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+    document.getElementById('gs-all').addEventListener('click', () => { leaveSearch(); switchMainScreen('tab-schedule'); showScheduleAll(); document.querySelector('.sched-daypicker').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
     document.getElementById('gs-results').addEventListener('click', e => {
       const p = e.target.closest('[data-gs-plan]');
-      if (p) { const [d, si] = p.dataset.gsPlan.split(',').map(Number); updateDayView(d); openPlaceSheet(d, si); return; }
+      if (p) { const [d, si] = p.dataset.gsPlan.split(',').map(Number); leaveSearch(); switchMainScreen('tab-schedule'); updateDayView(d); openPlaceSheet(d, si); return; }
       const f = e.target.closest('[data-gs-food]');
-      if (f) { gsGoFood(f.dataset.gsFood); return; }
+      if (f) { leaveSearch(); gsGoFood(f.dataset.gsFood); return; }
       if (e.target.closest('[data-gs-phrase]')) {
+        leaveSearch();
         window.openPhraseGuide();
         const ps = document.getElementById('phrase-search');
         if (ps) { ps.value = input.value.trim(); renderPhraseGuide(); }
@@ -5273,6 +5399,7 @@
         if (st.overlay !== 'menu' && !document.getElementById('menu-sheet').classList.contains('hidden')) hideMenuSheet();
         if (st.overlay !== 'flight') hideFlightModal();
         if (st.overlay !== 'place' && st.overlay !== 'menu') hidePlaceSheet();
+        if (st.overlay !== 'search') hideSearchSheet();
         if (st.oahu) currentOahuFilter = st.oahu;
         if (st.tab && st.tab !== currentTab) switchMainScreen(st.tab, { fromHistory: true });
         if (st.day && !st.base && st.day !== currentDayIndex) updateDayView(st.day);   // 맨 처음 기록으로 돌아올 때는 보던 날짜 유지
