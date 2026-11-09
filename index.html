@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611091437">
+  <link rel="stylesheet" href="/tailwind.css?v=202611091449">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -2131,7 +2131,7 @@
     // D2·D5 식당 가격 최신화 (2026.11 공식 온라인 메뉴 기준, 2026.11.04 요청)
     { day: 2, costIndex: 1, cost: 'Blue Water Garlic Shrimp 플레이트 $23.00 · Coconut Shrimp $22.00 · 키즈 메뉴 $12.00 (2026.11 공식 온라인 메뉴)' },
     { day: 5, costIndex: 0, cost: "Boots & Kimo's Banana Pancake w/ Macadamia Nut Sauce $16.99 · Macadamia Nut Sauce Pancakes $15.99 (2026.11 공식 메뉴)" },
-    { day: 3, slot: '오전', set: { mapQuery: '66-190 Kamehameha Hwy Haleiwa HI' } },
+    { day: 3, slot: '오전', set: { mapQuery: '66-190 Kamehameha Hwy Haleiwa HI', placeName: "훌리훌리 치킨 (Ray's Kiawe Broiled Chicken)" } },
     { day: 3, costIndex: 0, cost: "Ray's 통닭 1마리 약 $16 (토·일 10:00~16:00경 · 전화 예약 808-351-6258 · 현금 준비)" },
     // 본 렌터카 예약 확정: Dollar Rent A Car 미니밴 (2/18 12:00 픽업 ~ 2/28 12:00 반납, 공항) (2026.11.04 예약 메일 반영)
     { day: 1, slot: '오전', set: { desc: '✈️ KE051 인천 22:20 출발 ➔ 호놀룰루 11:10 도착 ➔ 입국·짐 찾기 후 셔틀로 렌터카 센터 이동 ➔ 12:00 Dollar 렌터카 미니밴(기아 카니발급 8인승) 픽업' },
@@ -2456,6 +2456,13 @@
   /* ===== 디자인 3단계: 일정 사진 · 장소 화면 =====
    *   사진은 음식 카드와 같은 중계 기능(/api/food-photo)을 씀 — 일정의 mapQuery가 허용 목록에 자동으로 들어감 (build.sh)
    *   줄이 화면에 보일 때만 불러옴 (사진 사용량 절약) · 같은 장소는 한 번만 받음 */
+  /* [DATA] 사진 전용 검색어 — 길안내 주소(mapQuery)로는 구글 사진이 없는 곳만 적음 (길안내·지도는 원래 주소 그대로)
+   *   오른쪽 값은 이미 사진 허용 목록에 있는 검색어(추천 음식 query 또는 다른 일정 mapQuery)를 씀 */
+  const PHOTO_QUERY = {
+    '66-190 Kamehameha Hwy Haleiwa HI': "Ray's Kiawe Broiled Chicken Haleiwa HI",          // 훌리훌리 치킨: 주소 검색은 사진 없음 → 가게 이름
+    'Consolidated Rent-A-Car Facility Honolulu HI': 'Daniel K. Inouye International Airport Honolulu HI'   // 렌터카 반납장: 사진 없음 → 공항 사진
+  };
+  function photoQ(q) { return PHOTO_QUERY[q] || q; }
   async function placePhoto(q) {
     if (!q) return null;
     try {
@@ -2514,9 +2521,9 @@
     hero.querySelectorAll('img').forEach(i => i.remove());
     hero.classList.remove('has-img');
     attr.textContent = '';
-    if (slot.mapQuery) placePhoto(slot.mapQuery).then(r => {
+    if (slot.mapQuery) placePhoto(photoQ(slot.mapQuery)).then(r => {
       if (!r || document.getElementById('ps-title').textContent !== slot.placeName) return;
-      if (r.mapsUri) map.href = r.mapsUri;
+      if (r.mapsUri && !PHOTO_QUERY[slot.mapQuery]) map.href = r.mapsUri;
       if (!r.img) return;
       const img = new Image();
       img.alt = ''; img.decoding = 'async';
@@ -2589,7 +2596,7 @@
         return `
           <div class="slot-item ${isNow ? 'is-now' : ''}" data-si="${si}">
             <button type="button" class="slot-row" onclick="openPlaceSheet(${data.day}, ${si})" aria-label="${escAttr(slot.placeName)} 자세히 보기">
-              <span class="slot-thumb" data-pq="${escAttr(slot.mapQuery || '')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.5-7-11a7 7 0 0114 0c0 6.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+              <span class="slot-thumb" data-pq="${escAttr(photoQ(slot.mapQuery || ''))}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.5-7-11a7 7 0 0114 0c0 6.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
               <span class="slot-txt">
                 <span class="slot-meta"><span class="slot-tag ${slot.color}">${slot.label}${slot.time ? ` · ${slot.time}` : ''}</span>${isNow ? '<span class="slot-now">지금</span>' : ''}${isNext ? '<span class="slot-next">다음</span>' : ''}${tips.length ? `<span class="slot-count">꿀팁 ${tips.reduce((n, it) => n + it.tips.length, 0)}</span>` : ''}</span>
                 <span class="slot-name">${slot.placeName}</span>
@@ -2915,7 +2922,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611091437').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611091449').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
