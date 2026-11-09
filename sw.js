@@ -4,7 +4,7 @@
 //   → 같은 이름으로 이미지를 바꿔도 다음번 열 때 반영됨
 // - 글꼴·배경 사진·지도 타일: 한 번 받으면 저장해 두고 재사용 (현지 데이터 절약 · 오프라인)
 // - Supabase(정산 데이터)·날씨 API: 저장하지 않음 (항상 최신)
-const VERSION = '202611081120';
+const VERSION = '202611091418';
 const CACHE = 'hawaii-portal-' + VERSION;
 const RUNTIME = 'hawaii-runtime-v1';
 const TILES = 'hawaii-tiles-v1';
@@ -17,6 +17,9 @@ const PRECACHE = [
   '/vendor/leaflet/leaflet.css',
   '/vendor/leaflet/leaflet.js',
   '/vendor/supabase.js',
+  '/vendor/fonts/instrument-sans-latin-400-normal.woff2',
+  '/vendor/fonts/instrument-sans-latin-600-normal.woff2',
+  '/vendor/fonts/instrument-sans-latin-700-normal.woff2',
   '/road-legs.json?v=' + VERSION,
   '/resort-map-v.webp',
   '/icon-192.png',
