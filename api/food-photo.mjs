@@ -4,7 +4,7 @@
 //        → { mapsUri, photos: [{ name, author, authorUri }], i, img }   (장소 번호가 있으면 '장소 정보' 1회, 없으면 '장소 검색' 1회 · 6시간 재사용)
 //   2) 사진 한 장: /api/food-photo?q=<검색어>&p=<목록의 name>
 //        → { img }                                             (사진 1회 · 장소 검색은 다시 하지 않음)
-//   허용 목록(_food-queries.mjs)에 있는 검색어만 처리 (build.sh가 index.html의 추천 음식에서 자동 생성)
+//   허용 목록(_food-queries.mjs)에 있는 검색어만 처리 (build.sh가 index.html의 추천 음식 query + 일정 mapQuery에서 자동 생성)
 import QUERIES from './_food-queries.mjs';
 import PLACE_IDS from './_place-ids.mjs';
 
@@ -13,7 +13,7 @@ const ORIGINS = /^https:\/\/(hawaii-seven\.vercel\.app|hawaii-[a-z0-9-]+-aniac1\
 const PHOTO_NAME = /^places\/[A-Za-z0-9_-]+\/photos\/[A-Za-z0-9_-]+$/;
 
 async function photoUri(key, name) {
-  const m = await fetch(`https://places.googleapis.com/v1/${name}/media?maxWidthPx=320&maxHeightPx=320&skipHttpRedirect=true&key=${key}`);
+  const m = await fetch(`https://places.googleapis.com/v1/${name}/media?maxWidthPx=800&maxHeightPx=800&skipHttpRedirect=true&key=${key}`);
   if (!m.ok) { const e = new Error('photo ' + m.status); e.status = m.status; throw e; }
   return (await m.json()).photoUri || null;
 }
