@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611100051">
+  <link rel="stylesheet" href="/tailwind.css?v=202611100102">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -1152,23 +1152,39 @@
     .m3-segmented.seg-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
     .m3-segmented.seg-5 .m3-seg-btn { font-size: 12.5px; padding: 0 2px; letter-spacing: -0.3px; }
     @media (max-width: 420px) { .m3-segmented.seg-5 .m3-seg-btn .ui-ic { display: none; } }
-    /* 사용법: 눌러서 펼치는 항목 */
-    .help-list details { border-radius: 20px; }
-    .help-list details + details { border-top: 1px solid #eceef0; border-radius: 0; }
-    .help-list summary {
-      list-style: none; cursor: pointer; min-height: 52px; padding: 0 14px; display: flex; align-items: center; justify-content: space-between;
-      font-size: 15px; font-weight: 700; color: var(--ink);
+    /* 펼침 목록 공통 디자인 (사용법 · 꿀팁 · 영어 · 장소별 영어 창)
+       · 카드 안 한 줄씩, 줄 사이 가는 선 · 제목 15px · 오른쪽 꺾쇠 · 글자 시작선 20px로 맞춤 */
+    .acc > * + * { margin-top: 0 !important; }
+    .acc > details { border: 0 !important; border-radius: 0 !important; background: transparent !important; overflow: visible; }
+    .acc.acc > details + details { border-top: 1px solid #eceef0 !important; }
+    .m3-card.p-4 > .acc, .m3-card.p-3\.5 > .acc { margin-left: -8px; margin-right: -8px; }
+    #menu-sheet-body.acc > details { margin-left: -4px; margin-right: -4px; }
+    .acc > details > summary {
+      list-style: none; cursor: pointer; min-height: 52px; padding: 10px 12px !important; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      font-size: 15px; font-weight: 700; color: var(--ink); -webkit-tap-highlight-color: transparent; border-radius: 14px;
     }
-    .help-list summary::-webkit-details-marker { display: none; }
-    .help-list summary::after { content: ''; width: 9px; height: 9px; border-right: 2px solid var(--ink-3); border-bottom: 2px solid var(--ink-3); transform: rotate(45deg); transition: transform 0.2s ease; margin-top: -4px; }
-    .help-list details[open] summary::after { transform: rotate(-135deg); margin-top: 4px; }
-    .help-list details > :not(summary) { margin: 0 14px; font-size: 13.5px; line-height: 1.65; color: #3a3f45; }
-    .help-list details > :last-child { padding-bottom: 14px; }
+    .acc > details > summary:active { background: var(--bg); }
+    .acc > details > summary::-webkit-details-marker { display: none; }
+    .acc > details > summary > span:first-child { font-size: 15px !important; font-weight: 700 !important; color: var(--ink); line-height: 1.4; }
+    .acc > details > summary .text-slate-500 { font-weight: 500 !important; color: var(--ink-3) !important; }
+    .acc > details > summary::after {
+      content: ''; flex: none; width: 9px; height: 9px; margin: -4px 4px 0 0;
+      border-right: 2px solid var(--ink-3); border-bottom: 2px solid var(--ink-3); transform: rotate(45deg); transition: transform 0.22s ease, margin 0.22s ease;
+    }
+    .acc > details[open] > summary::after { transform: rotate(-135deg); margin-top: 4px; }
+    .acc > details > :not(summary) { margin: 0 12px; padding-left: 0 !important; padding-right: 0 !important; font-size: 13.5px; line-height: 1.65; color: #3a3f45; }
+    .acc > details > :last-child { padding-bottom: 14px !important; }
+    /* 펼친 안쪽 상자: 연회색 둥근 상자로 통일 (확인 필요 상자만 빨간 테두리) */
+    .acc .bg-white.rounded-xl.border { background: var(--bg) !important; border-radius: 16px !important; border-color: transparent !important; padding: 12px !important; }
+    .acc .bg-white.rounded-xl.border.border-rose-200 { border-color: #fecdd3 !important; background: #fff5f6 !important; }
+    .acc .bg-amber-50.rounded-xl { border-radius: 16px !important; border-color: transparent !important; }
     .help-list ol, .help-list ul { padding-left: 18px; }
     .help-list ol { list-style: decimal; } .help-list ul { list-style: disc; }
     .help-list li + li { margin-top: 4px; }
     .help-list li ul { margin-top: 4px; }
     .help-list p { margin-top: 8px; }
+    /* 속도: 화면 밖 음식 카드는 그리기를 미룸 (첫 전환이 빨라짐) */
+    #food-list > .food-card { content-visibility: auto; contain-intrinsic-size: auto 150px; }
   </style>
 </head>
 <body>
@@ -1736,7 +1752,7 @@
             <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11.5px] font-bold nowrap-btn">2026.11 확인 기준</span>
           </div>
           <p class="text-[12px] text-slate-600">날짜를 누르면 펼쳐집니다. <span class="font-extrabold text-rose-700">⚠️</span> 표시는 현재 일정표 내용과 달라 확인이 필요한 항목입니다.</p>
-          <div id="place-tips-list" class="space-y-2"></div>
+          <div id="place-tips-list" class="acc"></div>
           <div class="text-[11.5px] text-slate-500">영업시간·요금·예약 규칙은 바뀔 수 있으니 방문 전 공식 사이트에서 한 번 더 확인하세요.</div>
         </div>
       </div>
@@ -1746,8 +1762,7 @@
         <div class="m3-card p-4 space-y-2">
           <h3 class="text-[15.5px] font-extrabold text-slate-900">❓ 하와이 포털 사용법</h3>
           <p class="text-[13px] text-slate-600 leading-relaxed">일정·지도·맛집·정산·환율·준비물을 한곳에서 보는 우리 가족 전용 앱이에요. 궁금한 항목을 눌러 펼쳐 보세요.</p>
-        </div>
-        <div class="m3-card p-2 help-list">
+          <div class="help-list acc">
           <details open>
             <summary>시작하기 · 설치</summary>
             <ol>
@@ -1850,6 +1865,7 @@
               <li><b>지출을 잘못 등록했어요 · 일정이 바뀌었어요</b> → 현익에게 알려 주세요.</li>
             </ul>
           </details>
+          </div>
         </div>
       </div>
 
@@ -1862,7 +1878,7 @@
           <p class="text-[12px] text-slate-600 leading-relaxed">문장을 누르면 영어 발음을 들려줘요 (🔊). 화면을 보여 주기만 해도 통해요. 일정표 각 칸의 <b>🗣️ 영어</b> 버튼을 누르면 그 장소에 맞는 표현만 모아 볼 수 있어요.</p>
           <input id="phrase-search" type="search" inputmode="search" autocomplete="off" placeholder="🔍 찾기 (예: 화장실, 포장, refill)" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-[14px] font-semibold focus:outline-none focus:border-sky-600">
           <div id="phrase-filter" class="flex flex-wrap gap-1.5"></div>
-          <div id="phrase-list" class="space-y-2"></div>
+          <div id="phrase-list" class="acc"></div>
         </div>
       </div>
     </section>
@@ -1964,7 +1980,7 @@
       </div>
       <button id="menu-sheet-close" type="button" class="w-8 h-8 rounded-full bg-slate-100 font-extrabold shrink-0">✕</button>
     </div>
-    <div id="menu-sheet-body" class="overflow-y-auto px-4 py-3 space-y-3"></div>
+    <div id="menu-sheet-body" class="overflow-y-auto px-4 py-3 space-y-3 acc"></div>
   </div>
 </div>
 
@@ -2384,7 +2400,7 @@
             <span class="text-[13.5px] font-extrabold text-slate-900">${g.head} <span class="font-bold text-slate-500">· ${g.title}</span></span>
             <span class="flex items-center gap-1 nowrap-btn">
               ${hasWarn ? '<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[12.5px] font-extrabold">⚠️ 확인</span>' : ''}
-              <span class="text-slate-500 text-[13px]">▾</span>
+              
             </span>
           </summary>
           <div class="px-3 pb-3 space-y-2.5">
@@ -3412,7 +3428,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611100051').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611100102').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -4629,7 +4645,7 @@
       <details class="rounded-2xl border border-slate-200 bg-slate-50 overflow-hidden" ${open ? 'open' : ''}>
         <summary class="cursor-pointer list-none px-3 py-3 flex items-center justify-between gap-2">
           <span class="text-[13.5px] font-extrabold text-slate-900">${sc.hi ? '🌺 ' : ''}${sc.title} <span class="font-bold text-slate-500">· ${(items || sc.items).length}</span></span>
-          <span class="text-slate-500 text-[13px]">▾</span>
+          
         </summary>
         <div class="px-2.5 pb-2.5 space-y-1.5">
           ${phraseRowsHtml(items || sc.items)}
@@ -4647,6 +4663,7 @@
     if (!scenes.length) return;
     document.getElementById('menu-sheet-title').textContent = `🗣️ ${slot.placeName}`;
     document.getElementById('menu-sheet-sub').textContent = `여기서 쓸 영어 표현 · 문장을 누르면 발음을 들려줘요`;
+    sheetOpened(document.getElementById('menu-sheet'));
     document.getElementById('menu-sheet-body').innerHTML = scenes.map((sc, i) => phraseSceneHtml(sc, null, i === 0)).join('')
       + `<button type="button" onclick="closeMenuSheet(); setTimeout(() => openPhraseGuide(), 60)" class="block w-full py-2.5 rounded-xl bg-slate-900 text-white text-[13px] font-extrabold text-center">📚 전체 표현 보기</button><div class="h-2"></div>`;
     document.getElementById('menu-sheet').classList.remove('hidden');
@@ -5002,52 +5019,53 @@
     if (hero && window.ResizeObserver) new ResizeObserver(() => fitBackdrop()).observe(hero);
   });
 
-  /* 사용법: 한 항목만 열림 + 부드럽게 열고 닫힘 */
-  function initHelpAccordion() {
-    const list = document.querySelector('.help-list');
-    if (!list) return;
-    const D = 260, EASE_IO = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
-    const anim = el => el._anim && el._anim.playState === 'running';
-    function closeOne(d) {
-      if (!d.open) return;
-      const sum = d.querySelector('summary');
-      if (!MOTION_OK() || !d.animate) { d.open = false; return; }
-      if (anim(d)) d._anim.cancel();
-      d._closing = true;
-      d.style.overflow = 'hidden';
-      d._anim = d.animate([{ height: d.offsetHeight + 'px' }, { height: sum.offsetHeight + 'px' }], { duration: D, easing: EASE_IO });
-      d._anim.onfinish = () => { d.open = false; d._closing = false; d.style.overflow = ''; d._anim = null; };
-      d._anim.oncancel = () => { d._closing = false; d.style.overflow = ''; };
-    }
-    function openOne(d) {
-      const sum = d.querySelector('summary');
-      const start = d.offsetHeight;
-      d.open = true;
-      if (!MOTION_OK() || !d.animate) return;
-      if (anim(d)) d._anim.cancel();
-      const end = d.offsetHeight;
-      d.style.overflow = 'hidden';
-      d._anim = d.animate([{ height: start + 'px' }, { height: end + 'px' }], { duration: D, easing: EASE_IO });
-      d._anim.onfinish = () => { d.style.overflow = ''; d._anim = null; };
-      d._anim.oncancel = () => { d.style.overflow = ''; };
-      [...d.children].filter(c => c !== sum).forEach(c => c.animate && c.animate([{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'none' }], { duration: D, easing: EASE_IO }));
-    }
-    list.querySelectorAll('details > summary').forEach(sum => sum.addEventListener('click', e => {
-      e.preventDefault();
-      const d = sum.parentElement;
-      if (d.open && !d._closing) { closeOne(d); return; }
-      list.querySelectorAll('details[open]').forEach(o => { if (o !== d && !o._closing) closeOne(o); });
-      if (d._closing) { d._anim.cancel(); d.open = false; }   // 닫히는 중에 다시 누르면 다시 열기
-      openOne(d);
-      // 열린 항목 제목이 화면 위로 가려지면 보이게
-      setTimeout(() => {
-        const top = sum.getBoundingClientRect().top;
-        const limit = (document.querySelector('.app-head') || {}).offsetHeight + 70 || 140;
-        if (top < limit) window.scrollBy({ top: top - limit, behavior: MOTION_OK() ? 'smooth' : 'auto' });
-      }, D + 30);
-    }));
+  /* 펼침 목록 공통 (사용법 · 꿀팁 · 영어 · 장소별 영어 창): 한 번에 한 항목만, 부드럽게 열고 닫힘
+   *   목록이 다시 그려져도 동작하도록 문서 한 곳에서 클릭을 받음 (항목마다 이벤트를 달지 않음 → 가벼움)
+   *   움직임은 높이·투명도만 · 0.26초 · '움직임 줄이기'면 바로 열고 닫음 */
+  const ACC_D = 260;
+  function accClose(d) {
+    if (!d.open) return;
+    if (d._anim) d._anim.cancel();
+    if (!MOTION_OK() || !d.animate) { d.open = false; return; }
+    const sum = d.querySelector('summary');
+    d._closing = true;
+    d.style.overflow = 'hidden';
+    d._anim = d.animate([{ height: d.offsetHeight + 'px' }, { height: sum.offsetHeight + 'px' }], { duration: ACC_D, easing: EASE });
+    d._anim.onfinish = () => { d.open = false; d._closing = false; d.style.overflow = ''; d._anim = null; };
+    d._anim.oncancel = () => { d._closing = false; d.style.overflow = ''; };
   }
-  document.addEventListener('DOMContentLoaded', initHelpAccordion);
+  function accOpen(d) {
+    if (d._anim) d._anim.cancel();
+    d.open = false;
+    const start = d.offsetHeight;
+    d.open = true;
+    if (!MOTION_OK() || !d.animate) return;
+    const end = d.offsetHeight;
+    d.style.overflow = 'hidden';
+    d._anim = d.animate([{ height: start + 'px' }, { height: end + 'px' }], { duration: ACC_D, easing: EASE });
+    d._anim.onfinish = () => { d.style.overflow = ''; d._anim = null; };
+    d._anim.oncancel = () => { d.style.overflow = ''; };
+    const sum = d.querySelector('summary');
+    [...d.children].forEach(c => { if (c !== sum && c.animate) c.animate([{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'none' }], { duration: ACC_D, easing: EASE }); });
+  }
+  document.addEventListener('click', e => {
+    const sum = e.target.closest && e.target.closest('.acc > details > summary');
+    if (!sum) return;
+    e.preventDefault();
+    const d = sum.parentElement, list = d.parentElement;
+    if (d.open && !d._closing) { accClose(d); return; }
+    [...list.children].forEach(o => { if (o !== d && o.tagName === 'DETAILS' && o.open && !o._closing) accClose(o); });
+    accOpen(d);
+    // 위 항목이 접히며 새로 연 제목이 머리줄 뒤로 가려지면 보이게 (화면 안에서 스크롤하는 창은 그 안에서)
+    setTimeout(() => {
+      const box = sum.closest('.overflow-y-auto, .ps-scroll');
+      const top = sum.getBoundingClientRect().top;
+      if (box) { const bt = box.getBoundingClientRect().top; if (top < bt) box.scrollBy({ top: top - bt - 8, behavior: MOTION_OK() ? 'smooth' : 'auto' }); return; }
+      const limit = ((document.querySelector('.app-head') || {}).offsetHeight || 64) + 70;
+      if (top < limit) window.scrollBy({ top: top - limit, behavior: MOTION_OK() ? 'smooth' : 'auto' });
+    }, ACC_D + 30);
+  });
+
 
   /* ===== 하와이 느낌: 그날 장소 사진 배경 · 현지 시각과 노을 ===== */
   /* [DATA] 일정 화면 배경으로 쓸 그날의 대표 장소 (일정 mapQuery 값 — 사진 허용 목록에 이미 있음) */
@@ -6148,6 +6166,19 @@
       run();
       new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true, characterData: true });
     });
+  })();
+</script>
+<script>
+  /* 반응 속도 점검: 주소 끝에 ?perf=1 을 붙이면 왼쪽 아래에 '누른 뒤 화면이 바뀌기까지 걸린 최대 시간'과 '0.05초 넘게 멈춘 작업 수'를 보여 줌 */
+  (function () {
+    if (!/[?&]perf=1/.test(location.search) || !('PerformanceObserver' in window)) return;
+    let maxI = 0, longN = 0, longMax = 0, last = '';
+    const box = document.createElement('div');
+    box.style.cssText = 'position:fixed;left:8px;bottom:calc(96px + env(safe-area-inset-bottom));z-index:3000;padding:6px 10px;border-radius:12px;background:rgba(33,37,41,.88);color:#fff;font:600 11.5px/1.4 system-ui;pointer-events:none';
+    const upd = () => { box.textContent = `반응 최대 ${Math.round(maxI)}ms${last ? ' (' + last + ')' : ''} · 긴 작업 ${longN}회 / 최대 ${Math.round(longMax)}ms`; box.style.background = maxI > 200 ? 'rgba(190,18,60,.9)' : 'rgba(33,37,41,.88)'; };
+    try { new PerformanceObserver(l => { l.getEntries().forEach(e => { if (e.interactionId && e.duration > maxI) { maxI = e.duration; last = e.name; } }); upd(); }).observe({ type: 'event', durationThreshold: 16, buffered: true }); } catch (e) {}
+    try { new PerformanceObserver(l => { l.getEntries().forEach(e => { longN++; longMax = Math.max(longMax, e.duration); }); upd(); }).observe({ type: 'longtask', buffered: true }); } catch (e) {}
+    document.addEventListener('DOMContentLoaded', () => { document.body.appendChild(box); upd(); });
   })();
 </script>
 </body>
