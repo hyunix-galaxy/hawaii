@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611092349">
+  <link rel="stylesheet" href="/tailwind.css?v=202611100000">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -1143,6 +1143,10 @@
     @keyframes waveL { from { transform: translateX(0); } to { transform: translateX(-260px); } }
     @keyframes waveR { from { transform: translateX(-200px); } to { transform: translateX(0); } }
     @media (prefers-reduced-motion: reduce) { .app-wave .wave { animation: none !important; } }
+
+    /* 머리줄 오른쪽: 찾기 · 공유앨범 (사진 박스의 공유앨범 버튼은 겹쳐서 숨김) */
+    a.head-btn { text-decoration: none; }
+    #app-hero-banner .hero-room [data-album-link] { display: none; }
   </style>
 </head>
 <body>
@@ -1197,7 +1201,7 @@
     </div>
     <div class="head-actions">
     <button id="head-search" type="button" class="head-btn" aria-label="장소·음식·영어 표현 찾기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.3-4.3"/></svg></button>
-    <button id="head-share" type="button" class="head-btn" aria-label="앱 링크 복사해서 공유"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/></svg></button>
+    <a id="head-album" href="https://photos.app.goo.gl/T7oLKmuA24sTGZky6" data-album-link target="_blank" rel="noopener noreferrer" class="head-btn" aria-label="공유앨범 열기 (사진 보기·올리기)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 016.5 6h1.8l1.5-2h4.4l1.5 2h1.8A2.5 2.5 0 0120 8.5v9a2.5 2.5 0 01-2.5 2.5h-11A2.5 2.5 0 014 17.5z"/><circle cx="12" cy="13" r="3.5"/></svg></a>
     </div>
   </header>
 
@@ -3271,7 +3275,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611092349').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611100000').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -4772,7 +4776,11 @@
     enableDragClose('.ps-hero, .ps-grab', document.querySelector('#place-sheet .ps-panel'), () => closePlaceSheet());
     enableDragClose('.sheet-head', document.querySelector('#menu-sheet .sheet-panel'), () => closeMenuSheet());
     enableDragClose('.sheet-head', document.querySelector('#flight-modal .sheet-panel'), () => document.getElementById('close-flight-modal-btn').click());
-    document.getElementById('head-share').addEventListener('click', () => copyTextToClipboard(window.location.href, 'Mahalo! 앱 링크를 복사했어요 · 카톡에 붙여 넣어 보내세요'));
+    // 공유앨범: 처음 한 번만 올리는 방법 안내
+    document.getElementById('head-album').addEventListener('click', () => {
+      try { if (localStorage.getItem('hawaii_album_tip')) return; localStorage.setItem('hawaii_album_tip', '1'); } catch (e) {}
+      showToast('구글 포토 앨범에서 + 를 누르면 사진을 올릴 수 있어요');
+    });
   }
   document.addEventListener('DOMContentLoaded', initMotion);
 
