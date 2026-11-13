@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=2">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611131042">
+  <link rel="stylesheet" href="/tailwind.css?v=202611131114">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -1188,6 +1188,20 @@
     /* 환율: 초기화 버튼은 금액 버튼과 구분 */
     #fx-quick .tip-chip { justify-content: center; }
     #fx-quick .fx-reset { grid-column: span 2; background: #fff !important; color: #be123c !important; border-color: #fecdd3 !important; }
+    /* 앱 열 때 사용 팁 */
+    #tip-sheet .sheet-panel { border-radius: 32px 32px 0 0; padding-bottom: env(safe-area-inset-bottom); animation: sheetUp 0.26s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    @media (min-width: 768px) { #tip-sheet .sheet-panel { border-radius: 32px; bottom: 24px; animation: fadeIn 0.2s ease; } }
+    .tip-card { display: flex; gap: 14px; align-items: flex-start; padding: 16px; border-radius: 20px; background: var(--bg); }
+    .tip-card .tip-emo { flex: none; width: 44px; height: 44px; border-radius: 14px; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+    .tip-card h4 { font-size: 15px; font-weight: 800; color: var(--ink); line-height: 1.4; }
+    .tip-card p { margin-top: 4px; font-size: 13.5px; line-height: 1.6; color: #3a3f45; }
+    .tip-btn { min-height: 48px; border-radius: 999px; font-size: 14.5px; font-weight: 800; }
+    .tip-btn-1 { background: var(--sea); color: #fff; }
+    .tip-btn-2 { background: var(--bg); color: var(--ink); }
+    .tip-btn:active { transform: scale(0.97); }
+    .tip-dots { display: flex; gap: 4px; justify-content: center; margin-top: 12px; }
+    .tip-dots i { width: 6px; height: 6px; border-radius: 3px; background: #d5d9dd; transition: width .2s ease, background .2s ease; }
+    .tip-dots i.on { width: 16px; background: var(--sea); }
   </style>
 </head>
 <body>
@@ -1766,6 +1780,7 @@
         <div class="m3-card p-4 space-y-2">
           <h3 class="text-[15.5px] font-extrabold text-slate-900">❓ 하와이 포털 사용법</h3>
           <p class="text-[13px] text-slate-600 leading-relaxed">일정·지도·맛집·정산·환율·준비물을 한곳에서 보는 우리 가족 전용 앱이에요. 궁금한 항목을 눌러 펼쳐 보세요.</p>
+          <button id="help-open-tips" type="button" class="tip-chip">💡 사용 팁 넘겨 보기</button>
           <div class="help-list acc">
           <details open>
             <summary>시작하기 · 설치</summary>
@@ -1974,6 +1989,25 @@
   </div>
 </div>
 
+<!-- 앱 열 때 사용 팁 (하루 한 번) -->
+<div id="tip-sheet" class="fixed inset-0 z-[1700] hidden" role="dialog" aria-modal="true" aria-labelledby="tip-sheet-title">
+  <div id="tip-sheet-backdrop" class="absolute inset-0 bg-slate-950/50"></div>
+  <div class="sheet-panel absolute left-1/2 -translate-x-1/2 bottom-0 w-full max-w-[480px] bg-white shadow-2xl flex flex-col">
+    <div class="sheet-head flex items-center justify-between gap-2 px-5 pt-5 pb-1">
+      <div class="min-w-0">
+        <div id="tip-sheet-title" class="text-[16px] font-extrabold text-slate-900">오늘의 사용 팁</div>
+        <div id="tip-sheet-count" class="text-[12px] font-bold text-slate-500 mt-0.5"></div>
+      </div>
+      <button id="tip-sheet-close" type="button" class="w-8 h-8 rounded-full bg-slate-100 font-extrabold shrink-0" aria-label="닫기">✕</button>
+    </div>
+    <div id="tip-sheet-body" class="px-5 pt-3 pb-1" aria-live="polite"></div>
+    <div class="px-5 pt-3 pb-2 grid grid-cols-2 gap-2">
+      <button id="tip-sheet-help" type="button" class="tip-btn tip-btn-2">사용법 전체</button>
+      <button id="tip-sheet-next" type="button" class="tip-btn tip-btn-1">다음 팁 ›</button>
+    </div>
+    <button id="tip-sheet-off" type="button" class="mx-auto mb-3 px-3 py-2 text-[12.5px] font-bold text-slate-500 underline underline-offset-2"></button>
+  </div>
+</div>
 <div id="menu-sheet" class="fixed inset-0 z-[1600] hidden">
   <div id="menu-sheet-backdrop" class="absolute inset-0 bg-slate-950/50"></div>
   <div class="sheet-panel absolute left-1/2 -translate-x-1/2 bottom-0 w-full max-w-[480px] max-h-[82vh] bg-white rounded-t-3xl shadow-2xl flex flex-col">
@@ -3432,7 +3466,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611131042').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611131114').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -5071,6 +5105,93 @@
   });
 
 
+  /* ===== 앱 열 때 사용 팁 — 하루 한 번, 날마다 다음 팁 · '팁 그만 보기' 가능 · 사용법에서 다시 켜기 ===== */
+  const APP_TIPS = [
+    ['🔍', '한 번에 찾기', "오른쪽 위 돋보기에 '새우', '주차', '화장실'처럼 적으면 일정·꿀팁·음식·영어 표현이 함께 나와요."],
+    ['📍', '장소 화면', '일정 줄을 누르면 큰 사진·설명·꿀팁이 아래에서 올라와요. 사진을 아래로 끌어내리면 닫혀요.'],
+    ['🧭', '길안내 바로 시작', "장소 화면의 '길안내 시작'을 누르면 구글 지도 길안내가 바로 열려요."],
+    ['🗺️', '그날 동선 지도', "일정 위쪽 '목록 | 지도'를 누르면 그날 가는 곳이 순서 번호와 함께 지도에 나와요."],
+    ['📷', '가족 공유앨범', '오른쪽 위 카메라 버튼은 가족 공유앨범이에요. 어느 화면에서든 사진을 보고 올릴 수 있어요.'],
+    ['💵', '환율 계산', '정산 → 환율에서 +$1·+$5 같은 버튼은 누를 때마다 더해져요. 처음부터 다시 하려면 초기화.'],
+    ['🧾', '지출 등록', '정산에서 지출을 등록하면 가족 모두의 화면에 바로 반영돼요. 두 가족만 쓴 비용도 나눌 수 있어요.'],
+    ['🗣️', '영어 표현 듣기', '영어 표현을 누르면 발음이 나와요. 장소 화면의 영어 버튼에는 그곳에서 쓸 말만 모여 있어요.'],
+    ['🍽️', '음식에서 일정으로', '음식 카드의 D3 같은 날짜 버튼을 누르면 그날 일정으로 바로 가요. 마트·장보기 칸도 있어요.'],
+    ['⏰', '하와이 시각', '제목 아래 줄은 호놀룰루 현재 시각과 일출·노을까지 남은 시간이에요. 청록색은 오늘·지금이라는 뜻이에요.'],
+    ['↩️', '뒤로 버튼', '휴대폰 뒤로 버튼은 한 단계씩 돌아가요. 맨 처음 화면에서 한 번 더 누르면 앱이 닫혀요.'],
+    ['📶', '인터넷이 약할 때', '한 번 열어 본 일정·꿀팁·준비물은 인터넷 없이도 보여요. 지도·사진·정산·환율은 인터넷이 필요해요.'],
+    ['🔄', '새 내용이 안 보이면', '앱을 완전히 껐다가 다시 열어요. 고친 내용은 다음에 열 때 자동으로 바뀌어요.'],
+    ['❓', '자세한 사용법', "준비 → 사용법에 화면별 설명과 구글 포토 사진 올리는 법이 있어요."]
+  ];
+  const TIP_KEY = { off: 'hawaii_tip_off', day: 'hawaii_tip_day', idx: 'hawaii_tip_idx' };
+  const tipGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const tipSet = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
+  let tipIdx = 0;
+  function renderTip() {
+    const t = APP_TIPS[tipIdx];
+    document.getElementById('tip-sheet-count').textContent = `${tipIdx + 1} / ${APP_TIPS.length}`;
+    document.getElementById('tip-sheet-body').innerHTML =
+      `<div class="tip-card"><div class="tip-emo" aria-hidden="true">${t[0]}</div><div class="min-w-0"><h4>${t[1]}</h4><p>${t[2]}</p></div></div>` +
+      `<div class="tip-dots" aria-hidden="true">${APP_TIPS.map((_, i) => `<i class="${i === tipIdx ? 'on' : ''}"></i>`).join('')}</div>`;
+    document.getElementById('tip-sheet-off').textContent = tipGet(TIP_KEY.off) === '1' ? '앱 열 때 팁 다시 보기' : '팁 그만 보기';
+    const card = document.querySelector('#tip-sheet .tip-card');
+    if (MOTION_OK() && card && card.animate) card.animate([{ opacity: 0, transform: 'translateX(12px)' }, { opacity: 1, transform: 'none' }], { duration: 220, easing: EASE });
+  }
+  function openTipSheet(idx) {
+    const sheet = document.getElementById('tip-sheet');
+    tipIdx = ((idx % APP_TIPS.length) + APP_TIPS.length) % APP_TIPS.length;
+    tipSet(TIP_KEY.idx, String(tipIdx));
+    renderTip();
+    sheetOpened(sheet);
+    sheet.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    navPush({ overlay: 'tip' });
+  }
+  function hideTipSheet() {
+    const sheet = document.getElementById('tip-sheet');
+    if (!sheet || sheet.classList.contains('hidden')) return;
+    sheetClose(sheet, sheet.querySelector('.sheet-panel'));
+    document.body.style.overflow = '';
+  }
+  function closeTipSheet(then) {
+    if (history.state && history.state.overlay === 'tip') history.back(); else hideTipSheet();
+    if (then) setTimeout(then, 260);
+  }
+  function maybeShowDailyTip() {
+    if (tipGet(TIP_KEY.off) === '1') return;
+    const now = new Date(), today = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+    if (tipGet(TIP_KEY.day) === today) return;
+    // 다른 창이 열려 있으면 이번엔 건너뜀
+    if (document.querySelector('#place-sheet:not(.hidden), #menu-sheet:not(.hidden), #search-sheet:not(.hidden), #flight-modal:not(.hidden)')) return;
+    tipSet(TIP_KEY.day, today);
+    const last = parseInt(tipGet(TIP_KEY.idx), 10);
+    openTipSheet(isNaN(last) ? 0 : last + 1);
+  }
+  function initAppTips() {
+    const sheet = document.getElementById('tip-sheet');
+    if (!sheet) return;
+    document.getElementById('tip-sheet-close').addEventListener('click', () => closeTipSheet());
+    document.getElementById('tip-sheet-backdrop').addEventListener('click', () => closeTipSheet());
+    document.getElementById('tip-sheet-next').addEventListener('click', () => { tipIdx = (tipIdx + 1) % APP_TIPS.length; tipSet(TIP_KEY.idx, String(tipIdx)); renderTip(); if (typeof buzz === 'function') buzz(); });
+    document.getElementById('tip-sheet-off').addEventListener('click', () => {
+      if (tipGet(TIP_KEY.off) === '1') { tipSet(TIP_KEY.off, null); showToast('앱을 열 때 하루 한 번 팁을 보여 드려요'); renderTip(); }
+      else { tipSet(TIP_KEY.off, '1'); closeTipSheet(); showToast('팁은 준비 → 사용법에서 다시 볼 수 있어요'); }
+    });
+    document.getElementById('tip-sheet-help').addEventListener('click', () => closeTipSheet(() => {
+      const nav = document.querySelector('.m3-nav-item[data-target="tab-guide"]'); if (nav) nav.click();
+      setTimeout(() => { const b = document.querySelector('[data-guide="help"]'); if (b) b.click(); }, 60);
+    }));
+    enableDragClose('.sheet-head', sheet.querySelector('.sheet-panel'), () => closeTipSheet());
+    const again = document.getElementById('help-open-tips');
+    if (again) again.addEventListener('click', () => { const last = parseInt(tipGet(TIP_KEY.idx), 10); openTipSheet(isNaN(last) ? 0 : last); });
+    // 입장 코드 화면이 있으면 통과한 뒤에, 없으면 화면이 자리 잡은 뒤에 보여 줌
+    const later = () => setTimeout(maybeShowDailyTip, 900);
+    if (document.getElementById('entry-gate')) {
+      const mo = new MutationObserver(() => { if (!document.getElementById('entry-gate')) { mo.disconnect(); later(); } });
+      mo.observe(document.body, { childList: true });
+    } else later();
+  }
+  document.addEventListener('DOMContentLoaded', initAppTips);
+
   /* ===== 하와이 느낌: 그날 장소 사진 배경 · 현지 시각과 노을 ===== */
   /* [DATA] 일정 화면 배경으로 쓸 그날의 대표 장소 (일정 mapQuery 값 — 사진 허용 목록에 이미 있음) */
   const DAY_COVER = {
@@ -5776,6 +5897,7 @@
         if (st.overlay !== 'flight') hideFlightModal();
         if (st.overlay !== 'place' && st.overlay !== 'menu') hidePlaceSheet();
         if (st.overlay !== 'search') hideSearchSheet();
+        if (st.overlay !== 'tip') hideTipSheet();
         if (st.oahu) currentOahuFilter = st.oahu;
         if (st.tab && st.tab !== currentTab) switchMainScreen(st.tab, { fromHistory: true });
         if (st.day && !st.base && st.day !== currentDayIndex) updateDayView(st.day);   // 맨 처음 기록으로 돌아올 때는 보던 날짜 유지
