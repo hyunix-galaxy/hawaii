@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=2">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611140853">
+  <link rel="stylesheet" href="/tailwind.css?v=202611140901">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -1335,6 +1335,10 @@
     .pv-res-note, .slot-note, .food-card p, #flight-modal p { text-wrap: pretty; }
     .pv-row .t.truncate { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     @media (min-width: 768px) { #exp-recent-card, #exp-back-btn { display: none !important; } }
+    /* 좌우로 넘기기: 세로 스크롤은 그대로 두고 옆 방향만 앱이 받음 */
+    #day-card-container, #place-sheet .ps-scroll { touch-action: pan-y; }
+    #place-sheet .ps-hero.drag-zone { touch-action: none; }
+    .ps-sub .ps-pos { margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: var(--bg); color: var(--ink-2); font-size: 12.5px; font-weight: 700; white-space: nowrap; }
   </style>
 <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
 <script defer src="/_vercel/insights/script.js"></script>
@@ -1918,6 +1922,7 @@
           <details>
             <summary>일정 보기 · 장소 안내 · 길안내</summary>
             <ul>
+              <li>일정 카드를 <b>좌우로 밀면</b> 이전·다음 날로 넘어가요. 장소 화면도 좌우로 밀면 이전·다음 장소예요.</li>
               <li>D1~D11 날짜 칩을 옆으로 넘겨 눌러요. 여행 중에는 오늘 날짜가 자동으로 열려요. <b>전체</b>를 누르면 11일 일정을 한 표로 봐요.</li>
               <li>일정 줄을 누르면 <b>장소 화면</b>이 아래에서 올라와요. 큰 사진, 전체 설명, 그 장소 꿀팁이 나와요.
                 <ul>
@@ -3129,14 +3134,15 @@
     els.forEach(el => slotThumbObserver.observe(el));
   }
 
-  function openPlaceSheet(day, si) {
+  function openPlaceSheet(day, si, swap) {
     const data = getScheduleDay(day);
     const slot = data && (data.slots || [])[si];
     const src = document.querySelector(`#day-card-container .slot-item[data-si="${si}"] .slot-detail`);
     if (!slot || !src) return;
     const sheet = document.getElementById('place-sheet');
+    sheet._cur = { day: data.day, si };
     document.getElementById('ps-title').textContent = slot.placeName;
-    document.getElementById('ps-sub').textContent = `D${data.day} · ${data.date} · ${slot.label}${slot.time ? ' ' + slot.time : ''}`;
+    document.getElementById('ps-sub').innerHTML = `D${data.day} · ${escAttr(data.date)} · ${escAttr(slot.label)}${slot.time ? ' ' + escAttr(slot.time) : ''}<span class="ps-pos">${si + 1} / ${data.slots.length}</span>`;
     const body = document.getElementById('ps-content');
     body.innerHTML = src.innerHTML;
     const tips = body.querySelector('.slot-tips');
@@ -3170,9 +3176,10 @@
       img.onload = () => { hero.querySelectorAll('img').forEach(i => i.remove()); hero.prepend(img); hero.classList.add('has-img'); };
       img.src = r.img;
     });
+    sheet.querySelector('.ps-scroll').scrollTop = 0;
+    if (swap) return;   // 좌우로 넘길 때는 창을 다시 열지 않고 내용만 바꿈
     sheetOpened(sheet);
     sheet.classList.remove('hidden');
-    sheet.querySelector('.ps-scroll').scrollTop = 0;
     navPush({ overlay: 'place' });
     document.body.style.overflow = 'hidden';
   }
@@ -3566,7 +3573,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611140853').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611140901').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -4978,6 +4985,7 @@
   // 날짜 바꾸기: 앞날은 오른쪽에서, 지난날은 왼쪽에서
   function animateDayChange(prev, next) {
     if (!prev || prev === next || currentTab !== 'tab-schedule') return;
+    if (document.getElementById('day-card-container')._swiping) return;   // 손으로 넘길 때는 넘기기 움직임이 대신함
     slideIn(document.getElementById('day-card-container'), next > prev ? '40px' : '-40px', 260);
   }
 
@@ -5006,15 +5014,18 @@
     let y0 = null, t0 = 0, dy = 0;
     panel.querySelectorAll(zoneSel).forEach(z => {
       z.classList.add('drag-zone');
+      let x0 = 0, side = false;
       z.addEventListener('pointerdown', e => {
         if (e.button > 0 || e.target.closest('button, a, input')) return;
         e.preventDefault();   // 사진 끌기·글자 선택이 끼어들지 않게
-        y0 = e.clientY; t0 = performance.now(); dy = 0;
+        y0 = e.clientY; x0 = e.clientX; side = false; t0 = performance.now(); dy = 0;
         try { z.setPointerCapture(e.pointerId); } catch (err) {}
         panel.style.transition = 'none';
       });
       z.addEventListener('pointermove', e => {
         if (y0 == null) return;
+        if (!side && dy === 0 && Math.abs(e.clientX - x0) > 10 && Math.abs(e.clientX - x0) > Math.abs(e.clientY - y0)) side = true;   // 옆으로 넘기기에 양보
+        if (side) return;
         dy = Math.max(0, e.clientY - y0);
         panel.style.translate = `0 ${dy}px`;
       });
@@ -5230,6 +5241,7 @@
   const APP_TIPS = [
     ['🔍', '한 번에 찾기', "오른쪽 위 돋보기에 '새우', '주차', '화장실'처럼 적으면 일정·꿀팁·음식·영어 표현이 함께 나와요."],
     ['📍', '장소 화면', '일정 줄을 누르면 큰 사진·설명·꿀팁이 아래에서 올라와요. 사진을 아래로 끌어내리면 닫혀요.'],
+    ['👆', '옆으로 밀어 넘기기', '일정 카드를 좌우로 밀면 이전·다음 날로, 장소 화면을 좌우로 밀면 이전·다음 장소로 넘어가요.'],
     ['🧭', '길안내 바로 시작', "장소 화면의 '길안내 시작'을 누르면 구글 지도 길안내가 바로 열려요."],
     ['🗺️', '그날 동선 지도', "일정 위쪽 '목록 | 지도'를 누르면 그날 가는 곳이 순서 번호와 함께 지도에 나와요."],
     ['📷', '가족 공유앨범', '오른쪽 위 카메라 버튼은 가족 공유앨범이에요. 어느 화면에서든 사진을 보고 올릴 수 있어요.'],
@@ -5313,6 +5325,103 @@
   }
   document.addEventListener('DOMContentLoaded', initAppTips);
 
+
+  /* ===== 좌우로 넘기기: 일정 카드 → 이전/다음 날 · 장소 창 → 이전/다음 장소 =====
+   *   손가락을 따라 카드가 움직이고, 충분히 밀면(폭의 22% 또는 빠르게 튕기기) 넘어감
+   *   끝(D1·D11, 첫·마지막 장소)에서는 고무줄처럼 버티다 돌아옴 · 세로 스크롤과 겹치면 세로 우선
+   *   화면 가장자리 18px에서 시작한 밀기는 휴대폰 '뒤로' 제스처라 무시 */
+  function enableSwipe(el, opts) {
+    if (!el) return;
+    let st = null;
+    el.addEventListener('pointerdown', e => {
+      if (e.pointerType === 'mouse' || e.button > 0) return;
+      if (opts.enabled && !opts.enabled()) return;
+      if (e.clientX < 18 || e.clientX > innerWidth - 18) return;
+      if (e.target.closest('input, select, textarea, .day-grid, .no-swipe')) return;
+      st = { x: e.clientX, y: e.clientY, t: performance.now(), dx: 0, mode: null, id: e.pointerId };
+    });
+    el.addEventListener('pointermove', e => {
+      if (!st || e.pointerId !== st.id) return;
+      const dx = e.clientX - st.x, dy = e.clientY - st.y;
+      if (!st.mode) {
+        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+        st.mode = Math.abs(dx) > Math.abs(dy) * 1.2 ? 'x' : 'y';
+        if (st.mode === 'y') { st = null; return; }
+        try { el.setPointerCapture(e.pointerId); } catch (err) {}
+        st.can = { next: opts.can(1), prev: opts.can(-1) };
+      }
+      const blocked = dx < 0 ? !st.can.next : !st.can.prev;
+      st.dx = blocked ? dx * 0.25 : dx;
+      opts.target().style.transform = `translateX(${st.dx}px)`;
+      opts.target().style.opacity = String(1 - Math.min(0.35, Math.abs(st.dx) / innerWidth * 0.6));
+    });
+    const end = e => {
+      if (!st || (e && e.pointerId !== st.id)) return;
+      const s = st; st = null;
+      if (s.mode !== 'x') return;
+      const tgt = opts.target(), w = tgt.getBoundingClientRect().width || innerWidth;
+      const v = Math.abs(s.dx) / Math.max(1, performance.now() - s.t);
+      const dir = s.dx < 0 ? 1 : -1;
+      const ok = dir > 0 ? s.can.next : s.can.prev;
+      const reset = () => { tgt.style.transform = ''; tgt.style.opacity = ''; };
+      if (ok && (Math.abs(s.dx) > w * 0.22 || (Math.abs(s.dx) > 40 && v > 0.45))) {
+        buzz(8);
+        if (!MOTION_OK() || !tgt.animate) { reset(); opts.go(dir); return; }
+        const out = tgt.animate([{ transform: `translateX(${s.dx}px)`, opacity: tgt.style.opacity || 1 }, { transform: `translateX(${-dir * w * 0.45}px)`, opacity: 0 }], { duration: 140, easing: 'cubic-bezier(0.4, 0, 1, 1)', fill: 'forwards' });
+        out.onfinish = () => {
+          reset();
+          opts.go(dir);
+          const t2 = opts.target();
+          t2.animate([{ transform: `translateX(${dir * w * 0.35}px)`, opacity: 0 }, { transform: 'translateX(0)', opacity: 1 }], { duration: 260, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' });
+          out.cancel();
+        };
+      } else {
+        if (!ok && Math.abs(s.dx) > 24) buzz(4);
+        if (tgt.animate && MOTION_OK()) tgt.animate([{ transform: `translateX(${s.dx}px)`, opacity: tgt.style.opacity || 1 }, { transform: 'translateX(0)', opacity: 1 }], { duration: 220, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' });
+        reset();
+      }
+    };
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
+  }
+  function initSwipes() {
+    // 일정: 그날 카드를 밀면 이전/다음 날
+    const dayBox = document.getElementById('day-card-container');
+    enableSwipe(dayBox, {
+      enabled: () => !scheduleAll && currentTab === 'tab-schedule',
+      can: d => d > 0 ? currentDayIndex < TOTAL_DAYS : currentDayIndex > 1,
+      target: () => dayBox,
+      go: d => {
+        const card = dayBox.getBoundingClientRect();
+        const headH = ((document.querySelector('.app-head') || {}).offsetHeight || 60) + ((document.querySelector('#tab-schedule .sub-bar') || {}).offsetHeight || 0) + 8;
+        if (card.top < headH) window.scrollBy(0, card.top - headH);   // 새 날의 맨 위부터 보이게
+        dayBox._swiping = true;
+        updateDayView(currentDayIndex + d);
+        dayBox._swiping = false;
+      }
+    });
+    // 장소 창: 밀면 이전/다음 장소 (그날 끝이면 다음 날 첫 장소로)
+    const sheet = document.getElementById('place-sheet');
+    const scroller = sheet && sheet.querySelector('.ps-scroll');
+    const nextOf = d => {
+      const c = sheet._cur; if (!c) return null;
+      const day = getScheduleDay(c.day); if (!day) return null;
+      let di = c.day, si = c.si + d;
+      if (si >= day.slots.length) { di++; si = 0; }
+      if (si < 0) { di--; const pd = getScheduleDay(di); si = pd ? pd.slots.length - 1 : -1; }
+      return getScheduleDay(di) && si >= 0 ? { day: di, si } : null;
+    };
+    enableSwipe(scroller, {
+      can: d => !!nextOf(d),
+      target: () => scroller,
+      go: d => {
+        const n = nextOf(d); if (!n) return;
+        if (n.day !== currentDayIndex || scheduleAll) updateDayView(n.day);
+        openPlaceSheet(n.day, n.si, true);
+      }
+    });
+  }
+  document.addEventListener('DOMContentLoaded', initSwipes);
   /* ===== 하와이 느낌: 그날 장소 사진 배경 · 현지 시각과 노을 ===== */
   /* [DATA] 일정 화면 배경으로 쓸 그날의 대표 장소 (일정 mapQuery 값 — 사진 허용 목록에 이미 있음) */
   const DAY_COVER = {
