@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=2">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611131114">
+  <link rel="stylesheet" href="/tailwind.css?v=202611140452">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -1203,6 +1203,8 @@
     .tip-dots i { width: 6px; height: 6px; border-radius: 3px; background: #d5d9dd; transition: width .2s ease, background .2s ease; }
     .tip-dots i.on { width: 16px; background: var(--sea); }
   </style>
+<script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
+<script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
 <!-- 카카오톡 안에서 열면 앱 설치가 안 되므로, 휴대폰 기본 브라우저(크롬·사파리)로 자동으로 다시 엶 -->
@@ -3466,7 +3468,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611131114').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611140452').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -4360,8 +4362,14 @@
 
   async function loadExpenses() {
     if (!sb) return;
-    const { data, error } = await sb.from('expenses').select('*').order('created_at', { ascending: false });
-    if (error) { setSyncStatus('⚠️ 불러오기 실패', 'err'); return; }
+    // 지출 내역은 입장 코드를 서버가 확인한 뒤에만 받음 (코드 없이 직접 읽기 막음)
+    const code = readSavedCode();
+    if (!code) { setSyncStatus('🔒 입장 코드 필요', 'warn'); return; }
+    const { data, error } = await sb.rpc('list_expenses', { p_code: code });
+    if (error) {
+      if (error.code === '28000') { clearCode(); showEntryGate('입장 코드가 바뀌었어요. 새 코드를 넣어 주세요.'); return; }
+      setSyncStatus('⚠️ 불러오기 실패', 'err'); return;
+    }
     expenses = data || [];
     lastSyncedAt = new Date();
     setSyncStatus('● 실시간 동기화', 'ok');
@@ -4372,8 +4380,9 @@
     if (!window.supabase || !window.supabase.createClient) { setSyncStatus('⚠️ 연결 불가', 'err'); renderExpenses(); return; }
     sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
     loadExpenses();
-    sb.channel('expenses-feed')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, () => loadExpenses())
+    // 서버는 '바뀌었다'는 신호만 보냄(내용 없음) → 코드로 다시 불러옴
+    sb.channel('expenses-sync')
+      .on('broadcast', { event: 'changed' }, () => loadExpenses())
       .subscribe(status => { if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') setSyncStatus('◐ 수동 새로고침', 'warn'); });
   }
 
