@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=2">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611140506">
+  <link rel="stylesheet" href="/tailwind.css?v=202611140659">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -1202,6 +1202,138 @@
     .tip-dots { display: flex; gap: 4px; justify-content: center; margin-top: 12px; }
     .tip-dots i { width: 6px; height: 6px; border-radius: 3px; background: #d5d9dd; transition: width .2s ease, background .2s ease; }
     .tip-dots i.on { width: 16px; background: var(--sea); }
+
+    /* ===================== 디자인 2단계 (2026.11.14) =====================
+       · 좌우 여백 10px(넓은 폰 12px) · 카드 한 겹 · 카드 안 16px
+       · 글자: 12px 이하 없앰 → 보조 13.5 / 본문 14.5 / 제목 19 / 큰 숫자 26~40
+       · 한글은 단어 단위로 줄바꿈, 제목은 줄 길이 균형 */
+    :root { --gutter: 10px; --r-card: 26px; }
+    @media (min-width: 380px) { :root { --gutter: 12px; } }
+    @media (min-width: 768px) { :root { --gutter: 16px; } }
+    :is(h1, h2, h3, h4, .pv-title, .slot-name, .pv-daytitle) { text-wrap: balance; }
+    :is(p, li, .slot-desc, .pv-sub, .pv-dnote) { text-wrap: pretty; }
+
+    /* 카드 안쪽 여백 통일 */
+    main .m3-card.p-4, main .m3-card.p-3\.5, .sheet-panel .m3-card.p-4 { padding: 16px !important; }
+    main .m3-card.p-3 { padding: 14px !important; }
+
+    /* 글자 크기 체계 (화면 · 아래 창 · 찾기) */
+    :where(main, .sheet-panel, #search-sheet, #flight-modal) :is(.text-\[9\.5px\], .text-\[10\.5px\], .text-\[11px\], .text-\[11\.5px\]) { font-size: 12.5px !important; }
+    :where(main, .sheet-panel, #search-sheet, #flight-modal) :is(.text-\[12px\], .text-\[12\.5px\]) { font-size: 13.5px !important; }
+    :where(main, .sheet-panel, #search-sheet, #flight-modal) :is(.text-\[13px\], .text-\[13\.5px\]) { font-size: 14.5px !important; }
+    :where(main, .sheet-panel, #search-sheet, #flight-modal) :is(.text-\[14px\]) { font-size: 15px !important; }
+    :where(main, .sheet-panel, #search-sheet, #flight-modal) :is(.text-\[15px\], .text-\[15\.5px\]) { font-size: 16px !important; }
+    /* 카드 제목 */
+    main .m3-card > :is(h2, h3).text-\[14\.5px\], main .m3-card > :is(h2, h3).text-\[14px\], main .m3-card > :is(h2, h3).text-\[16px\],
+    main .m3-card > div > :is(h2, h3):is(.text-\[14\.5px\], .text-\[14px\], .text-\[15px\], .text-\[16px\], .text-\[15\.5px\]) { font-size: 19px !important; letter-spacing: -0.4px; line-height: 1.3; }
+    /* 회색 글씨 대비 조금 높임 */
+    main .text-slate-500 { color: #5f6870 !important; }
+
+    /* 공통 카드 머리 · 숫자 타일 · 줄 */
+    .pv-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .pv-title { font-size: 19px; font-weight: 800; letter-spacing: -0.4px; color: var(--ink); line-height: 1.3; margin: 0; }
+    .pv-sub { font-size: 14px; font-weight: 600; color: #5f6870; margin-top: 3px; line-height: 1.4; }
+    .pv-go { flex: none; width: 40px; height: 40px; border-radius: 999px; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; line-height: 1; color: var(--ink); padding-bottom: 2px; }
+    .pv-go:active { background: #e3e6e9; }
+    .pv-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .pv-tile { background: var(--bg); border-radius: 20px; padding: 14px 14px 13px; min-width: 0; }
+    .pv-tile .l { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; color: #4b535a; }
+    .pv-tile .v { font-size: 25px; font-weight: 800; letter-spacing: -0.6px; color: var(--ink); margin-top: 6px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .pv-tile .s { font-size: 13.5px; font-weight: 600; color: #5f6870; margin-top: 5px; line-height: 1.45; }
+    .pv-tile .s b { font-weight: 800; color: var(--ink); } .pv-tile .s b.get { color: #0b8f88; } .pv-tile .s b.give { color: #be123c; }
+    .pv-dot { flex: none; width: 10px; height: 10px; border-radius: 99px; display: inline-block; }
+    .pv-total .l { font-size: 14px; font-weight: 700; color: #4b535a; }
+    .pv-total .v { font-size: 26px; font-weight: 800; letter-spacing: -0.6px; color: var(--ink); line-height: 1.15; margin-top: 2px; font-variant-numeric: tabular-nums; }
+    .pv-row { display: flex; align-items: center; gap: 14px; padding: 13px 0; }
+    .pv-row + .pv-row { border-top: 1px solid #eceef0; }
+    .pv-ico { flex: none; width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; color: #fff; }
+    .pv-row .t { font-size: 16px; font-weight: 800; color: var(--ink); line-height: 1.35; }
+    .pv-row .d { font-size: 13.5px; font-weight: 600; color: #5f6870; margin-top: 2px; line-height: 1.4; }
+    .pv-amt { margin-left: auto; padding-left: 4px; font-size: 18px; font-weight: 800; color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .pv-empty { padding: 14px 0 4px; font-size: 14.5px; font-weight: 600; color: #5f6870; }
+    .pv-info { background: var(--bg); border-radius: 18px; padding: 12px 14px; font-size: 13.5px; line-height: 1.55; color: #4b535a; font-weight: 600; }
+    .pv-info-h { font-weight: 800; color: var(--ink); margin-bottom: 2px; }
+
+    /* 일정: 위쪽 띠 */
+    #tab-schedule .hero-banner { padding: 12px 16px 14px !important; }
+    .pv-hero { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .pv-hero-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .pv-hero-big { font-size: 40px; font-weight: 800; letter-spacing: -1.4px; line-height: 1; color: #fff; white-space: nowrap; text-shadow: 0 1px 10px rgba(0,0,0,.25); }
+    .pv-hero-cap { display: flex; flex-direction: column; font-size: 14px; font-weight: 700; line-height: 1.35; color: rgba(255,255,255,.92); min-width: 0; text-shadow: 0 1px 8px rgba(0,0,0,.3); }
+    .pv-hero-cap span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pv-hero-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: none; }
+    .pv-hero-round { width: 42px; height: 42px; border-radius: 999px; display: flex; align-items: center; justify-content: center; color: #fff; background: rgba(15,23,42,.6); border: 1px solid rgba(255,255,255,.25); }
+    .pv-hero-round svg { width: 21px; height: 21px; }
+    .pv-hero-pill { font-size: 13px; font-weight: 700; color: #fff; background: rgba(15,23,42,.6); border: 1px solid rgba(255,255,255,.25); border-radius: 999px; padding: 7px 12px; line-height: 1; }
+    .pv-hero-pill-w { background: #fff; color: #0b253a; border-color: #fff; }
+    #tab-schedule .hero-room { padding: 10px 12px !important; border-radius: 18px !important; }
+    #hero-room-label { font-size: 12.5px !important; }
+    #tab-schedule .hero-room .text-\[13\.5px\] { font-size: 15px !important; }
+
+    /* 일정: 날짜 고르기 · 그날 카드 */
+    .sched-daypicker { padding: 16px 0 14px !important; }
+    .sched-daypicker > .flex.mb-2 { align-items: center !important; padding: 0 16px !important; margin-bottom: 12px !important; }
+    @media (max-width: 767px) { #schedule-day-grid { padding: 2px 16px 4px; scroll-padding: 0 16px; } .m3-card .day-grid:not(#schedule-day-grid) { margin: 0 -16px; padding: 2px 16px 4px; scroll-padding: 0 16px; } }
+    .sched-daypicker #current-day-indicator { margin-top: 0; font-size: 14px; }
+    #day-card-container > article { padding: 18px 16px !important; }
+    .pv-dayhead { padding: 0; }
+    .pv-daytitle { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.3; color: var(--ink); margin-top: 8px; }
+    .pv-dtiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+    .pv-dtile { background: var(--bg); border-radius: 16px; padding: 10px 4px 9px; text-align: center; min-width: 0; }
+    .pv-dtile .l { font-size: 12.5px; font-weight: 700; color: #5f6870; white-space: nowrap; }
+    .pv-dtile .v { font-size: 17px; font-weight: 800; letter-spacing: -0.4px; color: var(--ink); margin-top: 3px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .pv-dnote { font-size: 13px; font-weight: 600; color: #5f6870; margin-top: 8px; padding: 0 2px; }
+    .slots-wrap { margin-top: 6px !important; }
+    .slots-wrap > * + * { margin-top: 0 !important; border-top: 1px solid #eceef0; }
+    .slot-row { padding: 14px 0 !important; gap: 14px !important; }
+    .slot-thumb { width: 64px !important; height: 64px !important; border-radius: 18px !important; }
+    .slot-name { font-size: 17px !important; line-height: 1.32 !important; }
+    .slot-desc { font-size: 14.5px !important; line-height: 1.5 !important; color: #3f474e !important; }
+    .slot-note { font-size: 13.5px !important; }
+    .slot-tag, .slot-count { font-size: 12.5px !important; }
+    .pv-cost { background: var(--bg); border-radius: 18px; padding: 13px 14px; }
+    .pv-cost-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 15px; font-weight: 800; color: var(--ink); margin-bottom: 6px; }
+    .pv-cost-u { font-size: 12.5px; font-weight: 700; color: #5f6870; white-space: nowrap; }
+    .pv-cost-i { position: relative; padding-left: 12px; font-size: 14px; font-weight: 600; line-height: 1.5; color: #3a3f45; }
+    .pv-cost-i::before { content: ''; position: absolute; left: 1px; top: 0.68em; width: 4px; height: 4px; border-radius: 9px; background: #8a939b; }
+    .pv-cost-i + .pv-cost-i { margin-top: 4px; }
+
+    /* 정산: 입력칸 (아이폰에서 누를 때 확대되지 않도록 16px) */
+    #tab-expense label.block { font-size: 14px !important; color: #4b535a !important; margin-bottom: 6px !important; }
+    :is(#tab-expense, #tab-fx) :is(input:not([type=checkbox]):not([type=file]), select) { min-height: 48px; font-size: 16px !important; border-radius: 14px !important; }
+    #add-expense-btn { min-height: 52px; font-size: 16px !important; border-radius: 999px !important; }
+    #sync-status { flex: none; margin-top: 2px; }
+
+    /* 예약 목록: 상자 대신 줄 · 번호 · 이름 / 날짜 두 줄 */
+    .pv-res { padding: 16px 0; }
+    .pv-res + .pv-res { border-top: 1px solid #eceef0; }
+    .pv-res > * + * { margin-top: 8px; }
+    .pv-res.is-miss { background: #fff5f6; border-radius: 18px; padding: 14px; border-top: 0; }
+    .pv-res-top { display: flex; align-items: flex-start; gap: 12px; }
+    .pv-res-n { flex: none; width: 32px; height: 32px; border-radius: 11px; background: var(--ink); color: #fff; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+    .pv-res-name { display: block; font-size: 16.5px; font-weight: 800; color: var(--ink); line-height: 1.35; text-decoration: none; text-wrap: balance; }
+    .pv-res-when { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 4px; font-size: 14px; font-weight: 600; color: #5f6870; }
+    .pv-res-lead { flex: none; padding: 3px 9px; border-radius: 999px; font-size: 12.5px; font-weight: 800; line-height: 1.3; }
+    .pv-res-note { font-size: 14.5px; line-height: 1.55; color: #3a3f45; font-weight: 500; padding-left: 44px; }
+    .pv-res-cost { padding-left: 44px; }
+    .pv-res > .flex.flex-wrap { padding-left: 44px; }
+    .pv-res > p.text-\[12\.5px\] { padding-left: 44px; }
+    /* 음식 분류: 한 줄로 옆으로 넘기기 (세 번째 줄에 하나만 남는 문제 해결) */
+    #food-filter { flex-wrap: nowrap !important; overflow-x: auto; margin: 0 -16px; padding: 2px 16px 4px; scrollbar-width: none; }
+    #food-filter::-webkit-scrollbar { display: none; }
+    #food-filter > * { flex: none; }
+    /* 정산: 위 전환칸 대신 카드 안 버튼 */
+    #tab-expense > .m3-segmented { display: none !important; }
+    /* 전체 일정 표 카드는 안쪽 여백 0 */
+    #day-card-container > article.p-0 { padding: 0 !important; }
+    /* 카드 제목 (깊이 상관없이 카드 머리 크기 통일) */
+    main .m3-card :is(h2, h3):is(.text-\[14\.5px\], .text-\[15px\], .text-\[15\.5px\], .text-\[16px\]) { font-size: 19px !important; letter-spacing: -0.4px; line-height: 1.3; }
+    /* 카드 제목 앞 아이콘은 빼서 모든 카드 머리를 같은 모양으로 */
+    main .m3-card :is(h2, h3) > .ui-ic:first-child { display: none !important; }
+    /* 짧은 줄에 한두 글자만 남지 않게 (표·음식 카드·항공편·목록 제목) */
+    .sched-all-table :is(div, span), .food-card :is(span, div, a, p), #flight-modal :is(div, p), .pv-row .t, .pv-res-note, .slot-note { text-wrap: balance; }
+    .pv-row .t.truncate { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    @media (min-width: 768px) { #exp-recent-card, #exp-back-btn { display: none !important; } }
   </style>
 <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
 <script defer src="/_vercel/insights/script.js"></script>
@@ -1273,31 +1405,17 @@
       </div>
       <!-- TOP HERO HEADER (Time-Adaptive Hawaiian Panorama) -->
       <div id="app-hero-banner" class="hero-banner">
-        <div class="hero-top flex items-center justify-end gap-1.5 mb-2.5">
-          <div class="flex items-center gap-1.5">
-            <button id="open-flight-modal-btn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11.5px] font-bold bg-slate-900/65 text-white border border-white/25 nowrap-btn">
-              ✈️ 대한항공 KE051/052
-            </button>
-            <button id="install-app-btn" type="button" class="hidden inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11.5px] font-extrabold bg-white text-sky-800 border border-white nowrap-btn">
-              📲 설치
-            </button>
-            <button id="share-portal-btn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11.5px] font-bold bg-slate-900/65 text-white border border-white/25 nowrap-btn">
-              🔗 공유
-            </button>
+        <div class="pv-hero">
+          <div class="pv-hero-left">
+            <div id="hero-big" class="pv-hero-big">D-</div>
+            <div class="pv-hero-cap"><span id="hero-hello">알로하, 3가족!</span><span id="hero-line">2/18 출발</span></div>
+          </div>
+          <div class="pv-hero-right">
+            <button id="open-flight-modal-btn" type="button" class="pv-hero-round" aria-label="항공편 KE051/052 보기" data-noicon><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.5 13.5L4 11l1.5-1.5 7 1 3.6-3.6a1.8 1.8 0 012.5 2.5L15 13l1 7-1.5 1.5-2.5-6.5-3 3v2.5L7.5 22l-1-3.5L3 17.5 4.5 16H7l3.5-2.5z"/></svg></button>
+            <button id="install-app-btn" type="button" class="hidden pv-hero-pill pv-hero-pill-w nowrap-btn">📲 설치</button>
+            <button id="share-portal-btn" type="button" class="hidden" aria-hidden="true">공유</button>
           </div>
         </div>
-
-        <div class="hero-title mb-3">
-          <div class="flex items-baseline justify-between gap-2 flex-wrap">
-            <h1 class="text-[20px] font-extrabold tracking-tight text-white drop-shadow-sm">
-              하와이 3가족 오아후 트립
-            </h1>
-            <span class="text-[12px] font-bold text-sky-100 nowrap-btn">
-              2027.02.18 ~ 02.28 (8인)
-            </span>
-          </div>
-        </div>
-
         <div class="hero-room flex items-center justify-between gap-2 bg-slate-900/65 backdrop-blur-md border border-white/20 rounded-2xl px-3 py-2">
           <div class="flex items-center gap-2 min-w-0">
             <span class="text-lg">🏨</span>
@@ -1318,8 +1436,8 @@
 
       <div class="m3-card p-2.5 sched-daypicker">
         <div class="flex items-center justify-between mb-2 px-1">
-          <span id="day-picker-label" class="text-[12.5px] font-extrabold text-slate-700">📅 일자별 일정</span>
-          <span id="current-day-indicator" class="text-[12.5px] font-bold text-sky-700">1 / 11일차</span>
+          <h3 id="day-picker-label" class="pv-title" data-noicon>일자별 일정</h3>
+          <span id="current-day-indicator" class="pv-sub nowrap-btn">1 / 11일차</span>
         </div>
         <div id="schedule-day-grid" class="day-grid"></div>
       </div>
@@ -1493,7 +1611,7 @@
       <div class="sub-bar">
         <div class="view-sw" role="tablist" aria-label="정산·환율"><button type="button" class="view-sw-btn active" data-view="tab-expense"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3.5"/><path d="M3 10.5h18M15.5 15h2.5"/></svg><span>정산</span></button><button type="button" class="view-sw-btn" data-view="tab-fx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5h14l-3.5-3.5M20 15.5H6l3.5 3.5"/></svg><span>환율</span></button></div>
       </div>
-      <div class="m3-segmented">
+      <div class="m3-segmented hidden">
         <button id="seg-exp-summary-btn" type="button" class="m3-seg-btn active">📊 정산 요약</button>
         <button id="seg-exp-list-btn" type="button" class="m3-seg-btn">📋 지출 내역 목록</button>
       </div>
@@ -1501,8 +1619,8 @@
       <div id="exp-subpage-summary" class="space-y-3">
         <!-- 영수증 촬영 · 지출 등록 -->
         <div class="m3-card p-4 space-y-3">
-          <div class="flex items-center justify-between gap-2">
-            <h3 class="text-[14.5px] font-extrabold text-slate-900">🧾 영수증 촬영 · 지출 등록</h3>
+          <div class="flex items-start justify-between gap-2">
+            <div><h3 class="pv-title" data-noicon>지출 등록</h3><div class="pv-sub">영수증을 찍으면 항목·금액이 자동으로 채워져요</div></div>
             <span id="sync-status" class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[12px] font-bold nowrap-btn">연결 중…</span>
           </div>
 
@@ -1568,50 +1686,35 @@
           </div>
         </div>
 
+        <div class="m3-card p-4 space-y-1">
+          <div class="pv-head"><div><h3 class="pv-title" data-noicon>최종 송금 안내</h3><div class="pv-sub">이대로 보내면 정산이 끝나요</div></div></div>
+          <div id="settle-transfers"></div>
+        </div>
+
+        <div id="exp-recent-card" class="m3-card p-4 space-y-1">
+          <div class="pv-head"><div><h3 class="pv-title" data-noicon>최근 지출</h3><div id="exp-recent-sub" class="pv-sub">전체 0건</div></div><button id="exp-all-btn" type="button" class="pv-go" aria-label="지출 내역 전체 보기">›</button></div>
+          <div id="exp-recent"></div>
+        </div>
+
         <div class="m3-card p-4 space-y-3">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="text-[12.5px] font-bold text-slate-500">누적 공용 지출 총액</div>
-              <div id="exp-total-usd" class="text-[24px] font-extrabold text-slate-900">$0.00</div>
-            </div>
-            <span class="px-2.5 py-1 rounded-full bg-sky-50 text-sky-800 border border-sky-200 text-[12.5px] font-bold nowrap-btn">
-              3:3:2 자동계산
-            </span>
+          <div class="pv-head"><div><h3 class="pv-title" data-noicon>가족별 정산</h3><div id="exp-count-sub" class="pv-sub">지출 0건 · 자동 계산</div></div></div>
+          <div class="pv-total"><div class="l">공용 지출 합계</div><div id="exp-total-usd" class="v">$0.00</div></div>
+          <div class="pv-tiles">
+            <div class="pv-tile"><div class="l">일산 부담<span class="pv-dot" style="background:#0b6fb8"></span></div><div id="fam-a-share" class="v">$0</div><div id="fam-a-diff" class="s">결제 $0</div></div>
+            <div class="pv-tile"><div class="l">광명 부담<span class="pv-dot" style="background:#0b8f88"></span></div><div id="fam-b-share" class="v">$0</div><div id="fam-b-diff" class="s">결제 $0</div></div>
+            <div class="pv-tile"><div class="l">신림 부담<span class="pv-dot" style="background:#c2410c"></span></div><div id="fam-c-share" class="v">$0</div><div id="fam-c-diff" class="s">결제 $0</div></div>
+            <div class="pv-tile"><div class="l">남은 송금<span class="pv-dot" style="background:#adb5bd"></span></div><div id="exp-remain" class="v">$0</div><div id="exp-remain-sub" class="s">보낼 돈 없음</div></div>
           </div>
-
-          <div class="grid grid-cols-3 gap-2">
-            <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
-              <div class="text-[12.5px] font-extrabold text-sky-800">일산 (3명)</div>
-              <div id="fam-a-share" class="text-[15px] font-extrabold text-slate-900 mt-1">$0.00</div>
-              <div id="fam-a-diff" class="text-[12px] font-bold text-slate-500 mt-0.5">결제 $0</div>
-            </div>
-            <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
-              <div class="text-[12.5px] font-extrabold text-emerald-800">광명 (3명)</div>
-              <div id="fam-b-share" class="text-[15px] font-extrabold text-slate-900 mt-1">$0.00</div>
-              <div id="fam-b-diff" class="text-[12px] font-bold text-slate-500 mt-0.5">결제 $0</div>
-            </div>
-            <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
-              <div class="text-[12.5px] font-extrabold text-amber-800">신림 (2명)</div>
-              <div id="fam-c-share" class="text-[15px] font-extrabold text-slate-900 mt-1">$0.00</div>
-              <div id="fam-c-diff" class="text-[12px] font-bold text-slate-500 mt-0.5">결제 $0</div>
-            </div>
+          <div class="pv-info">
+            <div class="pv-info-h">분담 방식</div>
+            <div>8인 전원 3:3:2 · 3가족 1:1:1 · 2가족 1:1 (일산·광명 / 일산·신림 / 광명·신림)</div>
+            <div class="pt-1">저장된 내역의 수정·삭제는 총무에게 요청해 주세요. <span id="exp-updated-at"></span></div>
           </div>
-        </div>
-
-        <div class="m3-card p-4 space-y-2.5">
-          <h3 class="text-[14.5px] font-extrabold text-slate-900">💸 최종 송금 안내</h3>
-          <div id="settle-transfers" class="space-y-1.5"></div>
-        </div>
-
-        <div class="m3-card p-4 space-y-1.5 bg-slate-50">
-          <div class="text-[12px] font-extrabold text-slate-700">ℹ️ 분담 방식 안내</div>
-          <div class="text-[12px] text-slate-600 leading-relaxed">• 8인 전원: A 3 : B 3 : C 2<br>• 선발 6인: A 3 : B 3 : C 0<br>• 3가족 균등: A 1 : B 1 : C 1</div>
-          <div class="text-[12.5px] text-slate-500 pt-1">저장된 내역의 수정·삭제는 총무에게 요청해 주세요.<br><span id="exp-updated-at"></span></div>
         </div>
       </div>
 
-      <div id="exp-subpage-list" class="hidden m3-card p-3.5 space-y-2.5">
-        <h3 class="text-[14.5px] font-extrabold text-slate-900">📋 등록된 지출 내역</h3>
+      <div id="exp-subpage-list" class="hidden m3-card p-4 space-y-1">
+        <div class="pv-head"><div><h3 class="pv-title" data-noicon>지출 내역 전체</h3><div class="pv-sub">무효 처리된 건은 줄이 그어져 있어요</div></div><button id="exp-back-btn" type="button" class="pv-go" aria-label="정산으로 돌아가기">‹</button></div>
         <div id="expense-list-container" class="divide-y divide-slate-200"></div>
       </div>
     </section>
@@ -1624,7 +1727,7 @@
       </div>
       <div class="m3-card p-4 space-y-2">
         <div class="flex items-center justify-between gap-2">
-          <h2 class="text-[16px] font-extrabold text-slate-900">💱 환율 계산기 (USD ↔ 원)</h2>
+          <div><h2 class="pv-title" data-noicon>환율 계산기</h2><div class="pv-sub">달러 ↔ 원 · 하루 1번 자동 갱신</div></div>
           <button id="fx-refresh-btn" type="button" class="px-3 py-1.5 rounded-full bg-sky-50 text-sky-800 border border-sky-200 text-[12.5px] font-bold nowrap-btn">↻ 새로고침</button>
         </div>
         <div class="flex items-baseline gap-2 flex-wrap">
@@ -1717,7 +1820,7 @@
         <div class="m3-card p-3.5 space-y-2.5">
           <h3 class="text-[15px] font-extrabold text-slate-900">⏰ 사전 예약 필수 타임라인 & 길안내</h3>
           <p class="text-[12.5px] text-slate-600">날짜·시각·비용은 일정표에서 자동으로 가져와요. 일정이 바뀌면 여기도 같이 바뀝니다.</p>
-          <div id="reservation-list" class="space-y-2.5"></div>
+          <div id="reservation-list"></div>
         </div>
         <div class="m3-card p-4 space-y-3">
           <h3 class="text-[15px] font-extrabold text-slate-900">✈️ 대한항공 (Korean Air) 공식 스케줄</h3>
@@ -1802,7 +1905,7 @@
             <summary>화면 한눈에</summary>
             <ul>
               <li><b>일정</b>: 날짜별 일정·장소 안내·길안내. 위쪽 <b>목록 | 지도</b>로 동선 지도</li>
-              <li><b>음식</b>: 추천 맛집·간식 37곳, 대표 메뉴와 가격</li>
+              <li><b>음식</b>: 추천 맛집·간식·마트 40곳, 대표 메뉴와 가격</li>
               <li><b>숙소</b>: 힐튼 하와이안 빌리지 단지 지도와 시설 위치</li>
               <li><b>정산</b>: 지출 등록·가족별 송금 안내. 위쪽 <b>정산 | 환율</b>로 환율 계산기</li>
               <li><b>준비</b>: 예약 일정·항공·렌터카, 준비물, 영어 표현, 꿀팁, 이 사용법</li>
@@ -2201,25 +2304,18 @@
     } catch (e) { forecastLoaded = false; }
   }
 
-  function renderDayEnv(dateKey) {
+  function renderDayEnv(dateKey, nPlaces) {
     const env = DAY_ENV[dateKey];
     if (!env) return '';
     const fc = forecastByDate[dateKey];
-    let weatherHtml;
-    if (fc && fc.hi != null) {
-      const [icon, label] = WMO[fc.code] || ['🌡️', '예보'];
-      const pop = fc.pop != null ? ` · 강수 ${fc.pop}%` : '';
-      weatherHtml = `<span class="px-1.5 py-0.5 rounded bg-sky-600 text-white text-[11px] font-extrabold">예보</span>
-        <span>${icon} ${label} ${Math.round(fc.hi)}° / ${Math.round(fc.lo)}°${pop}</span>`;
-    } else {
-      weatherHtml = `<span class="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 text-[11px] font-extrabold">평년</span>
-        <span>🌡️ ${Math.round(env.normHi)}° / ${Math.round(env.normLo)}° · 비 온 해 ${env.rainYears}/${ENV_YEARS}</span>`;
-    }
+    let wLabel, wVal;
+    if (fc && fc.hi != null) { const [icon, label] = WMO[fc.code] || ['🌡️', '예보']; wLabel = `예보 ${icon}`; wVal = `${Math.round(fc.hi)}°/${Math.round(fc.lo)}°`; }
+    else { wLabel = '평년 기온'; wVal = `${Math.round(env.normHi)}°/${Math.round(env.normLo)}°`; }
+    const sub = fc && fc.hi != null ? (fc.pop != null ? `비 올 확률 ${fc.pop}%` : '') : `지난 ${ENV_YEARS}년 중 ${env.rainYears}년은 이날 비가 왔어요`;
+    const tile = (l, v) => `<div class="pv-dtile"><div class="l">${l}</div><div class="v">${v}</div></div>`;
     return `
-      <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] font-bold text-slate-700">
-        <span class="inline-flex items-center gap-1.5">${weatherHtml}</span>
-        <span class="inline-flex items-center gap-2 nowrap-btn">🌅 ${env.sunrise} <span class="text-slate-500">·</span> 🌇 ${env.sunset}</span>
-      </div>`;
+      <div class="pv-dtiles">${tile(wLabel, wVal)}${tile('일출', env.sunrise)}${tile('노을', env.sunset)}${tile('장소', (nPlaces || 0) + '곳')}</div>
+      ${sub ? `<div class="pv-dnote">${sub}</div>` : ''}`;
   }
 
   /* [DATA] 장소별 꿀팁 (2026.11 공식 사이트·현지 가이드 확인 기준)
@@ -2903,7 +2999,7 @@
     document.querySelectorAll('#schedule-day-grid .day-chip').forEach(chip => chip.classList.toggle('active', chip.dataset.day === 'all'));
     centerActiveChip('schedule-day-grid');
     const indicator = document.getElementById('current-day-indicator');
-    if (indicator) indicator.textContent = `전체 일정 (D1 ~ D${TOTAL_DAYS})`;
+    if (indicator) indicator.textContent = `전체 ${TOTAL_DAYS}일`;
     const today = tripTodayDay();
     const rows = [];
     for (let d = 1; d <= TOTAL_DAYS; d++) {
@@ -2930,9 +3026,9 @@
     const container = document.getElementById('day-card-container');
     container.innerHTML = `
       <article class="m3-card p-0 overflow-hidden">
-        <div class="px-4 pt-3.5 pb-2 flex items-center justify-between gap-2">
-          <h2 class="text-[15.5px] font-extrabold text-slate-900">🗓️ 전체 일정 한눈에</h2>
-          <span class="text-[11.5px] font-bold text-slate-500 nowrap-btn">날짜를 누르면 상세 일정</span>
+        <div class="px-4 pt-4 pb-2">
+          <h2 class="pv-title" data-noicon>전체 일정 한눈에</h2>
+          <div class="pv-sub">날짜를 누르면 그날 상세 일정이 열려요</div>
         </div>
         <table class="sched-all-table">
           <thead><tr><th>날짜</th><th>일정</th></tr></thead>
@@ -2961,7 +3057,7 @@
       btn.addEventListener('click', () => btn.dataset.day === 'all' ? showScheduleAll() : updateDayView(parseInt(btn.dataset.day, 10)));
     });
     const label = document.getElementById('day-picker-label');
-    if (label) label.textContent = `📅 일자별 일정 (D1 ~ D${TOTAL_DAYS})`;
+    if (label) label.textContent = '일자별 일정';
     const todayBtn = document.getElementById('today-day-btn');
     if (todayBtn) todayBtn.classList.toggle('hidden', !today);
   }
@@ -3113,7 +3209,7 @@
     centerActiveChip('schedule-day-grid');
 
     const indicator = document.getElementById('current-day-indicator');
-    if (indicator) indicator.textContent = `Day ${dayNum} / ${TOTAL_DAYS} (${data.date})`;
+    if (indicator) indicator.textContent = `${data.date} · ${dayNum}/${TOTAL_DAYS}일차`;
 
     const container = document.getElementById('day-card-container');
     if (container) {
@@ -3176,28 +3272,28 @@
         `;
       }).join('');
 
-      const costsHtml = (data.costs || []).map(c => `<div class="text-[12.5px] text-slate-700 font-semibold leading-snug">• ${c}</div>`).join('');
+      const costsHtml = (data.costs || []).map(c => `<div class="pv-cost-i">${c}</div>`).join('');
 
       container.innerHTML = `
         <article class="m3-card p-4 space-y-3">
-          <div class="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5">
+          <div class="pv-dayhead">
             <div>
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="px-2 py-0.5 rounded-md bg-sky-100 text-sky-900 text-[12px] font-extrabold nowrap-btn">${data.date}</span>
                 <span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 text-[12px] font-extrabold nowrap-btn">${data.badge}</span>
                 ${data.day === tripTodayDay() ? '<span class="px-2 py-0.5 rounded-md bg-sky-600 text-white text-[12px] font-extrabold nowrap-btn">오늘</span>' : ''}
               </div>
-              <h2 class="text-[17px] font-extrabold text-slate-900 mt-1.5 leading-snug">${data.title}</h2>
-              ${renderDayEnv(data.date.split(' ')[0])}
+              <h2 class="pv-daytitle">${data.title}</h2>
+              ${renderDayEnv(data.date.split(' ')[0], (data.slots || []).length)}
             </div>
           </div>
 
           <div class="slots-wrap space-y-2.5">${slotsHtml}</div>
           <div class="slot-photo-note">사진: Google 지도 · 장소를 누르면 사진 올린 사람과 자세한 안내가 보여요</div>
 
-          <div class="pt-2 border-t border-slate-200 flex flex-col gap-2.5">
-            <div class="bg-slate-50 rounded-xl p-2.5 border border-slate-200 space-y-1">
-              <div class="text-[12px] font-extrabold text-slate-500">💰 주요 비용 (현재 기준 단가)${data.updated ? ` <span class="ml-1 px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[12px]">🔄 ${data.updatedAt} 최신 반영</span>` : ''}</div>
+          <div class="flex flex-col gap-2.5">
+            <div class="pv-cost">
+              <div class="pv-cost-h"><span>주요 비용</span><span class="pv-cost-u">${data.updated ? `${data.updatedAt} 기준` : '현재 기준 단가'}</span></div>
               ${costsHtml}
             </div>
 
@@ -3468,7 +3564,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611140506').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611140659').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -4314,23 +4410,38 @@
   function renderExpenses() {
     const { total, paid, owed, transfers } = calcSettlement();
 
-    document.getElementById('exp-total-usd').textContent = `$${total.toFixed(2)}`;
+    const money = v => '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const live = expenses.filter(e => !e.is_void);
+    document.getElementById('exp-total-usd').textContent = money(total);
+    const cs = document.getElementById('exp-count-sub'); if (cs) cs.textContent = `지출 ${live.length}건${expenses.length > live.length ? ` (무효 ${expenses.length - live.length}건 제외)` : ''} · 자동 계산`;
     FAMILIES.forEach(fam => {
       const key = fam.toLowerCase();
-      document.getElementById(`fam-${key}-share`).textContent = `$${owed[fam].toFixed(2)}`;
+      document.getElementById(`fam-${key}-share`).textContent = `$${Math.round(owed[fam]).toLocaleString('en-US')}`;
       const net = paid[fam] - owed[fam];
-      document.getElementById(`fam-${key}-diff`).textContent = `결제 $${paid[fam].toFixed(0)} (${net >= 0 ? '받을돈' : '보낼돈'} $${Math.abs(net).toFixed(0)})`;
+      const r = Math.round(Math.abs(net));
+      document.getElementById(`fam-${key}-diff`).innerHTML = `결제 $${Math.round(paid[fam]).toLocaleString('en-US')}<br>` +
+        (r === 0 ? '<b>정산 끝</b>' : `<b class="${net > 0 ? 'get' : 'give'}">${net > 0 ? '받을 돈' : '보낼 돈'} $${r.toLocaleString('en-US')}</b>`);
     });
+    const remain = transfers.reduce((a, t) => a + t.amount, 0);
+    const rEl = document.getElementById('exp-remain'); if (rEl) rEl.textContent = `$${Math.round(remain).toLocaleString('en-US')}`;
+    const rs = document.getElementById('exp-remain-sub'); if (rs) rs.innerHTML = transfers.length ? `${transfers.length}건만 보내면<br><b>정산 끝</b>` : '보낼 돈 없음';
 
+    const FAM_COL = { A: '#0b6fb8', B: '#0b8f88', C: '#c2410c' };
+    const ico = f => `<span class="pv-ico" style="background:${FAM_COL[f] || '#868e96'}">${esc(FAMILY_NAME[f] || f).slice(0, 1)}</span>`;
     const transEl = document.getElementById('settle-transfers');
     if (transEl) {
       transEl.innerHTML = transfers.length
         ? transfers.map(t => `
-            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[13px] font-extrabold">
-              <span>${famName(t.from)} ➔ ${famName(t.to)}</span>
-              <span class="text-sky-800">$${t.amount.toFixed(2)}</span>
-            </div>`).join('')
-        : `<div class="text-[12.5px] text-slate-500 font-semibold">정산할 금액이 없습니다.</div>`;
+            <div class="pv-row">${ico(t.from)}<div class="min-w-0"><div class="t">${esc(FAMILY_NAME[t.from])} → ${esc(FAMILY_NAME[t.to])}</div><div class="d">${esc(famName(t.from))}이 ${esc(famName(t.to))}에게</div></div><span class="pv-amt">${money(t.amount)}</span></div>`).join('')
+        : `<div class="pv-empty">보낼 돈이 없어요</div>`;
+    }
+    const recEl = document.getElementById('exp-recent');
+    const rsub = document.getElementById('exp-recent-sub'); if (rsub) rsub.textContent = `전체 ${expenses.length}건`;
+    if (recEl) {
+      recEl.innerHTML = expenses.length
+        ? expenses.slice(0, 3).map(item => `
+            <div class="pv-row ${item.is_void ? 'opacity-50' : ''}">${ico(item.payer)}<div class="min-w-0"><div class="t truncate ${item.is_void ? 'line-through' : ''}">${esc(item.title)}</div><div class="d">${esc(item.exp_date)} · ${esc(FAMILY_NAME[item.payer] || item.payer)} 결제${item.is_void ? ' · 무효' : ''}</div></div><span class="pv-amt">${money(parseFloat(item.amount) || 0)}</span></div>`).join('')
+        : `<div class="pv-empty">아직 등록된 지출이 없어요</div>`;
     }
 
     const updEl = document.getElementById('exp-updated-at');
@@ -5295,23 +5406,20 @@
     try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); } catch (e) { return null; }
   }
   function applyGreeting() {
-    const h1 = document.querySelector('#app-hero-banner .hero-title h1');
-    const sub = document.querySelector('#app-hero-banner .hero-title span');
-    if (!h1 || !sub) return;
+    const big = document.getElementById('hero-big'), hello = document.getElementById('hero-hello'), lineEl = document.getElementById('hero-line');
+    if (!big || !lineEl) return;
     const today = seoulToday();
     const left = today ? Math.round((Date.parse(TRIP_START) - Date.parse(today)) / 86400000) : null;
     const tDay = tripTodayDay();
-    let line;
-    if (tDay) { const d = scheduleData.find(x => x.day === tDay); line = `여행 ${tDay}일째 · ${d ? d.date : ''}`; }
-    else if (left == null) line = '2027.02.18 ~ 02.28 (8인)';
-    else if (left > 0) line = `결혼기념 오아후 · D-${left}`;
-    else if (left === 0) line = 'E hele kākou(가 볼까요)! · 오늘 인천 22:20 출발';
-    else if (left >= -11) line = '여행 중 · 2027.02.18 ~ 02.28';
-    else line = 'A hui hou(또 만나요) · 다녀왔어요 2027.02.18 ~ 02.28';
-    if (tDay === TOTAL_DAYS) line = `A hui hou(또 만나요)! · 마지막 날 ${scheduleData.find(x => x.day === tDay).date}`;
-    h1.textContent = '알로하, 3가족!';
-    sub.textContent = line;
-    sub.classList.add('hero-dday');
+    let b = '', h = '알로하, 3가족!', l = '결혼기념 오아후';
+    if (tDay) { const d = scheduleData.find(x => x.day === tDay); b = `Day ${tDay}`; l = `여행 ${tDay}일째 · ${d ? d.date : ''}`; }
+    else if (left == null) { b = 'Oahu'; l = '2027.02.18 ~ 02.28'; }
+    else if (left > 0) { b = `D-${left}`; l = '2/18 (목) 인천 출발'; }
+    else if (left === 0) { b = 'D-Day'; h = 'E hele kākou!'; l = '오늘 인천 22:20 출발'; }
+    else if (left >= -11) { b = 'Oahu'; l = '여행 중 · 02.18 ~ 02.28'; }
+    else { b = 'Mahalo'; h = 'A hui hou(또 만나요)'; l = '다녀왔어요 · 2027.02.18 ~ 02.28'; }
+    if (tDay === TOTAL_DAYS) { h = 'A hui hou(또 만나요)!'; l = `마지막 날 · ${scheduleData.find(x => x.day === tDay).date}`; }
+    big.textContent = b; hello.textContent = h; lineEl.textContent = l;
   }
 
   function gsNorm(t) { return String(t || '').toLowerCase().replace(/[’']/g, "'"); }
@@ -5748,13 +5856,16 @@
       const when = where ? `${where.day.date}${t ? ' · ' + t : ' · ' + where.slot.label}` : '일정에 없음';
       const costs = where ? where.day.costs.filter(c => r.costKeys.some(k => c.includes(k))) : [];
       return `
-        <div class="p-3 rounded-2xl ${where ? 'bg-slate-50 border border-slate-200' : 'bg-rose-50 border border-rose-200'} space-y-1.5">
-          <div class="flex items-start justify-between gap-2">
-            <a href="${gMapSearchQuery(sp.query)}" target="_blank" rel="noopener noreferrer" class="text-[14px] font-extrabold text-sky-900 underline">${i + 1}. 📍 ${sp.name} (${when})</a>
-            <span class="px-2 py-0.5 rounded-full ${TONE_CLS[r.tone] || TONE_CLS.sky} text-[12px] font-extrabold nowrap-btn">${r.lead}</span>
+        <div class="pv-res ${where ? '' : 'is-miss'}">
+          <div class="pv-res-top">
+            <span class="pv-res-n">${i + 1}</span>
+            <div class="min-w-0 flex-1">
+              <a href="${gMapSearchQuery(sp.query)}" target="_blank" rel="noopener noreferrer" class="pv-res-name">${sp.name}</a>
+              <div class="pv-res-when"><span>${when}</span><span class="pv-res-lead ${TONE_CLS[r.tone] || TONE_CLS.sky} nowrap-btn">${r.lead}</span></div>
+            </div>
           </div>
-          <p class="text-[12.5px] text-slate-700">${r.note}</p>
-          ${costs.length ? `<div class="text-[12px] text-slate-600 font-semibold">${costs.map(c => '💰 ' + c).join('<br>')}</div>` : ''}
+          <p class="pv-res-note">${r.note}</p>
+          ${costs.length ? `<div class="pv-res-cost">${costs.map(c => `<div class="pv-cost-i">${c}</div>`).join('')}</div>` : ''}
           ${where ? '' : '<p class="text-[12.5px] font-bold text-rose-700">⚠️ 지금 일정표에 이 장소가 없어요. 예약을 유지할지 확인하세요.</p>'}
           <div class="flex flex-wrap gap-1.5 pt-1">
             <a href="${gMapDirQuery(sp.query)}" target="_blank" rel="noopener noreferrer" class="gnav-chip">🚗 길안내 ↗</a>
@@ -6182,6 +6293,8 @@
       document.getElementById('exp-subpage-list').classList.add('hidden');
     });
 
+    const expAll = document.getElementById('exp-all-btn'); if (expAll) expAll.addEventListener('click', () => { document.getElementById('seg-exp-list-btn').click(); window.scrollTo({ top: 0, behavior: MOTION_OK() ? 'smooth' : 'auto' }); });
+    const expBack = document.getElementById('exp-back-btn'); if (expBack) expBack.addEventListener('click', () => document.getElementById('seg-exp-summary-btn').click());
     document.getElementById('seg-exp-list-btn').addEventListener('click', () => {
       document.getElementById('seg-exp-list-btn').classList.add('active');
       document.getElementById('seg-exp-summary-btn').classList.remove('active');
