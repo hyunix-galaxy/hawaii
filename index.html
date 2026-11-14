@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=2">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611140452">
+  <link rel="stylesheet" href="/tailwind.css?v=202611140506">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -3468,7 +3468,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611140452').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611140506').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -4367,8 +4367,13 @@
     if (!code) { setSyncStatus('🔒 입장 코드 필요', 'warn'); return; }
     const { data, error } = await sb.rpc('list_expenses', { p_code: code });
     if (error) {
-      if (error.code === '28000') { clearCode(); showEntryGate('입장 코드가 바뀌었어요. 새 코드를 넣어 주세요.'); return; }
+      if (isCodeLocked(error)) { setSyncStatus('🔒 잠시 잠김 (1시간 뒤 다시)', 'warn'); return; }
       setSyncStatus('⚠️ 불러오기 실패', 'err'); return;
+    }
+    // 코드가 틀리면 서버는 빈 목록을 줌 → 비어 있을 때만 코드가 아직 맞는지 확인
+    if (!data || !data.length) {
+      const { data: ok, error: e2 } = await sb.rpc('check_trip_code', { p_code: code });
+      if (!e2 && ok === false) { clearCode(); showEntryGate('입장 코드가 바뀌었어요. 새 코드를 넣어 주세요.'); return; }
     }
     expenses = data || [];
     lastSyncedAt = new Date();
@@ -4516,6 +4521,9 @@
     document.getElementById('receipt-file').value = '';
   }
 
+  // 입장 코드 시도 제한: 같은 인터넷 연결에서 1시간 10번 틀리면 서버가 1시간 잠금 (오류 코드 P0429)
+  const CODE_LOCK_MSG = '틀린 시도가 너무 많아요. 1시간 뒤에 다시 해 주세요. (와이파이를 끄고 휴대폰 데이터로 해도 돼요)';
+  function isCodeLocked(e) { return !!e && (e.code === 'P0429' || /too_many_attempts/.test(e.message || '')); }
   function readSavedCode() { try { return localStorage.getItem('hawaii_trip_code') || ''; } catch (e) { return ''; } }
   function saveCode(code) { try { localStorage.setItem('hawaii_trip_code', code); } catch (e) {} }
   function clearCode() { try { localStorage.removeItem('hawaii_trip_code'); } catch (e) {} }
@@ -4541,12 +4549,12 @@
       try {
         const { data: ok, error } = await sb.rpc('check_trip_code', { p_code: code });
         if (error) throw error;
-        if (!ok) { msg.textContent = '코드가 맞지 않아요.'; input.select(); return; }
+        if (!ok) { msg.textContent = '코드가 맞지 않아요. (1시간에 10번 틀리면 1시간 동안 잠겨요)'; input.select(); return; }
         saveCode(code);
         gate.remove();
         document.body.style.overflow = '';
       } catch (e) {
-        msg.textContent = '확인하지 못했어요. 인터넷 연결을 확인해 주세요.';
+        msg.textContent = isCodeLocked(e) ? CODE_LOCK_MSG : '확인하지 못했어요. 인터넷 연결을 확인해 주세요.';
       } finally {
         if (btn.isConnected) { btn.disabled = false; btn.textContent = '입장하기'; }
       }
@@ -4580,6 +4588,7 @@
     btn.textContent = '저장 중…';
     try {
       const { data: ok, error: codeErr } = await sb.rpc('check_trip_code', { p_code: code });
+      if (isCodeLocked(codeErr)) { showToast(CODE_LOCK_MSG); return; }
       if (codeErr) throw codeErr;
       if (!ok) { clearCode(); showEntryGate('입장 코드가 바뀌었어요. 새 코드를 넣어 주세요.'); return; }
 
@@ -4591,12 +4600,13 @@
         if (upErr) { photoPath = null; showToast('사진 업로드 실패 — 내역만 저장합니다.'); }
       }
 
-      const { error } = await sb.rpc('add_expense', {
+      const { data: newId, error } = await sb.rpc('add_expense', {
         p_code: code, p_title: title, p_amount: Math.round(amount * 100) / 100,
         p_date: date, p_payer: payer, p_split: split, p_photo_path: photoPath,
         p_client_ref: pendingClientRef
       });
       if (error) throw error;
+      if (newId == null) { clearCode(); showEntryGate('입장 코드가 바뀌었어요. 새 코드를 넣어 주세요.'); return; }
       pendingClientRef = null;
       try { localStorage.setItem(LAST_PAYER_KEY, payer); localStorage.setItem(LAST_SPLIT_KEY, split); } catch (e) {}
 
