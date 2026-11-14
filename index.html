@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=2">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611140722">
+  <link rel="stylesheet" href="/tailwind.css?v=202611140828">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -1906,7 +1906,7 @@
             <summary>화면 한눈에</summary>
             <ul>
               <li><b>일정</b>: 날짜별 일정·장소 안내·길안내. 위쪽 <b>목록 | 지도</b>로 동선 지도</li>
-              <li><b>음식</b>: 추천 맛집·간식·마트 40곳, 대표 메뉴와 가격</li>
+              <li><b>음식</b>: 추천 맛집·간식·마트·아울렛 41곳, 대표 메뉴와 가격</li>
               <li><b>숙소</b>: 힐튼 하와이안 빌리지 단지 지도와 시설 위치</li>
               <li><b>정산</b>: 지출 등록·가족별 송금 안내. 위쪽 <b>정산 | 환율</b>로 환율 계산기</li>
               <li><b>준비</b>: 예약 일정·항공·렌터카, 준비물, 영어 표현, 꿀팁, 이 사용법</li>
@@ -3566,7 +3566,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611140722').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611140828').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -5617,10 +5617,14 @@
     { cat: 'mart', dish: '한국 식재료 · 반찬 · 푸드홀', name: 'H Mart 카카아코', area: '카카아코 (458 Keawe St)', query: "H Mart Kaka'ako 458 Keawe St Honolulu HI", near: '알라모아나 센터에서 차로 약 5분', photoQ: 'store',
       items: [['김치·반찬·라면·한국 양념', '1층 마트'], ['K-BBQ용 손질 고기 · 활어', '1층 마트'], ['푸드홀 Market Eatery (지오반니 새우 등)', '2층']], note: "매일 09:00~21:00 (2020년 개점 기사 기준, 바뀌었을 수 있어요) · 뒤쪽 Salt·The Flats 주차장은 영수증 인증 시 첫 1시간 무료 · 칼리히의 'H Mart Super Market'은 다른 가게예요", checked: '2020 기사', src: 'https://www.honolulumagazine.com/?p=437738' },
     { cat: 'mart', dish: '한국 마트 · 김밥 · 순대', name: 'Palama Supermarket (팔라마 슈퍼)', area: '칼리히 (1070 N King St)', query: 'Palama Supermarket 1070 N King St Honolulu HI', near: '힐튼 단지에서 차로 약 15분', photoQ: 'store',
-      items: [['김밥·롤 · 반찬', '즉석 코너'], ['순대 · 한국식 고기(와규 포함)', '정육 코너']], note: '매일 08:00~20:00 · 숙소 풀키친에서 한식 해 먹을 재료 사기 좋아요 · 영업시간은 전화(808-847-4427)로 확인', checked: '2026.11 (비공식)' }
+      items: [['김밥·롤 · 반찬', '즉석 코너'], ['순대 · 한국식 고기(와규 포함)', '정육 코너']], note: '매일 08:00~20:00 · 숙소 풀키친에서 한식 해 먹을 재료 사기 좋아요 · 영업시간은 전화(808-847-4427)로 확인', checked: '2026.11 (비공식)' },
+    // ---- 와이켈레 아울렛 점심 (2026.11.14 추가 · D8 점심 장소) ----
+    { placeId: 'waikele', cat: 'mart', dish: '푸드코트 · 한식 · 타이 · 타코', name: 'Waikele Premium Outlets', area: '와이파후 (94-790 Lumiaina St)', query: 'Waikele Premium Outlets Waipahu HI', photoQ: 'outlet',
+      items: [['MOOJIGAE Korean Grill (한식)', '푸드코트'], ["PJ's Thai Kitchen · Quick Thai", '푸드코트'], ["Paco's Tacos · Alyssandra's Lumpia", '푸드코트'], ["Mr. Cow · Dippin' Dots · Diamond Head Chocolate", '간식']],
+      note: '2/25(목) 10:00~19:00 (금·토 ~20:00, 일 11:00~18:00) · 먹을 곳은 가운데 광장 푸드코트 · 코치·마이클 코어스·케이트 스페이드·폴로·리바이스 등 · 홈페이지 VIP 회원가입(무료)하면 쿠폰북 · 야외형이라 그늘·물 챙기기', checked: '2026.11', src: 'https://www.premiumoutlets.com/outlet/waikele/stores' }
   ];
 
-  const FOOD_CATS = { plan: '📅 일정에 있음', snack: '🍩 간식·디저트', local: '🚚 푸드트럭·로컬', famous: '⭐ 유명 레스토랑', mart: '🛒 마트·장보기' };
+  const FOOD_CATS = { plan: '📅 일정에 있음', snack: '🍩 간식·디저트', local: '🚚 푸드트럭·로컬', famous: '⭐ 유명 레스토랑', mart: '🛒 마트·쇼핑' };
   const FOOD_BY_PLACE = {};
   let foodFilter = 'all';
   function foodDays(f) { const ds = []; [].concat(f.placeId || []).forEach(id => { if (PLACES[id]) placeDays(id).forEach(d => { if (!ds.includes(d)) ds.push(d); }); }); return ds.sort((a, b) => a - b); }

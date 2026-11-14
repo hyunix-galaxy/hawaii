@@ -40,6 +40,7 @@ export default [
  "Foodland Farms Ala Moana Honolulu HI",
  "H Mart Kaka'ako 458 Keawe St Honolulu HI",
  "Palama Supermarket 1070 N King St Honolulu HI",
+ "Waikele Premium Outlets Waipahu HI",
  "Daniel K. Inouye International Airport Honolulu HI",
  "Costco Wholesale 525 Alakawa St Honolulu HI",
  "Duke Kahanamoku Lagoon Honolulu HI",
@@ -75,7 +76,6 @@ export default [
  "Sunset Beach Haleiwa HI",
  "Giovanni's Shrimp Truck 66-472 Kamehameha Hwy Haleiwa HI",
  "Dole Pineapple Farm Tour and Store 64-1551 Kamehameha Hwy Wahiawa HI",
- "Waikele Premium Outlets Waipahu HI",
  "Costco Gas 525 Alakawa St Honolulu HI",
  "Plumeria Beach House The Kahala Hotel and Resort Honolulu HI"
 ];
