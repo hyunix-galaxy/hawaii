@@ -41,6 +41,7 @@ export default [
  "H Mart Kaka'ako 458 Keawe St Honolulu HI",
  "Palama Supermarket 1070 N King St Honolulu HI",
  "Waikele Premium Outlets Waipahu HI",
+ "Yard House 226 Lewers St Honolulu HI",
  "Daniel K. Inouye International Airport Honolulu HI",
  "Costco Wholesale 525 Alakawa St Honolulu HI",
  "Duke Kahanamoku Lagoon Honolulu HI",
