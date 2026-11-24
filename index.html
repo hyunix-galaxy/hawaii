@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=2">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611240110">
+  <link rel="stylesheet" href="/tailwind.css?v=202611240119">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -1634,7 +1634,7 @@
         <!-- 영수증 촬영 · 지출 등록 -->
         <div class="m3-card p-4 space-y-3">
           <div class="flex items-start justify-between gap-2">
-            <div><h3 class="pv-title" data-noicon>지출 등록</h3><div class="pv-sub">영수증을 찍으면 상호·금액(손글씨 팁 포함)이 자동으로 채워져요</div></div>
+            <div><h3 class="pv-title" data-noicon>지출 등록</h3><div class="pv-sub">영수증을 찍으면 상호·금액이 자동으로 채워져요</div></div>
             <span id="sync-status" class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[12px] font-bold nowrap-btn">연결 중…</span>
           </div>
 
@@ -2148,11 +2148,10 @@
   /* =====================================================================
    * [CONFIG] 지출 공유 저장소 (Supabase · 공개용 키 — 노출되어도 되는 키)
    *   지출 원장: public.expenses (조회 전용, 등록은 여행 코드 확인 함수로만)
-   *   영수증 사진: Storage 'receipts' 버킷
+   *   영수증 사진: Storage 'receipts' 버킷 (비공개 · 올리기/보기는 Edge Function trip-receipt가 입장 코드 확인 후 처리)
    * ===================================================================== */
   const SUPABASE_URL = 'https://zbmgocqznrmcotlhocfe.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_q5vobkDdPiNE58YgQiR-vg_BW3TvnvO';
-  const RECEIPT_BUCKET = 'receipts';
   const TESSERACT_CDN = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
 
   /* [DATA] 날짜별 일출·일몰 · 평년 날씨 (와이키키 기준, 하와이 시간)
@@ -3582,7 +3581,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611240110').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611240119').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -4391,9 +4390,23 @@
     el.textContent = text;
   }
 
-  function receiptPublicUrl(path) {
-    if (!path || !sb) return '';
-    return sb.storage.from(RECEIPT_BUCKET).getPublicUrl(path).data.publicUrl;
+  // 영수증 사진 보관함은 비공개 — 입장 코드를 확인한 서버(trip-receipt)가 1시간짜리 보기 주소를 만들어 줌
+  async function openReceipt(path) {
+    const code = readSavedCode();
+    if (!sb || !path) return;
+    if (!/^\d{6}$/.test(code)) { showEntryGate('입장 코드를 다시 넣어 주세요.'); return; }
+    const win = window.open('', '_blank');   // 누른 순간 창부터 열어 둬야 팝업 차단에 안 걸림
+    try {
+      const { data, error } = await sb.functions.invoke('trip-receipt', { body: { action: 'sign', code, paths: [path] } });
+      const url = !error && data && data.urls && data.urls[path];
+      if (!url) throw error || new Error('no url');
+      if (win) win.location.href = url; else location.href = url;
+    } catch (e) {
+      if (win) win.close();
+      const st = e && e.context && e.context.status;
+      if (st === 401) { clearCode(); showEntryGate('입장 코드가 바뀌었어요. 새 코드를 넣어 주세요.'); }
+      else showToast(st === 429 ? CODE_LOCK_MSG : '영수증을 열지 못했어요. 잠시 후 다시 눌러 주세요.');
+    }
   }
 
   function calcSettlement() {
@@ -4469,7 +4482,7 @@
     if (listEl) {
       listEl.innerHTML = expenses.length
         ? expenses.map(item => {
-            const photo = item.photo_path ? `<a href="${esc(receiptPublicUrl(item.photo_path))}" target="_blank" rel="noopener noreferrer" class="ext-link-chip">🧾 영수증 ↗</a>` : '';
+            const photo = item.photo_path ? `<button type="button" class="ext-link-chip" data-receipt="${esc(item.photo_path)}">🧾 영수증 ↗</button>` : '';
             const voidCls = item.is_void ? 'opacity-50 line-through' : '';
             const voidTag = item.is_void ? `<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[11.5px] font-extrabold no-underline">무효</span>` : '';
             return `
@@ -4775,10 +4788,12 @@
 
       let photoPath = null;
       if (pendingReceiptBlob) {
-        const rand = Math.random().toString(36).slice(2, 10);
-        photoPath = `r/${Date.now()}-${rand}.jpg`;
-        const { error: upErr } = await sb.storage.from(RECEIPT_BUCKET).upload(photoPath, pendingReceiptBlob, { contentType: 'image/jpeg', upsert: false });
-        if (upErr) { photoPath = null; showToast('사진 업로드 실패 — 내역만 저장합니다.'); }
+        try {
+          const image = await blobToBase64(pendingReceiptBlob);
+          const { data: up, error: upErr } = await sb.functions.invoke('trip-receipt', { body: { action: 'upload', code, image } });
+          photoPath = !upErr && up && up.path ? up.path : null;
+        } catch (e) { photoPath = null; }
+        if (!photoPath) showToast('사진 업로드 실패 — 내역만 저장합니다.');
       }
 
       const { data: newId, error } = await sb.rpc('add_expense', {
@@ -6439,6 +6454,10 @@
 
     initEntryGate();
     document.getElementById('receipt-file').addEventListener('change', (e) => handleReceiptFile(e.target.files && e.target.files[0]));
+    document.getElementById('expense-list-container').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-receipt]');
+      if (b) openReceipt(b.dataset.receipt);
+    });
     document.getElementById('receipt-clear-btn').addEventListener('click', clearReceipt);
     document.getElementById('add-expense-btn').addEventListener('click', submitExpense);
 
