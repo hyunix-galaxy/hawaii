@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=2">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611200914">
+  <link rel="stylesheet" href="/tailwind.css?v=202611240110">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -1634,7 +1634,7 @@
         <!-- 영수증 촬영 · 지출 등록 -->
         <div class="m3-card p-4 space-y-3">
           <div class="flex items-start justify-between gap-2">
-            <div><h3 class="pv-title" data-noicon>지출 등록</h3><div class="pv-sub">영수증을 찍으면 항목·금액이 자동으로 채워져요</div></div>
+            <div><h3 class="pv-title" data-noicon>지출 등록</h3><div class="pv-sub">영수증을 찍으면 상호·금액(손글씨 팁 포함)이 자동으로 채워져요</div></div>
             <span id="sync-status" class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[12px] font-bold nowrap-btn">연결 중…</span>
           </div>
 
@@ -3582,7 +3582,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611200914').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611240110').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -4594,6 +4594,35 @@
     return { amount, title, date };
   }
 
+  function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => resolve(String(fr.result).replace(/^data:[^,]*,/, ''));
+      fr.onerror = () => reject(fr.error);
+      fr.readAsDataURL(blob);
+    });
+  }
+
+  // 서버 함수 /api/receipt-ocr 호출 — 실패하면 null (화면은 폰 안 인식으로 넘어감)
+  async function aiReadReceipt(blob, code) {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 30000);
+    try {
+      const image = await blobToBase64(blob);
+      const r = await fetch('/api/receipt-ocr', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, image }), signal: ctl.signal
+      });
+      if (r.status === 401) return { codeBad: true, total: null };
+      if (!r.ok) return null;
+      return await r.json();
+    } catch (e) {
+      return null;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   async function handleReceiptFile(file) {
     pendingClientRef = null;
     if (!file) return;
@@ -4611,6 +4640,29 @@
     if (runId !== ocrRunId) return;
     pendingReceiptBlob = blob;
     preview.src = URL.createObjectURL(blob);
+
+    // 1차: 서버(Claude)로 읽기 — 손글씨 팁·최종 합계까지 읽음. 안 되면 아래 폰 안 인식으로 넘어감
+    const code = readSavedCode();
+    if (/^\d{6}$/.test(code) && navigator.onLine !== false) {
+      statusEl.textContent = '🤖 영수증 읽는 중… (몇 초 걸려요)';
+      const ai = await aiReadReceipt(blob, code);
+      if (runId !== ocrRunId) return;
+      if (ai && ai.total != null) {
+        const titleEl = document.getElementById('exp-title-input');
+        if (ai.merchant && !titleEl.value.trim()) titleEl.value = ai.merchant;
+        document.getElementById('exp-amount-input').value = ai.total.toFixed(2);
+        const dm = ai.date && ai.date.match(/^(\d{1,2})\/(\d{1,2})\//);
+        if (dm && +dm[1] === 2 && +dm[2] >= 18 && +dm[2] <= 28) document.getElementById('exp-date-input').value = `2/${+dm[2]}`;
+        const amt = `$${ai.total.toFixed(2)}`;
+        statusEl.textContent = ai.tip != null && ai.tip > 0
+          ? `✅ 자동 입력 완료 — 금액 ${amt} (팁 $${ai.tip.toFixed(2)} 포함${ai.tipHandwritten ? ' · 손글씨' : ''}). 영수증과 맞는지 확인해 주세요.`
+          : ai.tipBlank
+            ? `✅ 자동 입력 완료 — 금액 ${amt}. 팁 칸이 비어 있어요. 팁을 냈다면 금액에 더해 주세요.`
+            : `✅ 자동 입력 완료 — 금액 ${amt}. 영수증과 맞는지 확인해 주세요.`;
+        return;
+      }
+      if (ai && ai.codeBad) { clearCode(); showEntryGate('입장 코드를 다시 넣어 주세요.'); }
+    }
 
     try {
       statusEl.textContent = '🔎 인식 엔진 불러오는 중… (처음 1회 약간 걸립니다)';
