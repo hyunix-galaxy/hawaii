@@ -42,6 +42,8 @@ export default [
  "Palama Supermarket 1070 N King St Honolulu HI",
  "Waikele Premium Outlets Waipahu HI",
  "Yard House 226 Lewers St Honolulu HI",
+ "Kickin Kajun 655 Keeaumoku St Honolulu HI",
+ "Cajun Crab Waikiki Beach Walk 226 Lewers St Honolulu HI",
  "Daniel K. Inouye International Airport Honolulu HI",
  "Costco Wholesale 525 Alakawa St Honolulu HI",
  "Duke Kahanamoku Lagoon Honolulu HI",

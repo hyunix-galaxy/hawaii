@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=2">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
   <!-- 화면 스타일: Tailwind를 미리 만든 파일 (index.html의 클래스가 바뀌면 tailwind.css를 다시 만들어야 함 · tailwind.config.js 참고) -->
-  <link rel="stylesheet" href="/tailwind.css?v=202611240119">
+  <link rel="stylesheet" href="/tailwind.css?v=202611261348">
   <!-- 지도(Leaflet) · 지출 저장소(Supabase): 이 사이트에 함께 올린 파일, 화면 표시를 막지 않도록 defer -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script defer src="/vendor/leaflet/leaflet.js"></script>
@@ -3581,7 +3581,7 @@
     if (legQueue.length) setTimeout(pumpLegQueue, 1200);
   }
   function loadRoadLegs() {
-    fetch('/road-legs.json?v=202611240119').then(r => r.ok ? r.json() : {}).then(j => {
+    fetch('/road-legs.json?v=202611261348').then(r => r.ok ? r.json() : {}).then(j => {
       ROAD_LEGS = j || {};
       roadLegsLoaded = true;
       Object.keys(decodedLegs).forEach(k => delete decodedLegs[k]);
@@ -5820,7 +5820,14 @@
     // ---- Yard House 와이키키 (2026.11.20 추가 · 사용자가 보낸 구글 지도 링크) ----
     { cat: 'famous', dish: '생맥주 · 아메리칸 · 해피아워', name: 'Yard House 와이키키', area: '와이키키 비치 워크 (226 Lewers St)', query: 'Yard House 226 Lewers St Honolulu HI', near: '힐튼에서 걸어서 약 12분', photoQ: 'food',
       items: [['생맥주·와인·칵테일 $2 할인', '해피아워'], ['포케 나초·피자 등 일부 안주 반값', '해피아워'], ['생맥주 종류가 아주 많음 · 하프 야드 잔', '대표']],
-      note: '해피아워 월~금 14:00~17:30 · 일~수 22:30~마감 · 매일 11:00 열고 마감 시각은 안내마다 달라요(22시~새벽 1시) · 8명이면 전화로 자리 확인 (808) 923-9273 · 할인 내용은 2019년 후기 기준이라 바뀌었을 수 있어요', checked: '2026.11 (일부 2019 후기)', src: 'https://waikikibeachwalk.com/Restaurants/Restaurant-And-Nightlife/Yard-House.htm' }
+      note: '해피아워 월~금 14:00~17:30 · 일~수 22:30~마감 · 매일 11:00 열고 마감 시각은 안내마다 달라요(22시~새벽 1시) · 8명이면 전화로 자리 확인 (808) 923-9273 · 할인 내용은 2019년 후기 기준이라 바뀌었을 수 있어요', checked: '2026.11 (일부 2019 후기)', src: 'https://waikikibeachwalk.com/Restaurants/Restaurant-And-Nightlife/Yard-House.htm' },
+    // ---- 케이준 시푸드 보일 2곳 (2026.11.26 추가 · 사용자가 보낸 구글 지도 링크) ----
+    { cat: 'famous', dish: '케이준 시푸드 보일', name: 'Kickin Kajun 키킨 케이준', area: "케에아우모쿠 (655 Ke'eaumoku St)", query: "Kickin Kajun 655 Keeaumoku St Honolulu HI", near: '알라모아나 센터 근처 · 힐튼에서 차로 약 10분', photoQ: 'food',
+      items: [['새우 콤보 (새우·조개·홍합 + 사이드 2인분)', '$58'], ['스노크랩 콤보 · 킹크랩 콤보', '$90 · $130'], ['6파운더 모둠 (4인 이상)', '$250'], ['미니 콤보 (1인)', '$41.99']],
+      note: '일~목 11:00~21:00 · 금·토 ~22:00 · 건물 앞 주차장, 계산할 때 주차 확인(validation) 받기 · 한국어 하는 직원이 있다는 후기 · 인기 소스는 하우스 스페셜(갈릭 버터), 맵기는 골라요 · 가격은 온라인 주문 기준 · (808) 744-2599', checked: '2026.11 (온라인 주문 가격)', src: 'https://order.spoton.com/so-kickin-kajun-20073/honolulu-hi/6685c739605ea4003f16a637' },
+    { cat: 'famous', dish: '케이준 시푸드 보일 · 맥주', name: 'Cajun Crab 와이키키', area: '와이키키 비치 워크 2층 (226 Lewers St)', query: 'Cajun Crab Waikiki Beach Walk 226 Lewers St Honolulu HI', near: 'Yard House와 같은 건물 · 힐튼에서 걸어서 약 12분', photoQ: 'food',
+      items: [['해산물 골라 담는 보일', '가격 미확인'], ['소스: 갈릭 버터 · 드라이 럽', '대표'], ['로컬·일본 맥주', '음료']],
+      note: '2025년 4월 개점 · 저녁 영업 (시간은 확인 필요) · 예약은 Yelp 또는 (808) 913-2003 · 8명이면 미리 예약 · 공개된 가격 정보는 아직 없어요', checked: '2025.04', src: 'https://www.waikikibeachwalk.com/Press-Room/2025/Waikiki-Beach-Walk-Welcomes-Cajun-Crab-to-their-Di.htm' }
   ];
 
   const FOOD_CATS = { plan: '📅 일정에 있음', snack: '🍩 간식·디저트', local: '🚚 푸드트럭·로컬', famous: '⭐ 유명 레스토랑', mart: '🛒 마트·쇼핑' };
