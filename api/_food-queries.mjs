@@ -44,6 +44,8 @@ export default [
  "Yard House 226 Lewers St Honolulu HI",
  "Kickin Kajun 655 Keeaumoku St Honolulu HI",
  "Cajun Crab Waikiki Beach Walk 226 Lewers St Honolulu HI",
+ "Waffle and Berry 2250 Kalakaua Ave Honolulu HI",
+ "Teddy's Bigger Burgers 134 Kapahulu Ave Honolulu HI",
  "Daniel K. Inouye International Airport Honolulu HI",
  "Costco Wholesale 525 Alakawa St Honolulu HI",
  "Duke Kahanamoku Lagoon Honolulu HI",
